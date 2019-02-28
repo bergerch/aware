@@ -81,10 +81,10 @@ public class View implements Serializable {
         double wMax = 1.00 + ((double) delta / (double) f);
         double wMin = 1.00;
 
-        for(int i = 0; i < this.processes.length;i++)
+        for (int i = 0; i < this.processes.length;i++)
                 this.weights.put(processes[i], wMin);
         
-        for(int i = 0; i < u;i++)
+        for (int i = 0; i < u;i++)
                 this.weights.put(processes[i], wMax);
    
     }
@@ -139,7 +139,7 @@ public class View implements Serializable {
 
  	@Override
  	public String toString(){
- 		String ret = "ID:"+id+"; F:"+f+"; N-O:" + overlayN + "; F-O:" + overlayF + "; D: " + delta + "; Processes:";
+ 		String ret = "ID:"+id+"; F:"+f+"; N_O:" + overlayN + "; F_O:" + overlayF + "; D: " + delta + "; Processes:";
  		for(int i = 0; i < processes.length;i++){
  			ret = ret+processes[i]+"("+addresses.get(processes[i])+",W: "+weights.get(processes[i]) + "),";
  		}

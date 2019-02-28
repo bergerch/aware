@@ -142,7 +142,7 @@ public class NettyClientServerCommunicationSystemServerSide extends SimpleChanne
 			logger.info("ID = " + controller.getStaticConf().getProcessId());
 			logger.info("N = " + controller.getCurrentViewN());
 			logger.info("F = " + controller.getCurrentViewF());
-        		logger.info("Port = " + controller.getStaticConf().getPort(controller.getStaticConf().getProcessId()));
+        	logger.info("Port = " + controller.getStaticConf().getPort(controller.getStaticConf().getProcessId()));
 			logger.info("requestTimeout = " + controller.getStaticConf().getRequestTimeout());
 			logger.info("maxBatch = " + controller.getStaticConf().getMaxBatchSize());
 			if (controller.getStaticConf().getUseMACs() == 1) logger.info("Using MACs");
@@ -151,6 +151,17 @@ public class NettyClientServerCommunicationSystemServerSide extends SimpleChanne
                         //******* EDUARDO END **************//
                         
                         mainChannel = f.channel();
+
+           /** DynWHEAT **/
+           if (controller.getStaticConf().isUseDynamicWeights()) {
+               logger.info("Using DynWHEAT Extensions");
+               logger.info("Use WRITE-RESPONSE: " + controller.getStaticConf().isUseWriteResponse());
+               logger.info("Use DUMMY-PROPOSE: " + controller.getStaticConf().isUseDummyPropose());
+               logger.info("Use PROPOSE-RESPONSE: " + controller.getStaticConf().isUseProposeResponse());
+               logger.info("Monitoring overhead: " + controller.getStaticConf().getMonitoringOverhead());
+               logger.info("Re-Calculate after x consensus: " + controller.getStaticConf().getCalculationInterval());
+           }
+
 
 		} catch (NoSuchAlgorithmException | InterruptedException | UnknownHostException ex) {
 			logger.error("Failed to create Netty communication system",ex);

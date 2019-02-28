@@ -25,6 +25,11 @@ public class MessageFactory{
     public static final int WRITE    = 44782;
     public static final int ACCEPT  = 44783;
 
+    // DynWHEAT messages
+    public static final int DUMMY_PROPOSE = 44791;
+    public static final int PROPOSE_RESPONSE = 44792;
+    public static final int WRITE_RESPONSE  = 44793;
+
     private int from; // Replica ID of the process which sent this message
 
     /**
@@ -76,6 +81,7 @@ public class MessageFactory{
         return new ConsensusMessage(ACCEPT,id,epoch, from, value);
 
     }
+
 
 
 }

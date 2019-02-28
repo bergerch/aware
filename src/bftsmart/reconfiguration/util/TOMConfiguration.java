@@ -20,6 +20,7 @@ import java.util.StringTokenizer;
 
 import java.util.regex.Pattern;
 
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -66,6 +67,20 @@ public class TOMConfiguration extends Configuration {
         private int delta;
         private boolean useWeights;
         private boolean tentative;
+
+    // DynWHEAT Leader and weights configs
+    private int initialLeader;
+    private boolean useDynamicWeights;
+
+    // DynWHEAT calc & monitoring overhead config
+    private int calculationInterval;
+    private double monitoringOverhead;
+
+    // DynWHEAT messages
+    private boolean useDummyPropose;
+    private boolean useProposeResponse;
+    private boolean useWriteResponse;
+
 
 
     /** Creates a new instance of TOMConfiguration */
@@ -364,6 +379,31 @@ public class TOMConfiguration extends Configuration {
             s = (String) configs.remove("system.tentative");
             tentative = (s != null) ? Boolean.parseBoolean(s) : false;
 
+
+            /** DynWHEAT **/
+
+            s = (String) configs.remove("system.initial.leader");
+            initialLeader = s != null ? Integer.parseInt(s) : 0;
+
+            s = (String) configs.remove("system.dw.useDynamicWeights");
+            useDynamicWeights = Boolean.parseBoolean(s);
+
+            s = (String) configs.remove("system.dw.calculationInterval");
+            calculationInterval = s != null ? Integer.parseInt(s) : 0;
+
+            s = (String) configs.remove("system.dw.monitoringOverhead");
+            monitoringOverhead = s != null ? Double.parseDouble(s) : 0;
+
+            s = (String) configs.remove("system.dw.useDummyPropose");
+            useDummyPropose = Boolean.parseBoolean(s);
+
+            s = (String) configs.remove("system.dw.useProposeResponse");
+            useProposeResponse = Boolean.parseBoolean(s);
+
+            s = (String) configs.remove("system.dw.useWriteResponse");
+            useWriteResponse = Boolean.parseBoolean(s);
+
+
         } catch (Exception e) {
             logger.error("Could not parse system configuration file",e);
         }
@@ -546,5 +586,41 @@ public class TOMConfiguration extends Configuration {
 
     public String getBindAddress() {
         return bindAddress;
+    }
+
+    public boolean isUseWeights() {
+        return useWeights;
+    }
+
+    public boolean isTentative() {
+        return tentative;
+    }
+
+    public int getInitialLeader() {
+        return initialLeader;
+    }
+
+    public boolean isUseDynamicWeights() {
+        return useDynamicWeights;
+    }
+
+    public int getCalculationInterval() {
+        return calculationInterval;
+    }
+
+    public double getMonitoringOverhead() {
+        return monitoringOverhead;
+    }
+
+    public boolean isUseDummyPropose() {
+        return useDummyPropose;
+    }
+
+    public boolean isUseProposeResponse() {
+        return useProposeResponse;
+    }
+
+    public boolean isUseWriteResponse() {
+        return useWriteResponse;
     }
 }
