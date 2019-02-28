@@ -15,17 +15,22 @@ limitations under the License.
 */
 package bftsmart.reconfiguration.util;
 
-import java.security.PrivateKey;
-import java.security.PublicKey;
+import bftsmart.tom.util.KeyLoader;
 import java.util.StringTokenizer;
 
-import bftsmart.tom.util.Logger;
+import java.util.regex.Pattern;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class TOMConfiguration extends Configuration {
+
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     protected int n;
     protected int f;
     protected int requestTimeout;
+    protected int batchTimeout;
     protected int tomPeriod;
     protected int paxosHighMark;
     protected int revivalHighMark;
@@ -37,8 +42,6 @@ public class TOMConfiguration extends Configuration {
     protected int outQueueSize;
     protected boolean shutdownHookEnabled;
     protected boolean useSenderThread;
-    protected RSAKeyLoader rsaLoader;
-    private int debug;
     private int numNIOThreads;
     private int useMACs;
     private int useSignatures;
@@ -48,34 +51,33 @@ public class TOMConfiguration extends Configuration {
     private int useControlFlow;
     private int[] initialView;
     private int ttpId;
-	private boolean isToLog;
-	private boolean syncLog;
-	private boolean parallelLog;
-	private boolean logToDisk;
-	private boolean isToWriteCkpsToDisk;
-	private boolean syncCkp;
+    private boolean isToLog;
+    private boolean syncLog;
+    private boolean parallelLog;
+    private boolean logToDisk;
+    private boolean isToWriteCkpsToDisk;
+    private boolean syncCkp;
     private boolean isBFT;
     private int numRepliers;
     private int numNettyWorkers;
-    
+    private boolean sameBatchSize;
+    private String bindAddress;
+
         private int delta;
         private boolean useWeights;
         private boolean tentative;
-        
+
+
     /** Creates a new instance of TOMConfiguration */
-    public TOMConfiguration(int processId) {
-        super(processId);
+    public TOMConfiguration(int processId, KeyLoader loader) {
+        super(processId, loader);
     }
 
     /** Creates a new instance of TOMConfiguration */
-    public TOMConfiguration(int processId, String configHome) {
-        super(processId, configHome);
+    public TOMConfiguration(int processId, String configHome, KeyLoader loader) {
+        super(processId, configHome, loader);
     }
 
-    /** Creates a new instance of TOMConfiguration */
-    public TOMConfiguration(int processId, String configHome, String hostsFileName) {
-        super(processId, configHome, hostsFileName);
-    }
 
     @Override
     protected void init() {
@@ -106,6 +108,16 @@ public class TOMConfiguration extends Configuration {
                 requestTimeout = Integer.parseInt(s);
                 if (requestTimeout < 0) {
                     requestTimeout = 0;
+                }
+            }
+
+            s = (String) configs.remove("system.totalordermulticast.batchtimeout");
+            if (s == null) {
+                batchTimeout = -1;
+            } else {
+                batchTimeout = Integer.parseInt(s);
+                if (batchTimeout <= 0) {
+                    batchTimeout = -1;
                 }
             }
 
@@ -144,18 +156,6 @@ public class TOMConfiguration extends Configuration {
                 maxBatchSize = 100;
             } else {
                 maxBatchSize = Integer.parseInt(s);
-            }
-
-            s = (String) configs.remove("system.debug");
-            if (s == null) {
-                Logger.debug = false;
-            } else {
-                debug = Integer.parseInt(s);
-                if (debug == 0) {
-                    Logger.debug = false;
-                } else {
-                    Logger.debug = true;
-                }
             }
 
             s = (String) configs.remove("system.totalordermulticast.replayVerificationTime");
@@ -264,52 +264,52 @@ public class TOMConfiguration extends Configuration {
                 }
             }
 
-			s = (String) configs.remove("system.totalordermulticast.log");
-			if (s != null) {
-				isToLog = Boolean.parseBoolean(s);
-			} else {
-				isToLog = false;
-			}
+            s = (String) configs.remove("system.totalordermulticast.log");
+            if (s != null) {
+                    isToLog = Boolean.parseBoolean(s);
+            } else {
+                    isToLog = false;
+            }
 
-			s = (String) configs
-					.remove("system.totalordermulticast.log_parallel");
-			if (s != null) {
-				parallelLog = Boolean.parseBoolean(s);
-			} else {
-				parallelLog = false;
-			}
+            s = (String) configs
+                            .remove("system.totalordermulticast.log_parallel");
+            if (s != null) {
+                    parallelLog = Boolean.parseBoolean(s);
+            } else {
+                    parallelLog = false;
+            }
 
-			s = (String) configs
-					.remove("system.totalordermulticast.log_to_disk");
-			if (s != null) {
-				logToDisk = Boolean.parseBoolean(s);
-			} else {
-				logToDisk = false;
-			}
-			
-			s = (String) configs
-					.remove("system.totalordermulticast.sync_log");
-			if (s != null) {
-				syncLog = Boolean.parseBoolean(s);
-			} else {
-				syncLog = false;
-			}
+            s = (String) configs
+                            .remove("system.totalordermulticast.log_to_disk");
+            if (s != null) {
+                    logToDisk = Boolean.parseBoolean(s);
+            } else {
+                    logToDisk = false;
+            }
 
-			s = (String) configs
-					.remove("system.totalordermulticast.checkpoint_to_disk");
-			if (s == null) {
-				isToWriteCkpsToDisk = false;
-			} else {
-				isToWriteCkpsToDisk = Boolean.parseBoolean(s);
-			}
-			
-			s = (String) configs
-					.remove("system.totalordermulticast.sync_ckp");
-			if (s == null) {
-				syncCkp = false;
-			} else {
-				syncCkp = Boolean.parseBoolean(s);
-			}
+            s = (String) configs
+                            .remove("system.totalordermulticast.sync_log");
+            if (s != null) {
+                    syncLog = Boolean.parseBoolean(s);
+            } else {
+                    syncLog = false;
+            }
+
+            s = (String) configs
+                            .remove("system.totalordermulticast.checkpoint_to_disk");
+            if (s == null) {
+                    isToWriteCkpsToDisk = false;
+            } else {
+                    isToWriteCkpsToDisk = Boolean.parseBoolean(s);
+            }
+
+            s = (String) configs
+                            .remove("system.totalordermulticast.sync_ckp");
+            if (s == null) {
+                    syncCkp = false;
+            } else {
+                    syncCkp = Boolean.parseBoolean(s);
+            }
 
             s = (String) configs.remove("system.totalordermulticast.global_checkpoint_period");
             if (s == null) {
@@ -335,21 +335,37 @@ public class TOMConfiguration extends Configuration {
                 numNettyWorkers = Integer.parseInt(s);
             }
             
+            s = (String) configs.remove("system.communication.bindaddress");
+
+            Pattern pattern = Pattern.compile("^(([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.){3}([01]?\\d\\d?|2[0-4]\\d|25[0-5])$");
+
+            if (s == null || !pattern.matcher(s).matches()) {
+                bindAddress = "";
+            } else {
+                bindAddress = s;
+            }
+
+            s = (String) configs.remove("system.samebatchsize");
+            if (s != null) {
+                    sameBatchSize = Boolean.parseBoolean(s);
+            } else {
+                    sameBatchSize = false;
+            }
+
             s = (String) configs.remove("system.useweights");
             useWeights = (s != null) ? Boolean.parseBoolean(s) : false;
-            
+
             if (useWeights) {
                 delta = n - ( (isBFT ? 3*f : 2*f) + 1);
             } else {
                 delta = 0;
             }
-            
+
             s = (String) configs.remove("system.tentative");
             tentative = (s != null) ? Boolean.parseBoolean(s) : false;
-            
-            rsaLoader = new RSAKeyLoader(processId, TOMConfiguration.configHome, defaultKeys);
+
         } catch (Exception e) {
-            e.printStackTrace(System.err);
+            logger.error("Could not parse system configuration file",e);
         }
 
     }
@@ -378,6 +394,10 @@ public class TOMConfiguration extends Configuration {
 
     public int getRequestTimeout() {
         return requestTimeout;
+    }
+
+    public int getBatchTimeout() {
+        return batchTimeout;
     }
 
     public int getReplyVerificationTime() {
@@ -500,35 +520,6 @@ public class TOMConfiguration extends Configuration {
         return useControlFlow;
     }
 
-    public PublicKey getRSAPublicKey() {
-        try {
-            return rsaLoader.loadPublicKey();
-        } catch (Exception e) {
-            e.printStackTrace(System.err);
-            return null;
-        }
-
-    }
-
-    public PublicKey getRSAPublicKey(int id) {
-        try {
-            return rsaLoader.loadPublicKey(id);
-        } catch (Exception e) {
-            e.printStackTrace(System.err);
-            return null;
-        }
-
-    }
-    
-    public PrivateKey getRSAPrivateKey() {
-        try {
-            return rsaLoader.loadPrivateKey();
-        } catch (Exception e) {
-            e.printStackTrace(System.err);
-            return null;
-        }
-    }
-
     public boolean isBFT(){
     	
     	return this.isBFT;
@@ -540,12 +531,20 @@ public class TOMConfiguration extends Configuration {
     public int getDelta() {
         return delta;
     }
-    
+
     public boolean getTentative() {
         return tentative;
     }
-    
+
     public int getNumNettyWorkers() {
         return numNettyWorkers;
+    }
+
+    public boolean getSameBatchSize() {
+        return sameBatchSize;
+    }
+
+    public String getBindAddress() {
+        return bindAddress;
     }
 }

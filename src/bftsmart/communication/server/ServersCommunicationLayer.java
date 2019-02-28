@@ -23,34 +23,42 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import bftsmart.communication.SystemMessage;
 import bftsmart.reconfiguration.ServerViewController;
 import bftsmart.tom.ServiceReplica;
+import bftsmart.tom.util.TOMUtil;
+import java.net.InetAddress;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Random;
 
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
  * @author alysson
  */
 public class ServersCommunicationLayer extends Thread {
+    
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
+
 
     private ServerViewController controller;
     private LinkedBlockingQueue<SystemMessage> inQueue;
-    private Hashtable<Integer, ServerConnection> connections = new Hashtable<Integer, ServerConnection>();
+    private HashMap<Integer, ServerConnection> connections = new HashMap<>();
     private ServerSocket serverSocket;
     private int me;
     private boolean doWork = true;
@@ -80,11 +88,42 @@ public class ServersCommunicationLayer extends Thread {
             }
         }
 
-        serverSocket = new ServerSocket(controller.getStaticConf().getServerToServerPort(
-                controller.getStaticConf().getProcessId()));
+        String myAddress;
+        String confAddress =
+                    controller.getStaticConf().getRemoteAddress(controller.getStaticConf().getProcessId()).getAddress().getHostAddress();
+        
+        if (InetAddress.getLoopbackAddress().getHostAddress().equals(confAddress)) {
+                            
+            myAddress = InetAddress.getLoopbackAddress().getHostAddress();
 
-        SecretKeyFactory fac = SecretKeyFactory.getInstance("PBEWithMD5AndDES");
-        PBEKeySpec spec = new PBEKeySpec(PASSWORD.toCharArray());
+            }
+
+        else if (controller.getStaticConf().getBindAddress().equals("")) {
+
+            myAddress = InetAddress.getLocalHost().getHostAddress();
+
+            //If the replica binds to the loopback address, clients will not be able to connect to replicas.
+            //To solve that issue, we bind to the address supplied in config/hosts.config instead.
+            if (InetAddress.getLoopbackAddress().getHostAddress().equals(myAddress) && !myAddress.equals(confAddress)) {
+
+                myAddress = confAddress;
+            }
+
+
+        } else {
+
+            myAddress = controller.getStaticConf().getBindAddress();
+        }
+        
+        int myPort = controller.getStaticConf().getServerToServerPort(controller.getStaticConf().getProcessId());
+                        
+        serverSocket = new ServerSocket(myPort, 50, InetAddress.getByName(myAddress));
+
+        /*serverSocket = new ServerSocket(controller.getStaticConf().getServerToServerPort(
+                controller.getStaticConf().getProcessId()));*/
+
+        SecretKeyFactory fac = TOMUtil.getSecretFactory();
+        PBEKeySpec spec = TOMUtil.generateKeySpec(PASSWORD.toCharArray());
         selfPwd = fac.generateSecret(spec);
 
         serverSocket.setSoTimeout(10000);
@@ -151,12 +190,18 @@ public class ServersCommunicationLayer extends Thread {
         try {
             new ObjectOutputStream(bOut).writeObject(sm);
         } catch (IOException ex) {
-            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+            logger.error("Failed to serialize message", ex);
         }
 
         byte[] data = bOut.toByteArray();
+        
+        // this shuffling is done to prevent the replica with the lowest ID/index  from being always
+        // the last one receiving the messages, which can result in that replica  to become consistently
+        // delayed in relation to the others.
+        Integer[] targetsShuffled = Arrays.stream( targets ).boxed().toArray( Integer[]::new );
+        Collections.shuffle(Arrays.asList(targetsShuffled), new Random(System.nanoTime())); 
 
-        for (int i : targets) {
+        for (int i : targetsShuffled) {
             try {
                 if (i == me) {
                     sm.authenticated = true;
@@ -169,14 +214,14 @@ public class ServersCommunicationLayer extends Thread {
                     //******* EDUARDO END **************//
                 }
             } catch (InterruptedException ex) {
-                ex.printStackTrace();
+                logger.error("Interruption while inserting message into inqueue",ex);
             }
         }
     }
 
     public void shutdown() {
         
-        System.out.println("Shutting down replica sockets");
+        logger.info("Shutting down replica sockets");
         
         doWork = false;
 
@@ -201,7 +246,7 @@ public class ServersCommunicationLayer extends Thread {
             try {
                 establishConnection(pc.s, pc.remoteId);
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.error("Failed to estabilish connection to " + pc.remoteId,e);
             }
         }
 
@@ -235,19 +280,20 @@ public class ServersCommunicationLayer extends Thread {
                 //******* EDUARDO END **************//
 
             } catch (SocketTimeoutException ex) {
-            //timeout on the accept... do nothing
+            
+                logger.debug("Server socket timed out, retrying");
             } catch (IOException ex) {
-                Logger.getLogger(ServersCommunicationLayer.class.getName()).log(Level.SEVERE, null, ex);
+                logger.error("Problem during thread execution", ex);
             }
         }
 
         try {
             serverSocket.close();
         } catch (IOException ex) {
-            Logger.getLogger(ServersCommunicationLayer.class.getName()).log(Level.SEVERE, null, ex);
+            logger.error("Failed to close server socket", ex);
         }
 
-        Logger.getLogger(ServersCommunicationLayer.class.getName()).log(Level.INFO, "ServerCommunicationLayer stopped.");
+        logger.info("ServerCommunicationLayer stopped.");
     }
 
     //******* EDUARDO BEGIN **************//
@@ -276,7 +322,8 @@ public class ServersCommunicationLayer extends Thread {
         try {
             socket.setTcpNoDelay(true);
         } catch (SocketException ex) {
-            Logger.getLogger(ServersCommunicationLayer.class.getName()).log(Level.SEVERE, null, ex);
+            
+            LoggerFactory.getLogger(ServersCommunicationLayer.class).error("Failed to set TCPNODELAY", ex);
         }
     }
 

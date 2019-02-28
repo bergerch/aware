@@ -31,17 +31,21 @@ import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 
-import org.slf4j.LoggerFactory;
-
 import bftsmart.reconfiguration.ViewController;
 import bftsmart.tom.core.messages.TOMMessage;
-import bftsmart.tom.util.Logger;
+import bftsmart.tom.util.TOMUtil;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
  * @author Paulo Sousa
  */
 public class NettyTOMMessageDecoder extends ByteToMessageDecoder {
+    
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
+
 
     /**
      * number of measures used to calculate statistics
@@ -50,8 +54,6 @@ public class NettyTOMMessageDecoder extends ByteToMessageDecoder {
     private boolean isClient;
     private Map sessionTable;
     //private Storage st;
-    private int macSize;
-    private int signatureSize;
     private ViewController controller;
     private boolean firstTime;
     private ReentrantReadWriteLock rl;
@@ -68,27 +70,22 @@ public class NettyTOMMessageDecoder extends ByteToMessageDecoder {
      //******* EDUARDO END **************//
     
     private boolean useMAC;
-
-    private org.slf4j.Logger logger = LoggerFactory.getLogger(NettyTOMMessageDecoder.class);
-
     
-    public NettyTOMMessageDecoder(boolean isClient, Map sessionTable, int macLength, ViewController controller, ReentrantReadWriteLock rl, int signatureLength, boolean useMAC) {
+    public NettyTOMMessageDecoder(boolean isClient, Map sessionTable, ViewController controller, ReentrantReadWriteLock rl, boolean useMAC) {
         this.isClient = isClient;
         this.sessionTable = sessionTable;
-        this.macSize = macLength;
         this.controller = controller;
         this.firstTime = true;
         this.rl = rl;
-        this.signatureSize = signatureLength;
         this.useMAC = useMAC;
-        bftsmart.tom.util.Logger.println("new NettyTOMMessageDecoder!!, isClient=" + isClient);
+        logger.debug("new NettyTOMMessageDecoder!!, isClient=" + isClient);
     }
 
     @Override
     protected void decode(ChannelHandlerContext context, ByteBuf buffer, List<Object> list) throws Exception  {
 
         // Wait until the length prefix is available.
-        if (buffer.readableBytes() < 4) {
+        if (buffer.readableBytes() < Integer.BYTES) {
             return;
         }
 
@@ -97,39 +94,31 @@ public class NettyTOMMessageDecoder extends ByteToMessageDecoder {
         //Logger.println("Receiving message with "+dataLength+" bytes.");
 
         // Wait until the whole data is available.
-        if (buffer.readableBytes() < dataLength + 4) {
+        if (buffer.readableBytes() < dataLength + Integer.BYTES) {
             return;
         }
 
         // Skip the length field because we know it already.
-        buffer.skipBytes(4);
+        buffer.skipBytes(Integer.BYTES);
 
-        int totalLength = dataLength - 1;
-
-        //read control byte indicating if message is signed
-        byte signed = buffer.readByte();
-
-        int authLength = 0;
-
-        if (signed == 1) {
-            authLength += signatureSize;
-        }
-        if (useMAC) {
-            authLength += macSize;
-        }
-
-        byte[] data = new byte[totalLength - authLength];
+        int size = buffer.readInt();
+        byte[] data = new byte[size];
         buffer.readBytes(data);
 
         byte[] digest = null;
         if (useMAC) {
-            digest = new byte[macSize];
+            
+            size = buffer.readInt();
+            digest = new byte[size];
             buffer.readBytes(digest);
         }
 
         byte[] signature = null;
-        if (signed == 1) {
-            signature = new byte[signatureSize];
+        size = buffer.readInt();            
+            
+        if (size > 0) {
+
+            signature = new byte[size];
             buffer.readBytes(signature);
         }
 
@@ -143,7 +132,7 @@ public class NettyTOMMessageDecoder extends ByteToMessageDecoder {
             sm.rExternal(dis);
             sm.serializedMessage = data;
 
-            if (signed == 1) {
+            if (signature != null) {
                 sm.serializedMessageSignature = signature;
                 sm.signed = true;
             }
@@ -155,7 +144,7 @@ public class NettyTOMMessageDecoder extends ByteToMessageDecoder {
                 //verify MAC
                 if (useMAC) {
                     if (!verifyMAC(sm.getSender(), data, digest)) {
-                        System.out.println("MAC error: message discarded");
+                        logger.error("MAC error: message discarded");
                         return;
                     }
                 }
@@ -166,45 +155,44 @@ public class NettyTOMMessageDecoder extends ByteToMessageDecoder {
                     rl.readLock().unlock();
                     if (useMAC) {
                         if (!verifyMAC(sm.getSender(), data, digest)) {
-                            Logger.println("MAC error: message discarded");
+                            logger.debug("MAC error: message discarded");
                             return;
                         }
                     }
                 } else {
                     //creates MAC/publick key stuff if it's the first message received from the client
-                    bftsmart.tom.util.Logger.println("Creating MAC/public key stuff, first message from client" + sm.getSender());
-                    bftsmart.tom.util.Logger.println("sessionTable size=" + sessionTable.size());
+                    logger.debug("Creating MAC/public key stuff, first message from client" + sm.getSender());
+                    logger.debug("sessionTable size=" + sessionTable.size());
 
                     rl.readLock().unlock();
                     
-                    SecretKeyFactory fac = SecretKeyFactory.getInstance("PBEWithMD5AndDES");
+                    SecretKeyFactory fac = TOMUtil.getSecretFactory();
                     String str = sm.getSender() + ":" + this.controller.getStaticConf().getProcessId();                                        
-                    PBEKeySpec spec = new PBEKeySpec(str.toCharArray());
+                    PBEKeySpec spec = TOMUtil.generateKeySpec(str.toCharArray());
                     SecretKey authKey = fac.generateSecret(spec);
             
-                    Mac macSend = Mac.getInstance(controller.getStaticConf().getHmacAlgorithm());
+                    Mac macSend = TOMUtil.getMacFactory();
                     macSend.init(authKey);
-                    Mac macReceive = Mac.getInstance(controller.getStaticConf().getHmacAlgorithm());
+                    Mac macReceive = TOMUtil.getMacFactory();
                     macReceive.init(authKey);
                     NettyClientServerSession cs = new NettyClientServerSession(context.channel(), macSend, macReceive, sm.getSender());
                                        
                     rl.writeLock().lock();
 //                    logger.info("PUT INTO SESSIONTABLE - [client id]:"+sm.getSender()+" [channel]: "+cs.getChannel());
                     sessionTable.put(sm.getSender(), cs);
-                    bftsmart.tom.util.Logger.println("#active clients " + sessionTable.size());
+                    logger.debug("active clients " + sessionTable.size());
                     rl.writeLock().unlock();
                     if (useMAC && !verifyMAC(sm.getSender(), data, digest)) {
-                        Logger.println("MAC error: message discarded");
+                        logger.debug("MAC error: message discarded");
                         return;
                     }
                 }
             }
-            Logger.println("Decoded reply from " + sm.getSender() + " with sequence number " + sm.getSequence());
+            logger.debug("Decoded reply from " + sm.getSender() + " with sequence number " + sm.getSequence());
             list.add(sm);
         } catch (Exception ex) {
-            bftsmart.tom.util.Logger.println("Impossible to decode message: "+
-                    ex.getMessage());
-            ex.printStackTrace();
+            
+            logger.error("Failed to decode TOMMessage", ex);
         }
         return;
     }

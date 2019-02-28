@@ -15,15 +15,24 @@ limitations under the License.
 */
 package bftsmart.reconfiguration.util;
 
+import bftsmart.tom.util.KeyLoader;
+import bftsmart.tom.util.TOMUtil;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.math.BigInteger;
 import java.net.InetSocketAddress;
-import java.util.Hashtable;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
 
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+
 public class Configuration {
+    
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
     
     protected int processId;
     protected boolean channelsBlocking;
@@ -32,35 +41,51 @@ public class Configuration {
     protected int autoConnectLimit;
     protected Map<String, String> configs;
     protected HostsConfig hosts;
-           
-    private String hmacAlgorithm = "HmacSha1";
-    private int hmacSize = 160;
+    protected KeyLoader keyLoader;           
+    
+    public static final String DEFAULT_HMAC = "HmacSHA512";
+    public static final String DEFAULT_SECRETKEY = "PBKDF2WithHmacSHA1";
+    public static final String DEFAULT_SIGNATURE = "SHA512withRSA";
+    public static final String DEFAULT_HASH = "SHA-512";
+            
 
-    protected static String configHome = "";
+    public static final String DEFAULT_HMAC_PROVIDER = "SunJCE";
+    public static final String DEFAULT_SECRETKEY_PROVIDER = "SunJCE";
+    public static final String DEFAULT_SIGNATURE_PROVIDER = "SunRsaSign";
+    public static final String DEFAULT_HASH_PROVIDER = "SUN";
+    
+    protected String hmacAlgorithm;
+    protected String secretKeyAlgorithm;
+    protected String signatureAlgorithm;
+    protected String hashAlgorithm;
+
+    protected String hmacAlgorithmProvider;
+    protected String secretKeyAlgorithmProvider;
+    protected String signatureAlgorithmProvider;
+    protected String hashAlgorithmProvider;
+    
+    protected String configHome = "";
 
    
     protected static String hostsFileName = "";
 
     protected boolean defaultKeys = false;
+    
+    protected String proofType;
 
-    public Configuration(int procId){
+    public Configuration(int procId, KeyLoader loader){
         processId = procId;
+        keyLoader = loader;
         init();
     }
     
-    public Configuration(int processId, String configHomeParam){
-        this.processId = processId;
+    public Configuration(int procId, String configHomeParam, KeyLoader loader){
+        processId = procId;
         configHome = configHomeParam;
+        keyLoader = loader;
         init();
     }
 
-     public Configuration(int processId, String configHomeParam, String hostsFileNameParam){
-        this.processId = processId;
-        configHome = configHomeParam;
-        hostsFileName = hostsFileNameParam;
-        init();
-    }
-    
     protected void init(){
         try{
             hosts = new HostsConfig(configHome, hostsFileName);
@@ -79,6 +104,62 @@ public class Configuration {
                 channelsBlocking = false;
             }else{
                 channelsBlocking = (s.equalsIgnoreCase("true"))?true:false;
+            }
+            
+            s = (String) configs.remove("system.communication.hmacAlgorithm");
+            if(s == null){
+                hmacAlgorithm = DEFAULT_HMAC;
+            }else{
+                hmacAlgorithm = s;
+            }
+            
+            s = (String) configs.remove("system.communication.secretKeyAlgorithm");
+            if(s == null){
+                secretKeyAlgorithm = DEFAULT_SECRETKEY;
+            }else{
+                secretKeyAlgorithm = s;
+            }
+            
+            s = (String) configs.remove("system.communication.signatureAlgorithm");
+            if(s == null){
+                signatureAlgorithm = DEFAULT_SIGNATURE;
+            }else{
+                signatureAlgorithm = s;
+            }
+            
+            s = (String) configs.remove("system.communication.hashAlgorithm");
+            if(s == null){
+                hashAlgorithm = DEFAULT_HASH;
+            }else{
+                hashAlgorithm = s;
+            }
+            
+            s = (String) configs.remove("system.communication.hmacAlgorithmProvider");
+            if(s == null){
+                hmacAlgorithmProvider = DEFAULT_HMAC_PROVIDER;
+            }else{
+                hmacAlgorithmProvider = s;
+            }
+            
+            s = (String) configs.remove("system.communication.secretKeyAlgorithmProvider");
+            if(s == null){
+                secretKeyAlgorithmProvider = DEFAULT_SECRETKEY_PROVIDER;
+            }else{
+                secretKeyAlgorithmProvider = s;
+            }
+            
+            s = (String) configs.remove("system.communication.signatureAlgorithmProvider");
+            if(s == null){
+                signatureAlgorithmProvider = DEFAULT_SIGNATURE_PROVIDER;
+            }else{
+                signatureAlgorithmProvider = s;
+            }
+            
+            s = (String) configs.remove("system.communication.hashAlgorithmProvider");
+            if(s == null){
+                hashAlgorithmProvider = DEFAULT_HASH_PROVIDER;
+            }else{
+                hashAlgorithmProvider = s;
             }
             
             s = (String) configs.remove("system.communication.defaultkeys");
@@ -107,12 +188,41 @@ public class Configuration {
                 DH_G = new BigInteger(s);
             }
             
+            s = (String) configs.remove("system.totalordermulticast.prooftype");
+            if(s == null && !s.equalsIgnoreCase("macvector") && !s.equalsIgnoreCase("signatures")){
+                proofType = "signatures";
+            }else{
+                proofType = s;
+            }
+            
+            if (keyLoader == null) {
+                
+                if (signatureAlgorithm.toLowerCase().contains("ecdsa")) {
+                    logger.debug("Using default ECDSA key loader");
+                    keyLoader = new ECDSAKeyLoader(processId, configHome, defaultKeys, signatureAlgorithm);
+                }
+                else if (signatureAlgorithm.toLowerCase().contains("rsa")) {
+                    logger.debug("Using default RSA key loader");
+                    keyLoader = new RSAKeyLoader(processId, configHome, defaultKeys, signatureAlgorithm);
+                }
+                
+                else {
+                    throw new RuntimeException("Unsupported signature algorithm, custom keyloader required");
+                }
+            }
+            
+            TOMUtil.init(hmacAlgorithm, secretKeyAlgorithm, keyLoader.getSignatureAlgorithm(), hashAlgorithm,
+                    hmacAlgorithmProvider, secretKeyAlgorithmProvider, signatureAlgorithmProvider, hashAlgorithmProvider);
+
         }catch(Exception e){
-            System.err.println("Wrong system.config file format.");
-            e.printStackTrace(System.out);
+            LoggerFactory.getLogger(this.getClass()).error("Wrong system.config file format.");
         }
     }
-
+    
+    public String getConfigHome() {
+        return configHome;
+    }
+    
     public boolean useDefaultKeys() {
         return defaultKeys;
     }
@@ -145,10 +255,38 @@ public class Configuration {
         return hmacAlgorithm;
     }
 
-    public final int getHmacSize() {
-        return hmacSize;
+    public final String getSecretKeyAlgorithm() {
+        return secretKeyAlgorithm;
+    }
+    
+    public final String getSignatureAlgorithm() {
+        return signatureAlgorithm;
+    }
+    
+    public final String getHashAlgorithm() {
+        return hashAlgorithm;
     }
 
+    public final String getHmacAlgorithmProvider() {
+        return hmacAlgorithmProvider;
+    }
+
+    public final String getSecretKeyAlgorithmProvider() {
+        return secretKeyAlgorithmProvider;
+    }
+    
+    public final String getSignatureAlgorithmProvider() {
+        return signatureAlgorithmProvider;
+    }
+    
+    public final String getHashAlgorithmProvider() {
+        return hashAlgorithmProvider;
+    }
+    
+    public final String getProofType() {
+        return proofType;
+    }
+    
     public final String getProperty(String key){
         Object o = configs.get(key);
         if( o != null){
@@ -201,8 +339,37 @@ public class Configuration {
         this.hosts.add(id,host,port);
     }
     
+    public PublicKey getPublicKey() {
+        try {
+            return keyLoader.loadPublicKey();
+        } catch (Exception e) {
+            logger.error("Could not load public key",e);
+            return null;
+        }
+
+    }
+
+    public PublicKey getPublicKey(int id) {
+        try {
+            return keyLoader.loadPublicKey(id);
+        } catch (Exception e) {
+            logger.error("Could not load public key",e);
+            return null;
+        }
+
+    }
+    
+    public PrivateKey getPrivateKey() {
+        try {
+            return keyLoader.loadPrivateKey();
+        } catch (Exception e) {
+            logger.error("Could not load private key",e);
+            return null;
+        }
+    }
+    
     private void loadConfig(){
-        configs = new Hashtable<String, String>();
+        configs = new HashMap<>();
         try{
             if(configHome == null || configHome.equals("")){
                 configHome="config";
@@ -223,7 +390,7 @@ public class Configuration {
             fr.close();
             rd.close();
         }catch(Exception e){
-            e.printStackTrace(System.out);
+            LoggerFactory.getLogger(this.getClass()).error("Could not load configuration",e);
         }
     }
 }

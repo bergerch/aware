@@ -22,18 +22,20 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.logging.Level;
 
 import bftsmart.reconfiguration.ServerViewController;
 import bftsmart.reconfiguration.util.TOMConfiguration;
 import bftsmart.statemanagement.ApplicationState;
 import bftsmart.statemanagement.StateManager;
-import bftsmart.statemanagement.strategy.StandardStateManager;
+import bftsmart.statemanagement.standard.StandardStateManager;
 import bftsmart.tom.MessageContext;
 import bftsmart.tom.ReplicaContext;
 import bftsmart.tom.server.BatchExecutable;
 import bftsmart.tom.server.Recoverable;
-import bftsmart.tom.util.Logger;
+import bftsmart.tom.util.TOMUtil;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -43,6 +45,8 @@ import bftsmart.tom.util.Logger;
  * @author Joao Sousa
  */
 public abstract class DefaultRecoverable implements Recoverable, BatchExecutable {
+    
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private int checkpointPeriod;
     private ReentrantLock logLock = new ReentrantLock();
@@ -54,12 +58,15 @@ public abstract class DefaultRecoverable implements Recoverable, BatchExecutable
     private StateLog log;
     private StateManager stateManager;
 
+    /**
+     * Constructor
+     */
     public DefaultRecoverable() {
 
         try {
-            md = MessageDigest.getInstance("MD5"); // TODO: shouldn't it be SHA?
+            md = TOMUtil.getHashEngine();
         } catch (NoSuchAlgorithmException ex) {
-            java.util.logging.Logger.getLogger(DefaultRecoverable.class.getName()).log(Level.SEVERE, null, ex);
+            LoggerFactory.getLogger(this.getClass()).error("Failed to create DefaultRecoverable", ex);
         }
     }
 
@@ -84,7 +91,7 @@ public abstract class DefaultRecoverable implements Recoverable, BatchExecutable
             if (!noop) {
 
                 stateLock.lock();
-                replies = appExecuteBatch(commands, msgCtxs);
+                replies = appExecuteBatch(commands, msgCtxs, true);
                 stateLock.unlock();
 
             }
@@ -118,11 +125,11 @@ public abstract class DefaultRecoverable implements Recoverable, BatchExecutable
 
             if (!noop) {
                 stateLock.lock();
-                firstHalfReplies = appExecuteBatch(firstHalf, firstHalfMsgCtx);
+                firstHalfReplies = appExecuteBatch(firstHalf, firstHalfMsgCtx, true);
                 stateLock.unlock();
             }
 
-            System.out.println("(DefaultRecoverable.executeBatch) Performing checkpoint for consensus " + cid);
+            logger.info("Performing checkpoint for consensus " + cid);
             stateLock.lock();
             byte[] snapshot = getSnapshot();
             stateLock.unlock();
@@ -137,11 +144,11 @@ public abstract class DefaultRecoverable implements Recoverable, BatchExecutable
 
                 if (!noop) {
                     stateLock.lock();
-                    secondHalfReplies = appExecuteBatch(secondHalf, secondHalfMsgCtx);
+                    secondHalfReplies = appExecuteBatch(secondHalf, secondHalfMsgCtx, true);
                     stateLock.unlock();
                 }
 
-                Logger.println("(DefaultRecoverable.executeBatch) Storing message batch in the state log for consensus " + cid);
+                logger.debug("Storing message batch in the state log for consensus " + cid);
                 saveCommands(secondHalf, secondHalfMsgCtx);
 
                 System.arraycopy(secondHalfReplies, 0, replies, firstHalfReplies.length, secondHalfReplies.length);
@@ -155,7 +162,7 @@ public abstract class DefaultRecoverable implements Recoverable, BatchExecutable
         return replies;
     }
 
-    public final byte[] computeHash(byte[] data) {
+    private final byte[] computeHash(byte[] data) {
         byte[] ret = null;
         hashLock.lock();
         ret = md.digest(data);
@@ -175,14 +182,14 @@ public abstract class DefaultRecoverable implements Recoverable, BatchExecutable
 
         logLock.lock();
 
-        Logger.println("(TOMLayer.saveState) Saving state of CID " + lastCID);
+        logger.debug("(TOMLayer.saveState) Saving state of CID " + lastCID);
 
         thisLog.newCheckpoint(snapshot, computeHash(snapshot), lastCID);
         thisLog.setLastCID(lastCID);
         thisLog.setLastCheckpointCID(lastCID);
 
         logLock.unlock();
-        Logger.println("(TOMLayer.saveState) Finished saving state of CID " + lastCID);
+        logger.debug("(TOMLayer.saveState) Finished saving state of CID " + lastCID);
     }
 
     /**
@@ -195,8 +202,8 @@ public abstract class DefaultRecoverable implements Recoverable, BatchExecutable
         //if(!config.isToLog())
         //	return;        
         if (commands.length != msgCtx.length) {
-            System.out.println("----SIZE OF COMMANDS AND MESSAGE CONTEXTS IS DIFFERENT----");
-            System.out.println("----COMMANDS: " + commands.length + ", CONTEXTS: " + msgCtx.length + " ----");
+            logger.debug("SIZE OF COMMANDS AND MESSAGE CONTEXTS IS DIFFERENT----");
+            logger.debug("COMMANDS: " + commands.length + ", CONTEXTS: " + msgCtx.length + " ----");
         }
         logLock.lock();
 
@@ -245,15 +252,12 @@ public abstract class DefaultRecoverable implements Recoverable, BatchExecutable
             int lastCheckpointCID = state.getLastCheckpointCID();
             lastCID = state.getLastCID();
 
-            System.out.println("(DefaultRecoverable.setState) I'm going to update myself from CID "
+            logger.info("I'm going to update myself from CID "
                     + lastCheckpointCID + " to CID " + lastCID);
-            
-            bftsmart.tom.util.Logger.println("(DefaultRecoverable.setState) I'm going to update myself from CID "
-                    + lastCheckpointCID + " to CID " + lastCID);
-
+           
             stateLock.lock();
             if (state.getSerializedState() != null) {
-                System.out.println("The state is not null. Will install it");
+                logger.info("The state is not null. Will install it");
                 initLog();
                 log.update(state);
                 installSnapshot(state.getSerializedState());
@@ -262,9 +266,9 @@ public abstract class DefaultRecoverable implements Recoverable, BatchExecutable
             for (int cid = lastCheckpointCID + 1; cid <= lastCID; cid++) {
                 try {
 
-                    bftsmart.tom.util.Logger.println("(DefaultRecoverable.setState) interpreting and verifying batched requests for cid " + cid);
+                    logger.debug("Processing and verifying batched requests for cid " + cid);
                     if (state.getMessageBatch(cid) == null) {
-                        System.out.println("(DefaultRecoverable.setState) " + cid + " NULO!!!");
+                        logger.warn("Consensus " + cid + " is null!");
                     }
 
                     CommandsInfo cmdInfo = state.getMessageBatch(cid); 
@@ -274,16 +278,16 @@ public abstract class DefaultRecoverable implements Recoverable, BatchExecutable
                     if (commands == null || msgCtx == null || msgCtx[0].isNoOp()) {
                         continue;
                     }                        
-                    appExecuteBatch(commands, msgCtx);
+                    appExecuteBatch(commands, msgCtx, false);
                     
                 } catch (Exception e) {
-                    e.printStackTrace(System.err);
+                    logger.error("Failed to process and verify batched requests",e);
                     if (e instanceof ArrayIndexOutOfBoundsException) {
-                        System.out.println("CID do ultimo checkpoint: " + state.getLastCheckpointCID());
-                        System.out.println("CID do ultimo consenso: " + state.getLastCID());
-                        System.out.println("numero de mensagens supostamente no batch: " + (state.getLastCID() - state.getLastCheckpointCID() + 1));
-                        System.out.println("numero de mensagens realmente no batch: " + state.getMessageBatches().length);
-                    }
+                        logger.info("Last checkpoint, last consensus ID (CID): " + state.getLastCheckpointCID());
+                        logger.info("Last CID: " + state.getLastCID());
+                        logger.info("number of messages expected to be in the batch: " + (state.getLastCID() - state.getLastCheckpointCID() + 1));
+                        logger.info("number of messages in the batch: " + state.getMessageBatches().length);
+                     }
                 }
 
             }
@@ -367,7 +371,7 @@ public abstract class DefaultRecoverable implements Recoverable, BatchExecutable
             }
             index++;
         }
-        System.out.println("--- Checkpoint is in position " + index);
+        logger.info("Checkpoint is in position " + index);
         return index;
     }
    
@@ -409,9 +413,6 @@ public abstract class DefaultRecoverable implements Recoverable, BatchExecutable
         return stateManager;
     }
 
-
-    
-    
     @Override
     public byte[] executeUnordered(byte[] command, MessageContext msgCtx) {
         return appExecuteUnordered(command, msgCtx);
@@ -429,12 +430,37 @@ public abstract class DefaultRecoverable implements Recoverable, BatchExecutable
 
     }
     
+    /**
+     * Given a snapshot received from the state transfer protocol, install it
+     * @param state The serialized snapshot
+     */
     public abstract void installSnapshot(byte[] state);
     
+    /**
+     * Returns a serialized snapshot of the application state
+     * @return A serialized snapshot of the application state
+     */
     public abstract byte[] getSnapshot();
     
-    public abstract byte[][] appExecuteBatch(byte[][] commands, MessageContext[] msgCtxs);
+    /**
+     * Execute a batch of ordered requests
+     * 
+     * @param commands The batch of requests
+     * @param msgCtxs The context associated to each request
+     * @param fromConsensus true if the request arrived from a consensus execution, false if it arrives from the state transfer protocol
+     * 
+     * @return the respective replies for each request
+     */
+    public abstract byte[][] appExecuteBatch(byte[][] commands, MessageContext[] msgCtxs, boolean fromConsensus);
     
+    /**
+     * Execute an unordered request
+     * 
+     * @param command The unordered request
+     * @param msgCtx The context associated to the request
+     * 
+     * @return the reply for the request issued by the client
+     */
     public abstract byte[] appExecuteUnordered(byte[] command, MessageContext msgCtx);
 
 }

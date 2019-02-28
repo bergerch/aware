@@ -19,23 +19,54 @@ import bftsmart.tom.MessageContext;
 import bftsmart.tom.ReplicaContext;
 import bftsmart.tom.core.messages.TOMMessage;
 import bftsmart.tom.server.Replier;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+import org.slf4j.LoggerFactory;
 
 /**
  *
  * @author miguel
  */
 public class DefaultReplier implements Replier{
-
+    
+    private Lock replyLock = new ReentrantLock();
+    private Condition contextSetted = replyLock.newCondition();
     private ReplicaContext rc;
     
     @Override
     public void manageReply(TOMMessage request, MessageContext msgCtx) {
+        
+        
+        while (rc == null) {
+            
+            try {
+
+                this.replyLock.lock();
+
+                this.contextSetted.await();
+         
+                this.replyLock.unlock();
+
+            } catch (InterruptedException ex) {
+                LoggerFactory.getLogger(this.getClass()).error("Interruption while waiting/aquiring condition", ex);
+            }
+        }
+        
         rc.getServerCommunicationSystem().send(new int[]{request.getSender()}, request.reply);
+        
     }
 
     @Override
     public void setReplicaContext(ReplicaContext rc) {
+        
+        this.replyLock.lock();
+        
         this.rc = rc;
+        
+        this.contextSetted.signalAll();
+        
+        this.replyLock.unlock();
     }
     
 }

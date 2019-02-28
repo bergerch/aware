@@ -23,7 +23,6 @@ import java.security.Signature;
 import java.security.SignedObject;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.logging.Level;
 
 import bftsmart.clientsmanagement.ClientsManager;
 import bftsmart.clientsmanagement.RequestList;
@@ -44,7 +43,14 @@ import bftsmart.tom.server.Recoverable;
 import bftsmart.tom.server.RequestVerifier;
 import bftsmart.tom.util.BatchBuilder;
 import bftsmart.tom.util.BatchReader;
-import bftsmart.tom.util.Logger;
+import bftsmart.tom.util.TOMUtil;
+import java.util.Timer;
+import java.util.TimerTask;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * This class implements the state machine replication protocol described in
@@ -54,6 +60,8 @@ import bftsmart.tom.util.Logger;
  */
 public final class TOMLayer extends Thread implements RequestReceiver {
 
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
+    
     private boolean doWork = true;
     //other components used by the TOMLayer (they are never changed)
     public ExecutionManager execManager; // Execution manager
@@ -63,10 +71,18 @@ public final class TOMLayer extends Thread implements RequestReceiver {
     private DeliveryThread dt; // Thread which delivers total ordered messages to the appication
     public StateManager stateManager = null; // object which deals with the state transfer protocol
 
+    //thread pool used to paralelise verification of requests contained in a batch
+    private ExecutorService verifierExecutor = null;
+    
     /**
      * Manage timers for pending requests
      */
     public RequestsTimer requestsTimer;
+    
+    //timeout for batch
+    private Timer batchTimer = null;
+    private long lastRequest = -1;
+    
     /**
      * Store requests received but still not ordered
      */
@@ -125,43 +141,62 @@ public final class TOMLayer extends Thread implements RequestReceiver {
         this.acceptor = a;
         this.communication = cs;
         this.controller = controller;
-
+        
+        // use either the same number of Netty workers threads if specified in the configuration
+        // or use a many as the number of cores available
+        int nWorkers = this.controller.getStaticConf().getNumNettyWorkers();
+        nWorkers = nWorkers > 0 ? nWorkers : Runtime.getRuntime().availableProcessors();
+        this.verifierExecutor = Executors.newWorkStealingPool(nWorkers);
+        
         //do not create a timer manager if the timeout is 0
         if (this.controller.getStaticConf().getRequestTimeout() == 0) {
             this.requestsTimer = null;
         } else {
             this.requestsTimer = new RequestsTimer(this, communication, this.controller); // Create requests timers manager (a thread)
         }
-
+        
         try {
-            this.md = MessageDigest.getInstance("MD5"); // TODO: shouldn't it be SHA?
+            this.md = TOMUtil.getHashEngine();
         } catch (Exception e) {
-            e.printStackTrace(System.out);
+            logger.error("Failed to get message digest engine",e);
         }
 
         try {
-            this.engine = Signature.getInstance("SHA1withRSA");
+            this.engine = TOMUtil.getSigEngine();
         } catch (Exception e) {
-            e.printStackTrace(System.err);
+            logger.error("Failed to get signature engine",e);
         }
 
-        this.prk = this.controller.getStaticConf().getRSAPrivateKey();
+        this.prk = this.controller.getStaticConf().getPrivateKey();
         this.dt = new DeliveryThread(this, receiver, recoverer, this.controller); // Create delivery thread
         this.dt.start();
         this.stateManager = recoverer.getStateManager();
         stateManager.init(this, dt);
         
-        this.verifier = (verifier != null) ? verifier : new RequestVerifier() {
-			@Override
-			public boolean isValidRequest(byte[] request) {
-				return true; // By default, never validate requests
-                        }
-		};
-
+        this.verifier = (verifier != null) ? verifier : ((request) -> true); // By default, never validate requests 
+		
         // I have a verifier, now create clients manager
         this.clientsManager = new ClientsManager(this.controller, requestsTimer, this.verifier);
 
         this.syncher = new Synchronizer(this); // create synchronizer
+        
+        if (controller.getStaticConf().getBatchTimeout() > -1) {
+
+            batchTimer = new Timer();
+            batchTimer.scheduleAtFixedRate(new TimerTask() {
+                @Override
+                public void run() {
+
+                    if (clientsManager.havePendingRequests() && 
+                            (System.currentTimeMillis() - lastRequest) >= controller.getStaticConf().getBatchTimeout()) {
+
+                        logger.debug("Signaling proposer thread!!");
+                        haveMessages();
+                    }
+                }
+
+            }, 0, controller.getStaticConf().getBatchTimeout());
+        }
     }
 
     /**
@@ -183,7 +218,7 @@ public final class TOMLayer extends Thread implements RequestReceiver {
         try {
             return new SignedObject(obj, prk, engine);
         } catch (Exception e) {
-            e.printStackTrace(System.err);
+            logger.error("Failed to sign object",e);
             return null;
         }
     }
@@ -197,9 +232,9 @@ public final class TOMLayer extends Thread implements RequestReceiver {
      */
     public boolean verifySignature(SignedObject so, int sender) {
         try {
-            return so.verify(controller.getStaticConf().getRSAPublicKey(sender), engine);
+            return so.verify(controller.getStaticConf().getPublicKey(sender), engine);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Failed to verify object signature",e);
         }
         return false;
     }
@@ -244,7 +279,7 @@ public final class TOMLayer extends Thread implements RequestReceiver {
      */
     public void setInExec(int inEx) {
         proposeLock.lock();
-        Logger.println("(TOMLayer.setInExec) modifying inExec from " + this.inExecution + " to " + inEx);
+        logger.debug("Modifying inExec from " + this.inExecution + " to " + inEx);
         this.inExecution = inEx;
         if (inEx == -1 && !isRetrievingState()) {
             canPropose.signalAll();
@@ -280,23 +315,37 @@ public final class TOMLayer extends Thread implements RequestReceiver {
      */
     @Override
     public void requestReceived(TOMMessage msg) {
-        
+               
         if (!doWork) return;
         
         // check if this request is valid and add it to the client' pending requests list
         boolean readOnly = (msg.getReqType() == TOMMessageType.UNORDERED_REQUEST
                 || msg.getReqType() == TOMMessageType.UNORDERED_HASHED_REQUEST);
         if (readOnly) {
-            Logger.println("(TOMLayer.requestReceived) Received read-only TOMMessage from client " + msg.getSender() + " with sequence number " + msg.getSequence() + " for session " + msg.getSession());
+            logger.debug("Received read-only TOMMessage from client " + msg.getSender() + " with sequence number " + msg.getSequence() + " for session " + msg.getSession());
 
             dt.deliverUnordered(msg, syncher.getLCManager().getLastReg());
         } else {
-            Logger.println("(TOMLayer.requestReceived) Received TOMMessage from client " + msg.getSender() + " with sequence number " + msg.getSequence() + " for session " + msg.getSession());
+            logger.debug("Received TOMMessage from client " + msg.getSender() + " with sequence number " + msg.getSequence() + " for session " + msg.getSession());
 
             if (clientsManager.requestReceived(msg, true, communication)) {
-                haveMessages();
+                
+                if(controller.getStaticConf().getBatchTimeout() == -1) {
+                    haveMessages();
+                } else {
+                    
+                    if (clientsManager.countPendingRequests() < controller.getStaticConf().getMaxBatchSize()) {
+                        
+                        lastRequest = System.currentTimeMillis();
+                                                
+                    } else {
+                        
+                        haveMessages();
+                    }
+                    
+                }
             } else {
-                Logger.println("(TOMLayer.requestReceived) the received TOMMessage " + msg + " was discarded.");
+                logger.warn("The received TOMMessage " + msg + " was discarded.");
             }
         }
     }
@@ -311,6 +360,8 @@ public final class TOMLayer extends Thread implements RequestReceiver {
     public byte[] createPropose(Decision dec) {
         // Retrieve a set of pending requests from the clients manager
         RequestList pendingRequests = clientsManager.getPendingRequests();
+        
+        logger.debug("Number of pending requets to propose in consensus {}: {}", dec.getConsensusId(), pendingRequests.size());
 
         int numberOfMessages = pendingRequests.size(); // number of messages retrieved
         int numberOfNonces = this.controller.getStaticConf().getNumberOfNonces(); // ammount of nonces to be generated
@@ -322,9 +373,9 @@ public final class TOMLayer extends Thread implements RequestReceiver {
         }
         dec.batchSize = numberOfMessages;
 
-        Logger.println("(TOMLayer.run) creating a PROPOSE with " + numberOfMessages + " msgs");
+        logger.debug("Creating a PROPOSE with " + numberOfMessages + " msgs");
 
-        return bb.makeBatch(pendingRequests, numberOfNonces, System.currentTimeMillis(), controller);
+        return bb.makeBatch(pendingRequests, numberOfNonces, System.currentTimeMillis(), controller.getStaticConf().getUseSignatures() == 1);
     }
 
     /**
@@ -334,12 +385,12 @@ public final class TOMLayer extends Thread implements RequestReceiver {
      */
     @Override
     public void run() {
-        Logger.println("Running."); // TODO: can't this be outside of the loop?
+        logger.debug("Running."); // TODO: can't this be outside of the loop?
         while (doWork) {
 
             // blocks until this replica learns to be the leader for the current epoch of the current consensus
             leaderLock.lock();
-            Logger.println("Next leader for CID=" + (getLastExec() + 1) + ": " + execManager.getCurrentLeader());
+            logger.debug("Next leader for CID=" + (getLastExec() + 1) + ": " + execManager.getCurrentLeader());
 
             //******* EDUARDO BEGIN **************//
             if (execManager.getCurrentLeader() != this.controller.getStaticConf().getProcessId()) {
@@ -355,27 +406,31 @@ public final class TOMLayer extends Thread implements RequestReceiver {
             proposeLock.lock();
 
             if (getInExec() != -1) { //there is some consensus running
-                Logger.println("(TOMLayer.run) Waiting for consensus " + getInExec() + " termination.");
+                logger.debug("Waiting for consensus " + getInExec() + " termination.");
                 canPropose.awaitUninterruptibly();
             }
             proposeLock.unlock();
             
             if (!doWork) break;
 
-            Logger.println("(TOMLayer.run) I'm the leader.");
+            logger.debug("I'm the leader.");
 
             // blocks until there are requests to be processed/ordered
             messagesLock.lock();
-            if (!clientsManager.havePendingRequests()) {
+            if (!clientsManager.havePendingRequests() ||
+                    (controller.getStaticConf().getBatchTimeout() > -1 && clientsManager.countPendingRequests() < controller.getStaticConf().getMaxBatchSize())) {
+                
+                logger.debug("Waiting for enough requests");
                 haveMessages.awaitUninterruptibly();
+                logger.debug("Got enough requests");
             }
             messagesLock.unlock();
             
             if (!doWork) break;
             
-            Logger.println("(TOMLayer.run) There are messages to be ordered.");
+            logger.debug("There are requests to be ordered.");
 
-            Logger.println("(TOMLayer.run) I can try to propose.");
+            logger.debug("I can try to propose.");
 
             if ((execManager.getCurrentLeader() == this.controller.getStaticConf().getProcessId()) && //I'm the leader
                     (clientsManager.havePendingRequests()) && //there are messages to be ordered
@@ -390,8 +445,8 @@ public final class TOMLayer extends Thread implements RequestReceiver {
                 // Bypass protocol if service is not replicated
                 if (controller.getCurrentViewN() == 1) {
 
-                    Logger.println("(TOMLayer.run) Only one replica, bypassing consensus.");
-
+                    logger.debug("Only one replica, bypassing consensus.");
+                    
                     byte[] value = createPropose(dec);
 
                     Consensus consensus = execManager.getConsensus(dec.getConsensusId());
@@ -408,11 +463,10 @@ public final class TOMLayer extends Thread implements RequestReceiver {
                     continue;
 
                 }
-                execManager.getProposer().startConsensus(execId,
-                        createPropose(dec));
+                execManager.getProposer().startConsensus(execId, createPropose(dec));
             }
         }
-        java.util.logging.Logger.getLogger(TOMLayer.class.getName()).log(Level.INFO, "TOMLayer stopped.");
+        logger.info("TOMLayer stopped.");
     }
 
     /**
@@ -436,58 +490,79 @@ public final class TOMLayer extends Thread implements RequestReceiver {
      * TODO: verify timestamps and nonces
      *
      * @param proposedValue the value being proposed
+     * @param addToClientManager add the requests to the client manager
      * @return Valid messages contained in the proposed value
      */
     public TOMMessage[] checkProposedValue(byte[] proposedValue, boolean addToClientManager) {
-        Logger.println("(TOMLayer.isProposedValueValid) starting");
+    
+        try{
+            
+            logger.debug("Checking proposed value");
 
-        BatchReader batchReader = new BatchReader(proposedValue,
+            BatchReader batchReader = new BatchReader(proposedValue,
                 this.controller.getStaticConf().getUseSignatures() == 1);
 
-        TOMMessage[] requests = null;
+            TOMMessage[] requests = null;
 
-        try {
-			
             //deserialize the message
             //TODO: verify Timestamps and Nonces
             requests = batchReader.deserialiseRequests(this.controller);
             
-            //enforce the "external validity" property, i.e, verify if the
-            //requests are valid in accordance to the application semantics
-            //and not an erroneous requests sent by a Byzantine leader.
-            for (TOMMessage r : requests) {
-                if (controller.getStaticConf().isBFT() &&!verifier.isValidRequest(r.getContent())) return null;
-            }
-            
-
             if (addToClientManager) {
-                for (int i = 0; i < requests.length; i++) {
-					//notifies the client manager that this request was received and get
-                    //the result of its validation
-                    if (!clientsManager.requestReceived(requests[i], false)) {
-                        clientsManager.getClientsLock().unlock();
-                        Logger.println("(TOMLayer.isProposedValueValid) finished, return=false");
-                        System.out.println("failure in deserialize batch");
+
+                //use parallelization to validate the request
+                final CountDownLatch latch = new CountDownLatch(requests.length);
+
+                for (TOMMessage request : requests) {
+                    
+                    verifierExecutor.submit(() -> {
+                        try {
+                            
+                            //notifies the client manager that this request was received and get
+                            //the result of its validation
+                            request.isValid = clientsManager.requestReceived(request, false);
+                            if (Thread.holdsLock(clientsManager.getClientsLock())) clientsManager.getClientsLock().unlock();
+                            
+                        }
+                        catch (Exception e) {
+                            
+                            logger.error("Error while validating requests", e);
+                            if (Thread.holdsLock(clientsManager.getClientsLock())) clientsManager.getClientsLock().unlock();
+                            
+                        }
+                        
+                        latch.countDown();
+                    });
+                }
+                
+                latch.await();
+                
+                for (TOMMessage request : requests) {
+                    
+                    if (request.isValid == false) {
+                        
+                        logger.warn("Request {} could not be added to the pending messages queue of its respective client", request);
                         return null;
                     }
                 }
             }
 
+            logger.debug("Successfully deserialized batch");
+
+            return requests;
+        
         } catch (Exception e) {
-            e.printStackTrace();
-            clientsManager.getClientsLock().unlock();
-            Logger.println("(TOMLayer.isProposedValueValid) finished, return=false");
+            logger.error("Failed to check proposed value",e);
+            if (Thread.holdsLock(clientsManager.getClientsLock())) clientsManager.getClientsLock().unlock();
+
             return null;
         }
-        Logger.println("(TOMLayer.isProposedValueValid) finished, return=true");
-
-        return requests;
     }
 
     public void forwardRequestToLeader(TOMMessage request) {
         int leaderId = execManager.getCurrentLeader();
         if (this.controller.isCurrentViewMember(leaderId)) {
-            Logger.println("(TOMLayer.forwardRequestToLeader) forwarding " + request + " to " + leaderId);
+            logger.debug("Forwarding " + request + " to " + leaderId);
             communication.send(new int[]{leaderId},
                     new ForwardedMessage(this.controller.getStaticConf().getProcessId(), request));
         }
@@ -501,8 +576,14 @@ public final class TOMLayer extends Thread implements RequestReceiver {
         return result;
     }
 
+    public boolean isChangingLeader() {
+        
+        return !requestsTimer.isEnabled();
+
+    }
+    
     public void setNoExec() {
-        Logger.println("(TOMLayer.setNoExec) modifying inExec from " + this.inExecution + " to " + -1);
+        logger.debug("Modifying inExec from " + this.inExecution + " to " + -1);
 
         proposeLock.lock();
         this.inExecution = -1;

@@ -26,6 +26,8 @@ import bftsmart.consensus.messages.ConsensusMessage;
 import bftsmart.reconfiguration.ServerViewController;
 import bftsmart.reconfiguration.views.View;
 import bftsmart.tom.core.messages.TOMMessage;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
 
 
 /**
@@ -43,7 +45,10 @@ public class Epoch implements Serializable {
     private boolean[] acceptSetted;
     private byte[][] write; // WRITE values from other processes
     private byte[][] accept; // accepted values from other processes
-    
+    private boolean writeSent;
+    private boolean acceptSent;
+    private boolean acceptCreated;
+
     private boolean alreadyRemoved = false; // indicates if this epoch was removed from its consensus
 
     public byte[] propValue = null; // proposed value
@@ -54,6 +59,11 @@ public class Epoch implements Serializable {
     private View lastView = null;
 
     private ServerViewController controller;
+
+    private ReentrantLock acceptLock = new ReentrantLock();
+    private Condition gotAccept = acceptLock.newCondition();
+
+    private ConsensusMessage acceptMsg = null;
 
     private double[] sumWeightsWrite;
     private double[] sumWeightsAccept;
@@ -82,22 +92,28 @@ public class Epoch implements Serializable {
         Arrays.fill(writeSetted, false);
         Arrays.fill(acceptSetted, false);
 
+        writeSent = false;
+        acceptSent = false;
+        acceptCreated = false;
+
 
         if (timestamp == 0) {
 
             sumWeightsWrite = new double[n];
             sumWeightsAccept = new double[n];
-        
+
             this.write = new byte[n][];
             this.accept = new byte[n][];
 
             Arrays.fill((Object[]) write, null);
             Arrays.fill((Object[]) accept, null);
+
         } else {
             Epoch previousEpoch = consensus.getEpoch(timestamp - 1, controller);
 
             this.write = previousEpoch.getWrite();
             this.accept = previousEpoch.getAccept();
+
         }
     }
 
@@ -341,6 +357,78 @@ public class Epoch implements Serializable {
     }
 
     /**
+     * Indicate that the consensus instance already sent its WRITE message
+     */
+    public void writeSent() {
+        writeSent = true;
+    }
+
+    /**
+     * Indicate that the consensus instance already sent its ACCEPT message
+     */
+    public void acceptSent() {
+        acceptSent = true;
+    }
+
+    /**
+     * Indicate that the consensus instance already created its ACCEPT message
+     */
+    public void acceptCreated() {
+        acceptCreated = true;
+    }
+
+    /**
+     * Indicates if the consensus instance already sent its WRITE message
+     * @return true if WRITE was indicated as sent, false otherwise
+     */
+    public boolean isWriteSent() {
+        return writeSent;
+    }
+
+    /**
+     * Indicates if the consensus instance already sent its ACCEPT message
+     * @return true if ACCEPT was indicated as sent, false otherwise
+     */
+    public boolean isAcceptSent() {
+        return acceptSent;
+    }
+
+    /**
+     * Indicates if the consensus instance already created its ACCEPT message
+     * @return true if ACCEPT was indicated as created, false otherwise
+     */
+    public boolean isAcceptCreated() {
+        return acceptCreated;
+    }
+
+    /**
+     * Set the speculative ACCEPT message
+     * @param acceptMsg The speculative ACCEPT message
+     */
+    public void setAcceptMsg(ConsensusMessage acceptMsg) {
+
+        acceptLock.lock();
+        this.acceptMsg = acceptMsg;
+        gotAccept.signalAll();
+        acceptLock.unlock();
+    }
+
+    /**
+     * Fetch the speculative ACCEPT message. This method blocks until such message is set with setAcceptMsg(...);
+     * @return The speculative ACCEPT message
+     */
+    public ConsensusMessage fetchAccept() {
+
+        acceptLock.lock();
+        if (acceptMsg == null) {
+            gotAccept.awaitUninterruptibly();
+        }
+        acceptLock.unlock();
+
+        return acceptMsg;
+    }
+
+    /**
      * Counts how many times 'value' occurs in 'array'
      * @param array Array where to count
      * @param value Value to count
@@ -450,9 +538,12 @@ public class Epoch implements Serializable {
         Arrays.fill((Object[]) accept, null);
         
         this.proof = new HashSet<ConsensusMessage>();
-        
+
         sumWeightsWrite = new double[n];
         sumWeightsAccept = new double[n];
 
+        this.writeSent = false;
+        this.acceptSent = false;
+        this.acceptCreated = false;
     }
 }

@@ -24,13 +24,20 @@ import java.util.StringTokenizer;
 import bftsmart.reconfiguration.views.View;
 import bftsmart.tom.core.TOMLayer;
 import bftsmart.tom.core.messages.TOMMessage;
+import bftsmart.tom.util.KeyLoader;
 import bftsmart.tom.util.TOMUtil;
+import java.security.Provider;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
  * @author eduardo
  */
 public class ServerViewController extends ViewController {
+
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     public static final int ADD_SERVER = 0;
     public static final int REMOVE_SERVER = 1;
@@ -48,9 +55,10 @@ public class ServerViewController extends ViewController {
     private int overlayF;
     private int overlayQ_BFT;
     private int overlayQ_CFT;
-    
-    public ServerViewController(int procId) {
-        this(procId,"");
+
+
+    public ServerViewController(int procId, KeyLoader loader) {
+        this(procId,"", loader);
         /*super(procId);
         initialView = new View(0, getStaticConf().getInitialView(), 
                 getStaticConf().getF(), getInitAdddresses());
@@ -58,16 +66,16 @@ public class ServerViewController extends ViewController {
         reconfigureTo(initialView);*/
     }
 
-    public ServerViewController(int procId, String configHome) {
-        super(procId, configHome);
+    public ServerViewController(int procId, String configHome, KeyLoader loader) {
+        super(procId, configHome, loader);
         View cv = getViewStore().readView();
         if(cv == null){
             
-            System.out.println("-- Creating current view from configuration file");
+            logger.info("Creating current view from configuration file");
             reconfigureTo(new View(0, getStaticConf().getInitialView(), 
                 getStaticConf().getF(), getInitAdddresses(), getStaticConf().isBFT(), getStaticConf().getDelta()));
         }else{
-            System.out.println("-- Using view stored on disk");
+            logger.info("Using view stored on disk");
             reconfigureTo(cv);
         }
        
@@ -107,11 +115,12 @@ public class ServerViewController extends ViewController {
 
     public void enqueueUpdate(TOMMessage up) {
         ReconfigureRequest request = (ReconfigureRequest) TOMUtil.getObject(up.getContent());
-        if (TOMUtil.verifySignature(getStaticConf().getRSAPublicKey(request.getSender()),
-                request.toString().getBytes(), request.getSignature())) {
-            if (request.getSender() == getStaticConf().getTTPId()) {
+        if (request != null && request.getSender() == getStaticConf().getTTPId()
+                && TOMUtil.verifySignature(getStaticConf().getPublicKey(request.getSender()),
+                    request.toString().getBytes(), request.getSignature())) {
+            //if (request.getSender() == getStaticConf().getTTPId()) {
                 this.updates.add(up);
-            } else {
+            /*} else {
                 boolean add = true;
                 Iterator<Integer> it = request.getProperties().keySet().iterator();
                 while (it.hasNext()) {
@@ -142,7 +151,9 @@ public class ServerViewController extends ViewController {
                 if(add){
                     this.updates.add(up);
                 }
-            }
+            }*/
+        } else {
+            logger.warn("Invalid reconfiguration from {}, discarding", up.getSender());
         }
     }
 
@@ -234,9 +245,9 @@ public class ServerViewController extends ViewController {
 
         View newV = new View(currentView.getId() + 1, nextV, f,addresses, getStaticConf().isBFT(), getStaticConf().getDelta());
 
-        System.out.println("new view: " + newV);
-        System.out.println("installed on CID: " + cid);
-        System.out.println("lastJoinSet: " + jSet);
+        logger.info("New view: " + newV);
+        logger.info("Installed on CID: " + cid);
+        logger.info("lastJoinSet: " + jSet);
 
         //TODO:Remove all information stored about each process in rSet
         //processes execute the leave!!!
@@ -245,7 +256,7 @@ public class ServerViewController extends ViewController {
         if (forceLC) {
             
             //TODO: Reactive it and make it work
-            System.out.println("Shortening LC timeout");
+            logger.info("Shortening LC timeout");
             tomLayer.requestsTimer.stopTimer();
             tomLayer.requestsTimer.setShortTimeout(3000);
             tomLayer.requestsTimer.startTimer();

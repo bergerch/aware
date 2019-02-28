@@ -17,7 +17,6 @@ package bftsmart.communication;
 
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
 
 import bftsmart.communication.client.CommunicationSystemServerSide;
 import bftsmart.communication.client.CommunicationSystemServerSideFactory;
@@ -28,7 +27,9 @@ import bftsmart.reconfiguration.ServerViewController;
 import bftsmart.tom.ServiceReplica;
 import bftsmart.tom.core.TOMLayer;
 import bftsmart.tom.core.messages.TOMMessage;
-import bftsmart.tom.util.Logger;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -36,10 +37,12 @@ import bftsmart.tom.util.Logger;
  */
 public class ServerCommunicationSystem extends Thread {
 
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
+
     private boolean doWork = true;
     public final long MESSAGE_WAIT_TIME = 100;
     private LinkedBlockingQueue<SystemMessage> inQueue = null;//new LinkedBlockingQueue<SystemMessage>(IN_QUEUE_SIZE);
-    protected MessageHandler messageHandler = new MessageHandler();
+    protected MessageHandler messageHandler;
     private ServersCommunicationLayer serversConn;
     private CommunicationSystemServerSide clientsConn;
     private ServerViewController controller;
@@ -51,6 +54,8 @@ public class ServerCommunicationSystem extends Thread {
         super("Server CS");
 
         this.controller = controller;
+        
+        messageHandler = new MessageHandler();
 
         inQueue = new LinkedBlockingQueue<SystemMessage>(controller.getStaticConf().getInQueueSize());
 
@@ -109,23 +114,24 @@ public class ServerCommunicationSystem extends Thread {
         while (doWork) {
             try {
                 if (count % 1000 == 0 && count > 0) {
-                    Logger.println("(ServerCommunicationSystem.run) After " + count + " messages, inQueue size=" + inQueue.size());
+                    logger.debug("After " + count + " messages, inQueue size=" + inQueue.size());
                 }
 
                 SystemMessage sm = inQueue.poll(MESSAGE_WAIT_TIME, TimeUnit.MILLISECONDS);
 
                 if (sm != null) {
-                    Logger.println("<-------receiving---------- " + sm);
+                    logger.debug("<-------receiving---------- " + sm);
                     messageHandler.processData(sm);
                     count++;
                 } else {                
                     messageHandler.verifyPending();               
                 }
             } catch (InterruptedException e) {
-                e.printStackTrace(System.err);
+                
+                logger.error("Error processing message",e);
             }
         }
-        java.util.logging.Logger.getLogger(ServerCommunicationSystem.class.getName()).log(Level.INFO, "ServerCommunicationSystem stopped.");
+        logger.info("ServerCommunicationSystem stopped.");
 
     }
 
@@ -141,7 +147,7 @@ public class ServerCommunicationSystem extends Thread {
         if (sm instanceof TOMMessage) {
             clientsConn.send(targets, (TOMMessage) sm, false);
         } else {
-            Logger.println("--------sending----------> " + sm);
+            logger.debug("--------sending----------> " + sm);
             serversConn.send(targets, sm, true);
         }
     }
@@ -161,7 +167,7 @@ public class ServerCommunicationSystem extends Thread {
     
     public void shutdown() {
         
-        System.out.println("Shutting down communication layer");
+        logger.info("Shutting down communication layer");
         
         this.doWork = false;        
         clientsConn.shutdown();

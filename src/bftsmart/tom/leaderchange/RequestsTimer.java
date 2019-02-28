@@ -22,9 +22,8 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.TreeSet;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.Hashtable;
+import java.util.HashMap;
 import java.util.Set;
-import java.util.logging.Level;
 
 import bftsmart.communication.ServerCommunicationSystem;
 import bftsmart.reconfiguration.ServerViewController;
@@ -32,11 +31,16 @@ import bftsmart.tom.core.TOMLayer;
 import bftsmart.tom.core.messages.TOMMessage;
 import bftsmart.tom.util.TOMUtil;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * This thread serves as a manager for all timers of pending requests.
  *
  */
 public class RequestsTimer {
+    
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private Timer timer = new Timer("request timer");
     private RequestTimerTask rtTask = null;
@@ -51,7 +55,7 @@ public class RequestsTimer {
     private ServerCommunicationSystem communication; // Communication system between replicas
     private ServerViewController controller; // Reconfiguration manager
     
-    private Hashtable <Integer, Timer> stopTimers = new Hashtable<>();
+    private HashMap <Integer, Timer> stopTimers = new HashMap<>();
     
     //private Storage st1 = new Storage(100000);
     //private Storage st2 = new Storage(10000);
@@ -71,14 +75,6 @@ public class RequestsTimer {
 
     public void setShortTimeout(long shortTimeout) {
         this.shortTimeout = shortTimeout;
-    }
-    
-    public void setTimeout(long timeout) {
-        this.timeout = timeout;
-    }
-    
-    public long getTimeout() {
-        return timeout;
     }
     
     public void startTimer() {
@@ -153,25 +149,33 @@ public class RequestsTimer {
         
         //System.out.println("(RequestTimerTask.run) I SOULD NEVER RUN WHEN THERE IS NO TIMEOUT");
 
-        LinkedList<TOMMessage> pendingRequests = new LinkedList<TOMMessage>();
+        LinkedList<TOMMessage> pendingRequests = new LinkedList<>();
 
-        rwLock.readLock().lock();
+        try {
         
-        for (Iterator<TOMMessage> i = watched.iterator(); i.hasNext();) {
-            TOMMessage request = i.next();
-            if ((request.receptionTime + System.currentTimeMillis()) > t) {
-                pendingRequests.add(request);
-            } else {
-                break;
+            rwLock.readLock().lock();
+        
+            for (Iterator<TOMMessage> i = watched.iterator(); i.hasNext();) {
+                TOMMessage request = i.next();
+                if ((System.currentTimeMillis() - request.receptionTimestamp ) > t) {
+                    pendingRequests.add(request);
+                }
             }
+            
+        } finally {
+            
+            rwLock.readLock().unlock();
         }
-
-        rwLock.readLock().unlock();
-                
+        
         if (!pendingRequests.isEmpty()) {
+            
+            logger.info("The following requests timed out: " + pendingRequests);
+            
             for (ListIterator<TOMMessage> li = pendingRequests.listIterator(); li.hasNext(); ) {
                 TOMMessage request = li.next();
                 if (!request.timeout) {
+                    
+                    logger.info("Forwarding requests {} to leader", request);
 
                     request.signed = request.serializedMessageSignature != null;
                     tomLayer.forwardRequestToLeader(request);
@@ -181,7 +185,7 @@ public class RequestsTimer {
             }
 
             if (!pendingRequests.isEmpty()) {
-                System.out.println("Timeout for messages: " + pendingRequests);
+                logger.info("Attempting to start leader change for requests {}", pendingRequests);
                 //Logger.debug = true;
                 //tomLayer.requestTimeout(pendingRequests);
                 //if (reconfManager.getStaticConf().getProcessId() == 4) Logger.debug = true;
@@ -192,8 +196,11 @@ public class RequestsTimer {
                 timer.schedule(rtTask, t);
             }
         } else {
-            rtTask = null;
-            timer.purge();
+            
+            logger.debug("Timeout triggered with no expired requests");
+            
+            rtTask = new RequestTimerTask();
+            timer.schedule(rtTask, t);
         }
         
     }
@@ -227,14 +234,14 @@ public class RequestsTimer {
     
     public Set<Integer> getTimers() {
         
-        return ((Hashtable <Integer,Timer>) stopTimers.clone()).keySet();
+        return ((HashMap <Integer,Timer>) stopTimers.clone()).keySet();
         
     }
     
     public void shutdown() {
         timer.cancel();
         stopAllSTOPs();
-        java.util.logging.Logger.getLogger(RequestsTimer.class.getName()).log(Level.INFO, "RequestsTimer stopped.");
+        LoggerFactory.getLogger(this.getClass()).info("RequestsTimer stopped.");
 
     }
     
@@ -270,7 +277,7 @@ public class RequestsTimer {
          */
         public void run() {
 
-                System.out.println("(SendStopTask.run) Re-transmitting STOP message to install regency " + stop.getReg());
+                logger.info("Re-transmitting STOP message to install regency " + stop.getReg());
                 communication.send(controller.getCurrentViewOtherAcceptors(),this.stop);
 
                 setSTOP(stop.getReg(), stop); //repeat

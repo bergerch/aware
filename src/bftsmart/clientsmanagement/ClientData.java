@@ -22,11 +22,14 @@ import java.util.Iterator;
 import java.util.concurrent.locks.ReentrantLock;
 
 import bftsmart.tom.core.messages.TOMMessage;
-import bftsmart.tom.util.Logger;
 import bftsmart.tom.util.TOMUtil;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ClientData {
+    
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     ReentrantLock clientLock = new ReentrantLock();
 
@@ -38,7 +41,7 @@ public class ClientData {
     private int lastMessageReceived = -1;
     private long lastMessageReceivedTime = 0;
 
-    private int lastMessageExecuted = -1;
+    private int lastMessageDelivered = -1;
 
     private RequestList pendingRequests = new RequestList();
     //anb: new code to deal with client requests that arrive after their execution
@@ -57,11 +60,11 @@ public class ClientData {
         this.clientId = clientId;
         if(publicKey != null) {
             try {
-                signatureVerificator = Signature.getInstance("SHA1withRSA");
+                signatureVerificator = TOMUtil.getSigEngine();
                 signatureVerificator.initVerify(publicKey);
-                Logger.println("Signature verifier initialized for client "+clientId);
+                logger.debug("Signature verifier initialized for client "+clientId);
             } catch (Exception ex) {
-                ex.printStackTrace();
+                logger.error("Failed to create client data object",ex);
             }
         }
     }
@@ -86,12 +89,12 @@ public class ClientData {
         return orderedRequests;
     }
 
-    public void setLastMessageExecuted(int lastMessageExecuted) {
-        this.lastMessageExecuted = lastMessageExecuted;
+    public void setLastMessageDelivered(int lastMessageDelivered) {
+        this.lastMessageDelivered = lastMessageDelivered;
     }
 
-    public int getLastMessageExecuted() {
-        return lastMessageExecuted;
+    public int getLastMessageDelivered() {
+        return lastMessageDelivered;
     }
 
     public void setLastMessageReceived(int lastMessageReceived) {
@@ -115,7 +118,7 @@ public class ClientData {
             try {
                 return TOMUtil.verifySignature(signatureVerificator, message, signature);
             } catch (SignatureException ex) {
-                System.err.println("Error in processing client "+clientId+" signature: "+ex.getMessage());
+                logger.error("Failed to verify signature", ex);
             }
         }
         return false;
@@ -131,7 +134,7 @@ public class ClientData {
     }
 
     public boolean removeRequest(TOMMessage request) {
-	lastMessageExecuted = request.getSequence();
+	lastMessageDelivered = request.getSequence();
 	boolean result = pendingRequests.remove(request);
         //anb: new code to deal with client requests that arrive after their execution
         orderedRequests.addLast(request);

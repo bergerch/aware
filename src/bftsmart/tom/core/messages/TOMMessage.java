@@ -26,6 +26,7 @@ import java.io.IOException;
 
 import bftsmart.communication.SystemMessage;
 import bftsmart.tom.util.DebugInfo;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class represents a total ordered message
@@ -56,11 +57,14 @@ public class TOMMessage extends SystemMessage implements Externalizable, Compara
 	public transient int destination = -1; // message destination
 	public transient boolean signed = false; // is this message signed?
 
-	public transient long receptionTime;//the reception time of this message
-	public transient boolean timeout = false;//this message was timed out?
+	public transient long receptionTime;//the reception time of this message (nanoseconds)
+	public transient long receptionTimestamp;//the reception timestamp of this message (miliseconds)
+
+        public transient boolean timeout = false;//this message was timed out?
         
         public transient boolean recvFromClient = false; // Did the client already sent this message to me, or did it arrived in the batch?
-
+        public transient boolean isValid = false; // Was this request already validated by the replica?
+        
 	//the bytes received from the client and its MAC and signature
 	public transient byte[] serializedMessage = null;
 	public transient byte[] serializedMessageSignature = null;
@@ -84,20 +88,6 @@ public class TOMMessage extends SystemMessage implements Externalizable, Compara
 	public TOMMessage() {
 	}
 
-
-	/**
-	 * Creates a new instance of TOMMessage
-	 *
-	 * @param sender ID of the process which sent the message
-	 * @param session Session id of the sender
-	 * @param sequence Sequence number defined by the client
-	 * @param content Content of the message
-	 * @param view ViewId of the message
-	 */
-	public TOMMessage(int sender, int session, int sequence, byte[] content, int view) {
-		this(sender,session,sequence,content, view, TOMMessageType.ORDERED_REQUEST);
-	}
-
 	/**
 	 * Creates a new instance of TOMMessage
 	 *
@@ -108,9 +98,9 @@ public class TOMMessage extends SystemMessage implements Externalizable, Compara
 	 * @param view ViewId of the message
 	 * @param type Type of the request
 	 */
-	public TOMMessage(int sender, int session, int sequence, byte[] content, int view, TOMMessageType type) {
-		this(sender, session, sequence, -1, content, view, type);
-	}
+	//public TOMMessage(int sender, int session, int sequence, byte[] content, int view, TOMMessageType type) {
+	//	this(sender, session, sequence, -1, content, view, type);
+	//}
 
 	/**
 	 * Creates a new instance of TOMMessage. This one has an operationId parameter
@@ -232,7 +222,7 @@ public class TOMMessage extends SystemMessage implements Externalizable, Compara
 
 	@Override
 	public String toString() {
-		return "(" + sender + "," + sequence + "," + operationId + "," + session + ")";
+		return "[" + sender + ":" + session + ":" + sequence + "]";
 	}
 
 	public void wExternal(DataOutput out) throws IOException {
@@ -310,7 +300,7 @@ public class TOMMessage extends SystemMessage implements Externalizable, Compara
 		 try{
 			 m.rExternal(dis);
 		 }catch(Exception e) {
-			 System.out.println("error on bytesToMessage " + e);
+			 LoggerFactory.getLogger(TOMMessage.class).error("Failed to deserialize TOMMessage",e);
 			 return null;
 		 }
 
@@ -351,8 +341,42 @@ public class TOMMessage extends SystemMessage implements Externalizable, Compara
 		 return EQUAL;
 	 }
 	 
+        @Override
 	 public Object clone() throws CloneNotSupportedException {
-			return super.clone();
+             
+                          
+                    TOMMessage clone = new TOMMessage(sender, session, sequence,
+                            operationId, content, viewID, type);
+
+                    clone.setReplyServer(replyServer);
+                    
+                    clone.acceptSentTime = this.acceptSentTime;
+                    clone.alreadyProposed = this.alreadyProposed;
+                    clone.authenticated = this.authenticated;
+                    clone.consensusStartTime = this.consensusStartTime;
+                    clone.decisionTime = this.decisionTime;
+                    clone.deliveryTime = this.deliveryTime;
+                    clone.destination = this.destination;
+                    clone.executedTime = this.executedTime;
+                    clone.info = this.info;
+                    clone.isValid = this.isValid;
+                    clone.numOfNonces = this.numOfNonces;
+                    clone.proposeReceivedTime = this.proposeReceivedTime;
+                    clone.receptionTime = this.receptionTime;
+                    clone.receptionTimestamp = this.receptionTimestamp;
+                    clone.recvFromClient = this.recvFromClient;
+                    clone.reply = this.reply;
+                    clone.seed = this.seed;
+                    clone.serializedMessage = this.serializedMessage;
+                    clone.serializedMessageMAC = this.serializedMessageMAC;
+                    clone.serializedMessageSignature = this.serializedMessageSignature;
+                    clone.signed = this.signed;
+                    clone.timeout = this.timeout;
+                    clone.timestamp = this.timestamp;
+                    clone.writeSentTime = this.writeSentTime;
+
+                    return clone;
+                        
 		}
 
 

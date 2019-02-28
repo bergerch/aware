@@ -28,11 +28,20 @@ import java.security.Signature;
 import java.security.SignatureException;
 import java.util.Arrays;
 
-import bftsmart.reconfiguration.ViewController;
+import bftsmart.reconfiguration.util.Configuration;
+import java.security.Security;
+import java.util.Random;
+import javax.crypto.Mac;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.PBEKeySpec;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class TOMUtil {
 
     //private static final int BENCHMARK_PERIOD = 10000;
+    private static Logger logger = LoggerFactory.getLogger(TOMUtil.class);
 
     //some message types
     public static final int RR_REQUEST = 0;
@@ -50,21 +59,41 @@ public class TOMUtil {
     public static final int TRIGGER_SM_LOCALLY = 9;
     
     private static int signatureSize = -1;
+    private static boolean init = false;
+        
+    private static String hmacAlgorithm = Configuration.DEFAULT_HMAC;
+    private static String secretAlgorithm = Configuration.DEFAULT_SECRETKEY;
+    private static String sigAlgorithm = Configuration.DEFAULT_SIGNATURE;
+    private static String hashAlgorithm = Configuration.DEFAULT_HASH;
     
-    public static int getSignatureSize(ViewController controller) {
-        if (signatureSize > 0) {
-            return signatureSize;
+    private static String hmacAlgorithmProvider = Configuration.DEFAULT_HMAC_PROVIDER;
+    private static String secretAlgorithmProvider = Configuration.DEFAULT_SECRETKEY_PROVIDER;
+    private static String sigAlgorithmProvider = Configuration.DEFAULT_SIGNATURE_PROVIDER;
+    private static String hashAlgorithmProvider = Configuration.DEFAULT_HASH_PROVIDER;
+    
+    private static final int SALT_SEED = 509;
+    private static final int SALT_BYTE_SIZE = 64; // 512 bits
+    private static final int HASH_BYTE_SIZE = 64; // 512 bits
+    private static final int PBE_ITERATIONS = 1000;  
+
+    public static void init(String hmacAlgorithm, String secretAlgorithm, String sigAlgorithm, String hashAlgorithm,
+            String hmacAlgorithmProvider, String secretAlgorithmProvider, String sigAlgorithmProvider, String hashAlgorithmProvider) {
+     
+        if (!TOMUtil.init) {
+            
+            TOMUtil.hmacAlgorithm = hmacAlgorithm;
+            TOMUtil.sigAlgorithm = sigAlgorithm;
+            TOMUtil.secretAlgorithm = secretAlgorithm;
+            TOMUtil.hashAlgorithm = hashAlgorithm;
+        
+            TOMUtil.hmacAlgorithmProvider = hmacAlgorithmProvider;
+            TOMUtil.sigAlgorithmProvider = sigAlgorithmProvider;
+            TOMUtil.secretAlgorithmProvider = secretAlgorithmProvider;
+            TOMUtil.hashAlgorithmProvider = hashAlgorithmProvider;
+            
+            TOMUtil.init = true;
         }
-
-        byte[] signature = signMessage(controller.getStaticConf().getRSAPrivateKey(),
-                "a".getBytes());
-
-        if (signature != null) {
-            signatureSize = signature.length;
-        }
-
-        return signatureSize;
-    }
+    }    
     
     //******* EDUARDO BEGIN **************//
     public static byte[] getBytes(Object o) {
@@ -78,7 +107,7 @@ public class TOMUtil {
             obOut.close();
             bOut.close();
         } catch (IOException ex) {
-            ex.printStackTrace();
+            logger.error("Failed to serialize object",ex);
             return null;
         }
 
@@ -97,7 +126,6 @@ public class TOMUtil {
             bInp.close();
             return ret;
         } catch (Exception ex) {
-            ex.printStackTrace();
             return null;
         }
     }
@@ -114,8 +142,8 @@ public class TOMUtil {
 
         byte[] result = null;
         try {
-
-            Signature signatureEngine = Signature.getInstance("SHA1withRSA");
+            
+            Signature signatureEngine = getSigEngine();
 
             signatureEngine.initSign(key);
 
@@ -123,7 +151,7 @@ public class TOMUtil {
 
             result = signatureEngine.sign();
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Failed to sign message",e);
         }
 
         return result;
@@ -140,15 +168,15 @@ public class TOMUtil {
     public static boolean verifySignature(PublicKey key, byte[] message, byte[] signature) {
 
         boolean result = false;
-
+        
         try {
-            Signature signatureEngine = Signature.getInstance("SHA1withRSA");
+            Signature signatureEngine = getSigEngine();
 
             signatureEngine.initVerify(key);
 
             result = verifySignature(signatureEngine, message, signature);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Failed to verify signature",e);
         }
 
         return result;
@@ -187,14 +215,44 @@ public class TOMUtil {
         byte[] result = null;
         
         try {
-            MessageDigest md = MessageDigest.getInstance("MD5");
+            MessageDigest md = getHashEngine();
             result = md.digest(data);
             
         } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
+            logger.error("Failed to compute hash",e);
         } // TODO: shouldn't it be SHA?
                 
         return result;
     }
     
+    public static Signature getSigEngine() throws NoSuchAlgorithmException {
+        
+        return Signature.getInstance(TOMUtil.sigAlgorithm, Security.getProvider(TOMUtil.sigAlgorithmProvider));
+    }
+    
+    public static MessageDigest getHashEngine() throws NoSuchAlgorithmException {
+        
+        return MessageDigest.getInstance(TOMUtil.hashAlgorithm, Security.getProvider(TOMUtil.hashAlgorithmProvider));
+    }
+    
+    public static SecretKeyFactory getSecretFactory() throws NoSuchAlgorithmException {
+        
+        return SecretKeyFactory.getInstance(TOMUtil.secretAlgorithm, Security.getProvider(TOMUtil.secretAlgorithmProvider));
+    }
+    
+    public static Mac getMacFactory() throws NoSuchAlgorithmException {
+        
+        return Mac.getInstance(TOMUtil.hmacAlgorithm, Security.getProvider(TOMUtil.hmacAlgorithmProvider));
+    }
+    
+    public static PBEKeySpec generateKeySpec(char[] password) throws NoSuchAlgorithmException {
+        
+        // generate salt
+        Random random = new Random(SALT_SEED);
+        byte salt[] = new byte[SALT_BYTE_SIZE];
+        random.nextBytes(salt);
+
+        return new PBEKeySpec(password, salt, PBE_ITERATIONS, HASH_BYTE_SIZE);
+        
+    }
 }

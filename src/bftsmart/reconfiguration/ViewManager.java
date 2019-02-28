@@ -24,11 +24,14 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Scanner;
 import java.util.StringTokenizer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import bftsmart.communication.server.ServerConnection;
 import bftsmart.reconfiguration.views.View;
+import bftsmart.tom.util.KeyLoader;
+import java.security.Provider;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -36,6 +39,8 @@ import bftsmart.reconfiguration.views.View;
  */
 public class ViewManager {
 
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
+    
     private int id;
     private Reconfiguration rec = null;
     //private Hashtable<Integer, ServerConnection> connections = new Hashtable<Integer, ServerConnection>();
@@ -44,14 +49,14 @@ public class ViewManager {
     //in the system will execute the reconfiguration request
     private List<Integer> addIds = new LinkedList<Integer>();
 
-    public ViewManager() {
-        this("");
+    public ViewManager(KeyLoader loader) {
+        this("", loader);
     }
 
-    public ViewManager(String configHome) {
+    public ViewManager(String configHome, KeyLoader loader) {
         this.id = loadID(configHome);
-        this.controller = new ServerViewController(id, configHome);
-        this.rec = new Reconfiguration(id);
+        this.controller = new ServerViewController(id, configHome, loader);
+        this.rec = new Reconfiguration(id, configHome, loader);
     }
 
     public void connect(){
@@ -85,7 +90,7 @@ public class ViewManager {
             rd.close();
             return -1;
         } catch (Exception e) {
-            e.printStackTrace(System.out);
+            logger.error("Could not load ID", e);
             return -1;
         }
     }
@@ -108,7 +113,7 @@ public class ViewManager {
         connect();
         ReconfigureReply r = rec.execute();
         View v = r.getView();
-        System.out.println("New view f: " + v.getF());
+        logger.info("New view f: " + v.getF());
 
         VMMessage msg = new VMMessage(id, r);
 
@@ -130,7 +135,7 @@ public class ViewManager {
         try {
             new ObjectOutputStream(bOut).writeObject(sm);
         } catch (IOException ex) {
-            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+            logger.error("Could not serialize message", ex);
         }
 
         byte[] data = bOut.toByteArray();
@@ -143,7 +148,7 @@ public class ViewManager {
                 }
             } catch (InterruptedException ex) {
                // ex.printStackTrace();
-                System.err.println(ex);
+                logger.error("Failed to send data to target", ex);
             }
         }
         //br.ufsc.das.tom.util.Logger.println("(ServersCommunicationLayer.send) Finished sending messages to replicas");
@@ -152,45 +157,4 @@ public class ViewManager {
     public void close() {
         rec.close();
     }
-
-    public static void main(String[] args) {
-
-        ViewManager viewManager = null;
-
-        if (args.length > 0) {
-            viewManager = new ViewManager(args[0]);
-        } else {
-            viewManager = new ViewManager("");
-        }
-        
-        Scanner scan = new Scanner(System.in);
-        String str = null;
-        do {
-            str = scan.nextLine();
-            String cmd = "";
-            int arg = -1;
-            try {
-                StringTokenizer token = new StringTokenizer(str);
-                cmd = token.nextToken();
-                arg = Integer.parseInt(token.nextToken());
-            } catch (Exception e) {
-            }
-
-            if (arg >= 0) {
-                if (cmd.equals("add")) {
-
-                    int port = (arg * 10) + 11000;
-                    viewManager.addServer(arg, "127.0.0.1", port);
-                } else if (cmd.equals("rem")) {
-                    viewManager.removeServer(arg);
-                }
-
-                viewManager.executeUpdates();
-            }
-
-        } while (!str.equals("exit"));
-        viewManager.close();
-        System.exit(0);
-    }
-    
 }

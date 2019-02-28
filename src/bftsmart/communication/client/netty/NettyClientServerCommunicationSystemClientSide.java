@@ -28,6 +28,7 @@ import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.util.concurrent.GenericFutureListener;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
@@ -44,6 +45,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.Arrays;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import javax.crypto.Mac;
 import javax.crypto.SecretKey;
@@ -54,9 +59,10 @@ import bftsmart.communication.client.CommunicationSystemClientSide;
 import bftsmart.communication.client.ReplyReceiver;
 import bftsmart.reconfiguration.ClientViewController;
 import bftsmart.tom.core.messages.TOMMessage;
-import bftsmart.tom.util.Logger;
 import bftsmart.tom.util.TOMUtil;
-import java.util.Arrays;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -64,6 +70,8 @@ import java.util.Arrays;
  */
 @Sharable
 public class NettyClientServerCommunicationSystemClientSide extends SimpleChannelInboundHandler<TOMMessage> implements CommunicationSystemClientSide {
+
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private int clientId;
     protected ReplyReceiver trr;
@@ -74,10 +82,12 @@ public class NettyClientServerCommunicationSystemClientSide extends SimpleChanne
     private ReentrantReadWriteLock rl;
     //the signature engine used in the system
     private Signature signatureEngine;
-    private int signatureLength;
+    //private int signatureLength;
     private boolean closed = false;
 
     private EventLoopGroup workerGroup;
+    
+    private SyncListener listener;
 
     public NettyClientServerCommunicationSystemClientSide(int clientId, ClientViewController controller) {
         super();
@@ -85,12 +95,13 @@ public class NettyClientServerCommunicationSystemClientSide extends SimpleChanne
         this.clientId = clientId;
         this.workerGroup = new NioEventLoopGroup();
         try {           
-            SecretKeyFactory fac = SecretKeyFactory.getInstance("PBEWithMD5AndDES");
+            SecretKeyFactory fac = TOMUtil.getSecretFactory();
 
             this.controller = controller;
+            this.listener = new SyncListener();
+
             //this.st = new Storage(BENCHMARK_PERIOD);
             this.rl = new ReentrantReadWriteLock();
-            signatureLength = TOMUtil.getSignatureSize(controller);
 
             ChannelFuture future = null;
             int[] currV = controller.getCurrentViewProcesses();
@@ -98,7 +109,7 @@ public class NettyClientServerCommunicationSystemClientSide extends SimpleChanne
                 try {
 
                     String str = this.clientId + ":" + currV[i];
-                    PBEKeySpec spec = new PBEKeySpec(str.toCharArray());
+                    PBEKeySpec spec = TOMUtil.generateKeySpec(str.toCharArray());
                     SecretKey authKey = fac.generateSecret(spec);
 
                     //EventLoopGroup workerGroup = new NioEventLoopGroup();
@@ -119,34 +130,34 @@ public class NettyClientServerCommunicationSystemClientSide extends SimpleChanne
                     //******* EDUARDO BEGIN **************//
 
                     //creates MAC stuff
-                    Mac macSend = Mac.getInstance(controller.getStaticConf().getHmacAlgorithm());
+                    Mac macSend = TOMUtil.getMacFactory();
                     macSend.init(authKey);
-                    Mac macReceive = Mac.getInstance(controller.getStaticConf().getHmacAlgorithm());
+                    Mac macReceive = TOMUtil.getMacFactory();
                     macReceive.init(authKey);
                     NettyClientServerSession cs = new NettyClientServerSession(future.channel(), macSend, macReceive, currV[i]);
                     sessionTable.put(currV[i], cs);
 
-                    System.out.println("Connecting to replica " + currV[i] + " at " + controller.getRemoteAddress(currV[i]));
+                    logger.info("Connecting to replica " + currV[i] + " at " + controller.getRemoteAddress(currV[i]));
                     //******* EDUARDO END **************//
 
                     future.awaitUninterruptibly();
 
                     if (!future.isSuccess()) {
-                            System.err.println("Impossible to connect to " + currV[i]);
+                            logger.error("Impossible to connect to " + currV[i]);
                     }
 
                 } catch (java.lang.NullPointerException ex) {
-                        //What the fuck is this??? This is not possible!!!
-                        System.err.println("Should fix the problem, and I think it has no other implications :-), "
+                        //What is this??? This is not possible!!!
+                        logger.debug("Should fix the problem, and I think it has no other implications :-), "
                                         + "but we must make the servers store the view in a different place.");
                 } catch (InvalidKeyException ex) {
-                        ex.printStackTrace(System.err);
+                        logger.error("Failed to initialize MAC engine",ex);
                 } catch (Exception ex){
-                        ex.printStackTrace(System.err);
+                        logger.error("Failed to initialize MAC engine",ex);
                 }
             }
         } catch (NoSuchAlgorithmException ex) {
-                ex.printStackTrace(System.err);
+                logger.error("Failed to initialize secret key factory",ex);
         }
     }
 
@@ -162,7 +173,7 @@ public class NettyClientServerCommunicationSystemClientSide extends SimpleChanne
                     rl.readLock().unlock();
                     rl.writeLock().lock();
 
-                    SecretKeyFactory fac = SecretKeyFactory.getInstance("PBEWithMD5AndDES");
+                    SecretKeyFactory fac = TOMUtil.getSecretFactory();
                     try {
                         // Configure the client.
 
@@ -185,30 +196,28 @@ public class NettyClientServerCommunicationSystemClientSide extends SimpleChanne
                         ChannelFuture future =  b.connect(controller.getRemoteAddress(currV[i]));
 
                         String str = this.clientId + ":" + currV[i];
-                        PBEKeySpec spec = new PBEKeySpec(str.toCharArray());
+                        PBEKeySpec spec = TOMUtil.generateKeySpec(str.toCharArray());
                         SecretKey authKey = fac.generateSecret(spec);
 
                         //creates MAC stuff
-                        Mac macSend = Mac.getInstance(controller.getStaticConf().getHmacAlgorithm());
+                        Mac macSend = TOMUtil.getMacFactory();
                         macSend.init(authKey);
-                        Mac macReceive = Mac.getInstance(controller.getStaticConf().getHmacAlgorithm());
+                        Mac macReceive = TOMUtil.getMacFactory();
                         macReceive.init(authKey);
                         NettyClientServerSession cs = new NettyClientServerSession(future.channel(), macSend, macReceive, currV[i]);
                         sessionTable.put(currV[i], cs);
 
-                        System.out.println("Connecting to replica " + currV[i] + " at " + controller.getRemoteAddress(currV[i]));
+                        logger.info("Connecting to replica " + currV[i] + " at " + controller.getRemoteAddress(currV[i]));
                         //******* EDUARDO END **************//
 
                         future.awaitUninterruptibly();
 
                         if (!future.isSuccess()) {
-                            System.err.println("Impossible to connect to " + currV[i]);
+                            logger.error("Impossible to connect to " + currV[i]);
                         }
 
-                    } catch (InvalidKeyException ex) {
-                        ex.printStackTrace();
-                    } catch (InvalidKeySpecException ex) {
-                        ex.printStackTrace();
+                    } catch (InvalidKeyException | InvalidKeySpecException ex) {
+                        logger.error("Failed to initialize MAC engine",ex);
                     }
                     rl.writeLock().unlock();
                 } else {
@@ -216,20 +225,19 @@ public class NettyClientServerCommunicationSystemClientSide extends SimpleChanne
                 }
             }
         } catch (NoSuchAlgorithmException ex) {
-                ex.printStackTrace();
+                logger.error("Failed to initialzie secret key factory",ex);
         }
     }
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx,Throwable cause)  throws Exception {
         if(cause instanceof ClosedChannelException) {
-            System.out.println("Connection with replica closed.");
+            logger.error("Connection with replica closed.",cause);
         } else if(cause instanceof ConnectException) {
-            System.out.println("Impossible to connect to replica.");
+            logger.error("Impossible to connect to replica.",cause);
         } else {
-            System.out.println("Replica disconnected.");
+            logger.error("Replica disconnected.",cause);
         }
-        cause.printStackTrace();
     }
 
     @Override
@@ -254,13 +262,13 @@ public class NettyClientServerCommunicationSystemClientSide extends SimpleChanne
             return;
         }
         
-        System.out.println("Channel active");
+        logger.info("Channel active");
     }
 
     public void reconnect(final ChannelHandlerContext ctx){
 
         rl.writeLock().lock();
-    	Logger.println("try to reconnect");
+    	logger.debug("try to reconnect");
 
         //Iterator sessions = sessionTable.values().iterator();
 
@@ -295,13 +303,13 @@ public class NettyClientServerCommunicationSystemClientSide extends SimpleChanne
                         sessionTable.remove(ncss.getReplicaId());
                         sessionTable.put(ncss.getReplicaId(), cs);
 
-                        System.out.println("re-connecting to replica "+ncss.getReplicaId()+" at " + controller.getRemoteAddress(ncss.getReplicaId()));
+                        logger.info("re-connecting to replica "+ncss.getReplicaId()+" at " + controller.getRemoteAddress(ncss.getReplicaId()));
                     } else {
                         // This cleans an olde server from the session table
                         sessionTable.remove(ncss.getReplicaId());
                     }
                 } catch (NoSuchAlgorithmException ex) {
-                    ex.printStackTrace();
+                    logger.error("Failed to reconnect to replica",ex);
                 }
             }
         }
@@ -322,8 +330,19 @@ public class NettyClientServerCommunicationSystemClientSide extends SimpleChanne
     @Override
     public void send(boolean sign, int[] targets, TOMMessage sm) {
 
-        Logger.println("Sending request from " + sm.getSender() + " with sequence number " + sm.getSequence() + " to " + Arrays.toString(targets));
-
+        int quorum;
+        
+        if (controller.getStaticConf().isBFT()) {
+                quorum = (int) Math.ceil((controller.getCurrentViewN()
+                                + controller.getCurrentViewF()) / 2) + 1;
+        } else {
+                quorum = (int) Math.ceil((controller.getCurrentViewN()) / 2) + 1;
+        }
+        
+        listener.waitForChannels(quorum); // wait for the previous transmission to complete
+        
+        logger.debug("Sending request from " + sm.getSender() + " with sequence number " + sm.getSequence() + " to " + Arrays.toString(targets));
+                
         if (sm.serializedMessage == null) {
 
             //serialize message
@@ -335,13 +354,7 @@ public class NettyClientServerCommunicationSystemClientSide extends SimpleChanne
                 dos.flush();
                 sm.serializedMessage = baos.toByteArray();
             } catch (IOException ex) {
-                Logger.println("Impossible to serialize message: " + sm);
-            } finally {
-                try {
-                    dos.close();
-                } catch (IOException ex) {
-                    ex.printStackTrace();
-                }
+                logger.debug("Impossible to serialize message: " + sm);
             }
         }
 
@@ -350,11 +363,21 @@ public class NettyClientServerCommunicationSystemClientSide extends SimpleChanne
         //produce signature
         if (sign && sm.serializedMessageSignature == null) {
             sm.serializedMessageSignature = signMessage(
-                    controller.getStaticConf().getRSAPrivateKey(), sm.serializedMessage);
+                    controller.getStaticConf().getPrivateKey(), sm.serializedMessage);
         }
-
+                
         int sent = 0;
         for (int i = targets.length - 1; i >= 0; i--) {
+            
+            // This is done to avoid a race condition with the writeAndFush method. Since the method is asynchronous,
+            // each iteration of this loop could overwrite the destination of the previous one
+            try {
+                sm = (TOMMessage) sm.clone();
+            } catch (CloneNotSupportedException e) {
+                logger.error("Failed to clone TOMMessage",e);
+                continue;
+            }
+            
             sm.destination = targets[i];
 
             rl.readLock().lock();
@@ -362,16 +385,13 @@ public class NettyClientServerCommunicationSystemClientSide extends SimpleChanne
             rl.readLock().unlock();
             if (channel.isActive()) {
                 sm.signed = sign;
-                channel.writeAndFlush(sm);
+                ChannelFuture f = channel.writeAndFlush(sm);
+                                
+                f.addListener(listener);
+                
                 sent++;
             } else {
-                Logger.println("Channel to " + targets[i] + " is not connected");
-            }
-
-            try {
-                sm = (TOMMessage) sm.clone();
-            } catch (CloneNotSupportedException e) {
-                e.printStackTrace();
+                logger.debug("Channel to " + targets[i] + " is not connected");
             }
         }
 
@@ -395,17 +415,13 @@ public class NettyClientServerCommunicationSystemClientSide extends SimpleChanne
             data = baos.toByteArray();
             sm.serializedMessage = data;
         } catch (IOException ex) {
-        } finally {
-            try {
-                dos.close();
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
+            
+            logger.error("Failed to sign TOMMessage", ex);
         }
 
         //******* EDUARDO BEGIN **************//
         //produce signature
-        byte[] data2 = signMessage(controller.getStaticConf().getRSAPrivateKey(), data);
+        byte[] data2 = signMessage(controller.getStaticConf().getPrivateKey(), data);
         //******* EDUARDO END **************//
 
         sm.serializedMessageSignature = data2;
@@ -415,7 +431,7 @@ public class NettyClientServerCommunicationSystemClientSide extends SimpleChanne
         //long startTime = System.nanoTime();
         try {
             if (signatureEngine == null) {
-                    signatureEngine = Signature.getInstance("SHA1withRSA");
+                    signatureEngine = TOMUtil.getSigEngine();
             }
             byte[] result = null;
 
@@ -426,7 +442,7 @@ public class NettyClientServerCommunicationSystemClientSide extends SimpleChanne
             //st.store(System.nanoTime() - startTime);
             return result;
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Failed to sign message",e);
             return null;
         }
     }
@@ -446,10 +462,9 @@ public class NettyClientServerCommunicationSystemClientSide extends SimpleChanne
 
     private ChannelInitializer getChannelInitializer() throws NoSuchAlgorithmException{
 
-        Mac macDummy = Mac.getInstance(controller.getStaticConf().getHmacAlgorithm());
+        Mac macDummy = TOMUtil.getMacFactory();
 
-        final NettyClientPipelineFactory nettyClientPipelineFactory = new NettyClientPipelineFactory(this, sessionTable,
-                    macDummy.getMacLength(), controller, rl, signatureLength);
+        final NettyClientPipelineFactory nettyClientPipelineFactory = new NettyClientPipelineFactory(this, sessionTable, controller, rl);
 
         ChannelInitializer channelInitializer = new ChannelInitializer<SocketChannel>() {
             @Override
@@ -498,4 +513,61 @@ public class NettyClientServerCommunicationSystemClientSide extends SimpleChanne
         },time,TimeUnit.SECONDS);
     }
     
+    
+    private class SyncListener implements GenericFutureListener<ChannelFuture> {
+            
+            private int remainingFutures;
+            
+            private final Lock futureLock;
+            private final Condition enoughCompleted;
+            
+            public SyncListener() {
+                
+                this.remainingFutures = 0;
+
+                this.futureLock = new ReentrantLock();
+                this.enoughCompleted = futureLock.newCondition();
+            }
+            
+            @Override
+            public void operationComplete(ChannelFuture f) {
+                
+                this.futureLock.lock();
+
+                this.remainingFutures--;
+
+                if (this.remainingFutures <= 0) {
+
+                    this.enoughCompleted.signalAll();
+                }
+
+                logger.debug(this.remainingFutures + " channel operations remaining to complete");
+                
+                this.futureLock.unlock();
+              
+            }
+            
+            public void waitForChannels(int n) {
+                
+                this.futureLock.lock();
+                if (this.remainingFutures > 0) {
+                    
+                    logger.debug("There are still " + this.remainingFutures + " channel operations pending, waiting to complete");
+                    
+                    try {
+                        this.enoughCompleted.await(1000, TimeUnit.MILLISECONDS); // timeout if a malicous replica refuses to acknowledge the operation as completed
+                    } catch (InterruptedException ex) {
+                        logger.error("Interruption while waiting on condition", ex);
+                    }
+                    
+                }
+                
+                    logger.debug("All channel operations completed or timed out");
+
+                this.remainingFutures = n;
+                
+                this.futureLock.unlock();
+            }
+            
+        }
 }

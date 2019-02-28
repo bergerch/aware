@@ -15,42 +15,74 @@ limitations under the License.
 */
 package bftsmart.reconfiguration;
 
+import bftsmart.tom.util.KeyLoader;
+
 /**
- *
- * @author Andre Nogueira
+ * This class is used by the trusted client to add and remove replicas from the group
  */
 
 public class VMServices {
-	public static void main(String[] args) throws InterruptedException {
+    
+    private KeyLoader keyLoader;
+    private String configDir;
+    
+    /**
+     * Constructor. It adopts the default RSA key loader and default configuration path.
+     */
+    public VMServices() { // for the default keyloader and provider
+        
+        keyLoader = null;
+        configDir = "";
+    }
+    
+    /**
+     * Constructor.
+     * 
+     * @param keyLoader Key loader to use to fetch keys from disk
+     * @param configDir Configuration path
+     */
+    public VMServices(KeyLoader keyLoader, String configDir) {
+        
+        this.keyLoader = keyLoader;
+        this.configDir = configDir;
+    }
+    
+    /**
+     * Adds a new server to the group
+     * 
+     * @param id ID of the server to be added (needs to match the value in config/hosts.config)
+     * @param ipAddress IP address of the server to be added (needs to match the value in config/hosts.config)
+     * @param port Port of the server to be added (needs to match the value in config/hosts.config)
+     */
+    public void addServer(int id, String ipAddress, int port) {
+        
+        ViewManager viewManager = new ViewManager(configDir, keyLoader);
+        
+        viewManager.addServer(id, ipAddress,port);
+        
+        execute(viewManager);
 
-		ViewManager viewManager = new ViewManager();
+    }
+    
+    /**
+     * Removes a server from the group
+     * 
+     * @param id ID of the server to be removed 
+     */
+    public void removeServer (int id) {
+        
+        ViewManager viewManager = new ViewManager(keyLoader);
+        
+        viewManager.removeServer(id);
+        
+        execute(viewManager);
 
-
-		if(args.length == 1){
-			System.out.println("####Tpp Service[Disjoint]####");
-
-			int smartId = Integer.parseInt(args[0]);
-
-			viewManager.removeServer(smartId);
-		}else if(args.length == 3){
-			System.out.println("####Tpp Service[Join]####");
-
-			int smartId = Integer.parseInt(args[0]);
-			String ipAddress = args[1];
-			int port = Integer.parseInt(args[2]);
-
-			viewManager.addServer(smartId, ipAddress,port);
-
-		}else{
-			System.out.println("Usage: java -jar TppServices <smart id> [ip address] [port]");
-			System.exit(1);
-		}
-
-		viewManager.executeUpdates();
-		
-		Thread.sleep(2000);//2s
-		viewManager.close();
-
-		System.exit(0);
-	}
+    }
+    
+    private void execute(ViewManager viewManager) {
+        
+        viewManager.executeUpdates();
+        
+        viewManager.close();
+    }
 }
