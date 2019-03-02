@@ -32,6 +32,7 @@ import bftsmart.consensus.Decision;
 import bftsmart.consensus.Consensus;
 import bftsmart.consensus.Epoch;
 import bftsmart.consensus.roles.Acceptor;
+import bftsmart.dynwheat.messages.MonitoringMessageFactory;
 import bftsmart.reconfiguration.ServerViewController;
 import bftsmart.statemanagement.StateManager;
 import bftsmart.tom.ServiceReplica;
@@ -66,7 +67,7 @@ public final class TOMLayer extends Thread implements RequestReceiver {
     //other components used by the TOMLayer (they are never changed)
     public ExecutionManager execManager; // Execution manager
     public Acceptor acceptor; // Acceptor role of the PaW algorithm
-    private ServerCommunicationSystem communication; // Communication system between replicas
+    public ServerCommunicationSystem communication; // Communication system between replicas
     //private OutOfContextMessageThread ot; // Thread which manages messages that do not belong to the current consensus
     private DeliveryThread dt; // Thread which delivers total ordered messages to the appication
     public StateManager stateManager = null; // object which deals with the state transfer protocol
@@ -115,6 +116,13 @@ public final class TOMLayer extends Thread implements RequestReceiver {
     private RequestVerifier verifier;
             
     private Synchronizer syncher;
+
+
+    /** DynWHEAT **/
+    public MonitoringMessageFactory monitoringMsgFactory;
+    //private ReentrantLock dummyProposeLock = new ReentrantLock();
+    //private Condition canDummyPropose = dummyProposeLock.newCondition();
+
 
     /**
      * Creates a new instance of TOMulticastLayer
@@ -197,6 +205,9 @@ public final class TOMLayer extends Thread implements RequestReceiver {
 
             }, 0, controller.getStaticConf().getBatchTimeout());
         }
+
+        // DynWHEAT
+        monitoringMsgFactory = new MonitoringMessageFactory(this.controller.getStaticConf().getProcessId());
     }
 
     /**
@@ -286,6 +297,8 @@ public final class TOMLayer extends Thread implements RequestReceiver {
         }
         proposeLock.unlock();
     }
+
+
 
     /**
      * This method blocks until the PaW algorithm is finished
@@ -388,17 +401,24 @@ public final class TOMLayer extends Thread implements RequestReceiver {
         logger.debug("Running."); // TODO: can't this be outside of the loop?
         while (doWork) {
 
-            // blocks until this replica learns to be the leader for the current epoch of the current consensus
-            leaderLock.lock();
-            logger.debug("Next leader for CID=" + (getLastExec() + 1) + ": " + execManager.getCurrentLeader());
+          //  if (!this.controller.getStaticConf().isUseDynamicWeights()) {
 
-            //******* EDUARDO BEGIN **************//
-            if (execManager.getCurrentLeader() != this.controller.getStaticConf().getProcessId()) {
-                iAmLeader.awaitUninterruptibly();
-                //waitForPaxosToFinish();
-            }
-            //******* EDUARDO END **************//
-            leaderLock.unlock();
+
+                // blocks until this replica learns to be the leader for the current epoch of the current consensus
+                leaderLock.lock();
+                logger.debug("Next leader for CID=" + (getLastExec() + 1) + ": " + execManager.getCurrentLeader());
+
+                //******* EDUARDO BEGIN **************//
+                if (execManager.getCurrentLeader() != this.controller.getStaticConf().getProcessId()) {
+                    iAmLeader.awaitUninterruptibly();
+                    //waitForPaxosToFinish();
+                }
+                //******* EDUARDO END **************//
+                leaderLock.unlock();
+
+
+         //   }
+
             
             if (!doWork) break;
 
@@ -432,6 +452,10 @@ public final class TOMLayer extends Thread implements RequestReceiver {
 
             logger.debug("I can try to propose.");
 
+            // TODO DynWHEAT
+            // System.out.println("I am going to propose");
+            // dummyPropose();
+
             if ((execManager.getCurrentLeader() == this.controller.getStaticConf().getProcessId()) && //I'm the leader
                     (clientsManager.havePendingRequests()) && //there are messages to be ordered
                     (getInExec() == -1)) { //there is no consensus in execution
@@ -463,8 +487,10 @@ public final class TOMLayer extends Thread implements RequestReceiver {
                     continue;
 
                 }
+                System.out.println("I am the leader and start consensus");
                 execManager.getProposer().startConsensus(execId, createPropose(dec));
             }
+
         }
         logger.info("TOMLayer stopped.");
     }
@@ -482,6 +508,7 @@ public final class TOMLayer extends Thread implements RequestReceiver {
         
         this.dt.delivery(dec); // Sends the decision to the delivery thread
     }
+
 
     /**
      * Verify if the value being proposed for a epoch is valid. It verifies the
@@ -632,5 +659,27 @@ public final class TOMLayer extends Thread implements RequestReceiver {
         if (this.dt != null) this.dt.shutdown();
         if (this.communication != null) this.communication.shutdown();
  
+    }
+
+
+    private void dummyPropose() {
+        /**
+         * DynWHEAT
+         * I am not the leader but I will send a DUMMY-PROPOSE for monitoring purposes anyway
+         */
+        if (this.controller.getStaticConf().isUseDynamicWeights() &&
+                (execManager.getCurrentLeader() != this.controller.getStaticConf().getProcessId()) && //I'm NOT the leader
+                (clientsManager.havePendingRequests()) && //there are messages to be ordered
+                (getInExec() == -1)) {
+            // Sets the current consensus
+            int execId = getLastExec() + 1;
+            setInExec(execId);
+            Decision dec = execManager.getConsensus(execId).getDecision();
+            byte[] value = createPropose(dec); // Send (possibly large) dummy propose with consensus value
+            System.out.println("I SEND A DUMMY PROPOSE");
+            communication.send(this.controller.getCurrentViewAcceptors(),
+                    monitoringMsgFactory.createDummyPropose(execId, 0, value));
+
+        }
     }
 }

@@ -1,18 +1,18 @@
 /**
-Copyright (c) 2007-2013 Alysson Bessani, Eduardo Alchieri, Paulo Sousa, and the authors indicated in the @author tags
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
+ * Copyright (c) 2007-2013 Alysson Bessani, Eduardo Alchieri, Paulo Sousa, and the authors indicated in the @author tags
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package bftsmart.consensus.messages;
 
 import java.io.IOException;
@@ -22,7 +22,6 @@ import java.io.ObjectOutput;
 import bftsmart.communication.SystemMessage;
 
 
-
 /**
  * This class represents a message used in a epoch of a consensus instance.
  */
@@ -30,15 +29,20 @@ public class ConsensusMessage extends SystemMessage {
 
     private int number; //consensus ID for this message
     private int epoch; // Epoch to which this message belongs to
-    private int paxosType; // Message type
+    protected int paxosType; // Message type
     private byte[] value = null; // Value used when message type is PROPOSE
     private Object proof; // Proof used when message type is COLLECT
-                              // Can be either a MAC vector or a signature
+    // Can be either a MAC vector or a signature
+
+    /** DynWHEAT **/
+    protected long sentTimestamp;
+    protected long receivedTimestamp;
 
     /**
      * Creates a consensus message. Not used. TODO: How about making it private?
      */
-    public ConsensusMessage(){}
+    public ConsensusMessage() {
+    }
 
     /**
      * Creates a consensus message. Used by the message factory to create a COLLECT or PROPOSE message
@@ -49,7 +53,7 @@ public class ConsensusMessage extends SystemMessage {
      * @param from This should be this process ID
      * @param value This should be null if its a COLLECT message, or the proposed value if it is a PROPOSE message
      */
-    public ConsensusMessage(int paxosType, int id,int epoch,int from, byte[] value){
+    public ConsensusMessage(int paxosType, int id, int epoch, int from, byte[] value) {
 
         super(from);
 
@@ -70,7 +74,7 @@ public class ConsensusMessage extends SystemMessage {
      * @param epoch Epoch timestamp
      * @param from This should be this process ID
      */
-    public ConsensusMessage(int type, int id,int epoch, int from) {
+    public ConsensusMessage(int type, int id, int epoch, int from) {
 
         this(type, id, epoch, from, null);
 
@@ -86,7 +90,13 @@ public class ConsensusMessage extends SystemMessage {
         out.writeInt(epoch);
         out.writeInt(paxosType);
 
-        if(value == null) {
+
+        /*** DynWHEAT **/
+        sentTimestamp = System.nanoTime();
+        out.writeLong(sentTimestamp);
+
+
+        if (value == null) {
 
             out.writeInt(-1);
 
@@ -97,14 +107,12 @@ public class ConsensusMessage extends SystemMessage {
 
         }
 
-        if(this.proof != null) {
+        if (this.proof != null) {
 
             out.writeBoolean(true);
             out.writeObject(proof);
 
-        }
-        
-        else {
+        } else {
             out.writeBoolean(false);
         }
 
@@ -120,26 +128,32 @@ public class ConsensusMessage extends SystemMessage {
         epoch = in.readInt();
         paxosType = in.readInt();
 
+
+        /** DynWHEAT **/
+        sentTimestamp = in.readLong();
+        receivedTimestamp = System.nanoTime();
+
+
         int toRead = in.readInt();
 
-        if(toRead != -1) {
+        if (toRead != -1) {
 
             value = new byte[toRead];
 
-            do{
+            do {
 
-                toRead -= in.read(value, value.length-toRead, toRead);
+                toRead -= in.read(value, value.length - toRead, toRead);
 
-            } while(toRead > 0);
+            } while (toRead > 0);
 
         }
 
         boolean asProof = in.readBoolean();
         if (asProof) {
-            
+
             proof = in.readObject();
         }
-        
+
     }
 
     /**
@@ -151,7 +165,7 @@ public class ConsensusMessage extends SystemMessage {
         return epoch;
 
     }
-    
+
     /**
      * Retrieves the value contained in the message.
      * @return The value
@@ -163,10 +177,10 @@ public class ConsensusMessage extends SystemMessage {
     }
 
     public void setProof(Object proof) {
-        
+
         this.proof = proof;
     }
-    
+
     /**
      * Returns the proof associated with a PROPOSE or COLLECT message
      * @return The proof
@@ -202,11 +216,11 @@ public class ConsensusMessage extends SystemMessage {
      * @return Message type
      */
     public String getPaxosVerboseType() {
-        if (paxosType==MessageFactory.PROPOSE)
+        if (paxosType == MessageFactory.PROPOSE)
             return "PROPOSE";
-        else if (paxosType==MessageFactory.ACCEPT)
+        else if (paxosType == MessageFactory.ACCEPT)
             return "ACCEPT";
-        else if (paxosType==MessageFactory.WRITE)
+        else if (paxosType == MessageFactory.WRITE)
             return "WRITE";
         else
             return "";
@@ -214,8 +228,8 @@ public class ConsensusMessage extends SystemMessage {
 
     @Override
     public String toString() {
-        return "type="+getPaxosVerboseType()+", number="+getNumber()+", epoch="+
-                getEpoch()+", from="+getSender();
+        return "type=" + getPaxosVerboseType() + ", number=" + getNumber() + ", epoch=" +
+                getEpoch() + ", from=" + getSender();
     }
 
 }

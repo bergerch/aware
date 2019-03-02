@@ -18,6 +18,7 @@ package bftsmart.communication;
 import bftsmart.consensus.messages.MessageFactory;
 import bftsmart.consensus.messages.ConsensusMessage;
 import bftsmart.consensus.roles.Acceptor;
+import bftsmart.dynwheat.messages.MonitoringMessage;
 import bftsmart.statemanagement.SMMessage;
 import bftsmart.tom.core.TOMLayer;
 import bftsmart.tom.core.messages.TOMMessage;
@@ -65,11 +66,20 @@ public class MessageHandler {
 
     @SuppressWarnings("unchecked")
     protected void processData(SystemMessage sm) {
-        if (sm instanceof ConsensusMessage) {
-            
+        if (sm instanceof ConsensusMessage && !(sm instanceof MonitoringMessage)) {
+
             int myId = tomLayer.controller.getStaticConf().getProcessId();
             
             ConsensusMessage consMsg = (ConsensusMessage) sm;
+
+            /** DynWHEAT: Send back WRITE_RESPONSE **/
+            if (tomLayer.controller.getStaticConf().isUseWriteResponse() && consMsg.getPaxosVerboseType() == "WRITE") {
+                System.out.println("I send WRITE-RSPONSE for consensus message " + consMsg.getNumber() + " to process " + consMsg.getSender());
+                int[] destination = new int[1];
+                destination[0] = consMsg.sender;
+                tomLayer.communication.send(destination, tomLayer.monitoringMsgFactory
+                        .createWriteResponse(consMsg.getNumber(), consMsg.getEpoch(), null));
+            }
 
             if (tomLayer.controller.getStaticConf().getUseMACs() == 0 || consMsg.authenticated || consMsg.getSender() == myId) acceptor.deliver(consMsg);
             else if (consMsg.getType() == MessageFactory.ACCEPT && consMsg.getProof() != null) {
@@ -106,9 +116,11 @@ public class MessageHandler {
                     logger.error("Failed to generate MAC",ex);
                 }
                 
-                if (recvMAC != null && myMAC != null && Arrays.equals(recvMAC, myMAC))
+                if (recvMAC != null && myMAC != null && Arrays.equals(recvMAC, myMAC)) {
+
                     acceptor.deliver(consMsg);
-                else {
+
+                } else {
                     logger.warn("Invalid MAC from " + sm.getSender());
                 }
             } else {
@@ -170,9 +182,16 @@ public class MessageHandler {
 		                    tomLayer.getStateManager().stateTimeout();
 	                        break;
 	                }
-	            /******************************************************************/
-	            } else {
-	            	logger.warn("UNKNOWN MESSAGE TYPE: " + sm);
+                /**************       DynWHEAT     **********************************/
+	            } else if(sm instanceof MonitoringMessage) {
+
+	                // TODO DynWHEAT Monitoring message received
+                    System.out.println("Monitoring message received from " + sm.sender + " WITH NUMBER " + ((MonitoringMessage) sm).getNumber());
+
+                /******************************************************************/
+                } else {
+                    logger.warn("UNKNOWN MESSAGE TYPE: " + sm);
+
 	            }
 	        } else {
 	            logger.warn("Discarding unauthenticated message from " + sm.getSender());
