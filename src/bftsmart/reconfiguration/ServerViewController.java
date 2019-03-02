@@ -26,7 +26,6 @@ import bftsmart.tom.core.TOMLayer;
 import bftsmart.tom.core.messages.TOMMessage;
 import bftsmart.tom.util.KeyLoader;
 import bftsmart.tom.util.TOMUtil;
-import java.security.Provider;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,8 +35,6 @@ import org.slf4j.LoggerFactory;
  * @author eduardo
  */
 public class ServerViewController extends ViewController {
-
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 

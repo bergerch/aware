@@ -77,8 +77,8 @@ public class MessageHandler {
                 System.out.println("I send WRITE-RSPONSE for consensus message " + consMsg.getNumber() + " to process " + consMsg.getSender());
                 int[] destination = new int[1];
                 destination[0] = consMsg.sender;
-                tomLayer.communication.send(destination, tomLayer.monitoringMsgFactory
-                        .createWriteResponse(consMsg.getNumber(), consMsg.getEpoch(), null));
+               // tomLayer.communication.send(destination, tomLayer.monitoringMsgFactory
+                //        .createWriteResponse(consMsg.getNumber(), consMsg.getEpoch(), null));
             }
 
             if (tomLayer.controller.getStaticConf().getUseMACs() == 0 || consMsg.authenticated || consMsg.getSender() == myId) acceptor.deliver(consMsg);
