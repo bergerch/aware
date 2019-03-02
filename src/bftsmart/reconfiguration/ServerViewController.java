@@ -39,6 +39,8 @@ public class ServerViewController extends ViewController {
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
+
     public static final int ADD_SERVER = 0;
     public static final int REMOVE_SERVER = 1;
     public static final int CHANGE_F = 2;

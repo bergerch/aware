@@ -75,7 +75,7 @@ public class NettyClientServerCommunicationSystemServerSide extends SimpleChanne
     // This locked seems to introduce a bottleneck and seems useless, but I cannot recall why I added it
     //private ReentrantLock sendLock = new ReentrantLock();
     private NettyServerPipelineFactory serverPipelineFactory;
-        
+
 	public NettyClientServerCommunicationSystemServerSide(ServerViewController controller) {
 		try {
 
@@ -111,33 +111,33 @@ public class NettyClientServerCommunicationSystemServerSide extends SimpleChanne
                         String myAddress;
                         String confAddress =
                                     controller.getStaticConf().getRemoteAddress(controller.getStaticConf().getProcessId()).getAddress().getHostAddress();
-                        
+
                         if (InetAddress.getLoopbackAddress().getHostAddress().equals(confAddress)) {
-                            
+
                             myAddress = InetAddress.getLoopbackAddress().getHostAddress();
-                            
+
                         }
-                        
+
                         else if (controller.getStaticConf().getBindAddress().equals("")) {
-                            
+
                             myAddress = InetAddress.getLocalHost().getHostAddress();
-                              
+
                             //If Netty binds to the loopback address, clients will not be able to connect to replicas.
                             //To solve that issue, we bind to the address supplied in config/hosts.config instead.
                             if (InetAddress.getLoopbackAddress().getHostAddress().equals(myAddress) && !myAddress.equals(confAddress)) {
-                                
+
                                 myAddress = confAddress;
                             }
-                            
-                            
+
+
                         } else {
-                            
+
                             myAddress = controller.getStaticConf().getBindAddress();
                         }
-                        
+
                         int myPort = controller.getStaticConf().getPort(controller.getStaticConf().getProcessId());
 
-			ChannelFuture f = b.bind(new InetSocketAddress(myAddress, myPort)).sync(); 
+			ChannelFuture f = b.bind(new InetSocketAddress(myAddress, myPort)).sync();
 
 			logger.info("ID = " + controller.getStaticConf().getProcessId());
 			logger.info("N = " + controller.getCurrentViewN());
@@ -302,7 +302,7 @@ public class NettyClientServerCommunicationSystemServerSide extends SimpleChanne
 		}
 
 		for (int i = 0; i < targets.length; i++) {
-                    
+
                         // This is done to avoid a race condition with the writeAndFush method. Since the method is asynchronous,
                         // each iteration of this loop could overwrite the destination of the previous one
                         try {
@@ -311,7 +311,7 @@ public class NettyClientServerCommunicationSystemServerSide extends SimpleChanne
                             logger.error("Failed to clone TOMMessage",ex);
                             continue;
                         }
-                    
+
 			rl.readLock().lock();
 			//sendLock.lock();
 			try {       
@@ -378,20 +378,20 @@ public class NettyClientServerCommunicationSystemServerSide extends SimpleChanne
 
     @Override
     public int[] getClients() {
-        
+
         rl.readLock().lock();
         Set s = sessionTable.keySet();
         int[] clients = new int[s.size()];
         Iterator it = s.iterator();
         int i = 0;
         while (it.hasNext()) {
-            
+
             clients[i] = ((Integer) it.next()).intValue();
             i++;
         }
-        
+
         rl.readLock().unlock();
-        
+
         return clients;
     }
 

@@ -83,7 +83,6 @@ public final class Acceptor {
         int nWorkers = this.controller.getStaticConf().getNumNettyWorkers();
         nWorkers = nWorkers > 0 ? nWorkers : Runtime.getRuntime().availableProcessors();
         this.proofExecutor = Executors.newWorkStealingPool(nWorkers);
-
     }
 
     public MessageFactory getFactory() {
@@ -411,7 +410,6 @@ public final class Acceptor {
                 logger.error("Failed to create MAC engine", ex);
                 return;
             }
-
             int[] processes = this.controller.getCurrentViewAcceptors();
 
             HashMap<Integer, byte[]> macVector = new HashMap<>();

@@ -427,7 +427,6 @@ public class Epoch implements Serializable {
 
         return acceptMsg;
     }
-
     /**
      * Counts how many times 'value' occurs in 'array'
      * @param array Array where to count
