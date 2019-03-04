@@ -80,7 +80,7 @@ public class TOMConfiguration extends Configuration {
     private boolean useDummyPropose;
     private boolean useProposeResponse;
     private boolean useWriteResponse;
-
+    private int monitoringWindow;
 
 
     /** Creates a new instance of TOMConfiguration */
@@ -385,6 +385,9 @@ public class TOMConfiguration extends Configuration {
             s = (String) configs.remove("system.initial.leader");
             initialLeader = s != null ? Integer.parseInt(s) : 0;
 
+            s = (String) configs.remove("system.dw.monitoringWindow");
+            monitoringWindow = s != null ? Integer.parseInt(s) : 0;
+
             s = (String) configs.remove("system.dw.useDynamicWeights");
             useDynamicWeights = Boolean.parseBoolean(s);
 
@@ -622,5 +625,9 @@ public class TOMConfiguration extends Configuration {
 
     public boolean isUseWriteResponse() {
         return useWriteResponse;
+    }
+
+    public int getMonitoringWindow() {
+        return this.monitoringWindow;
     }
 }

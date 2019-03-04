@@ -187,6 +187,15 @@ public class MessageHandler {
                 /**************       DynWHEAT     **********************************/
 	            } else if(sm instanceof MonitoringMessage) {
 
+                    tomLayer.communication.writeLatencyMonitor.addRecvdTime(sm.sender,
+                            ((MonitoringMessage) sm).getNumber(), ((MonitoringMessage) sm).receivedTimestamp);
+
+                    // TODO remove this check:
+
+                    if (((MonitoringMessage) sm).getNumber() > 1000) {
+                        tomLayer.communication.writeLatencyMonitor.create_M();
+                    }
+
 	                // TODO DynWHEAT Monitoring message received
                     logger.debug(" <--| MM | Monitoring message received " + ((MonitoringMessage) sm).getPaxosVerboseType()
                             +  "from " + sm.sender + " WITH NUMBER " + ((MonitoringMessage) sm).getNumber());

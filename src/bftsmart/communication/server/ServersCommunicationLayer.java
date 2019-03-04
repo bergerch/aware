@@ -30,7 +30,11 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import bftsmart.communication.ServerCommunicationSystem;
 import bftsmart.communication.SystemMessage;
+import bftsmart.consensus.Consensus;
+import bftsmart.consensus.messages.ConsensusMessage;
+import bftsmart.dynwheat.monitoring.WriteLatencyMonitor;
 import bftsmart.reconfiguration.ServerViewController;
 import bftsmart.tom.ServiceReplica;
 import bftsmart.tom.util.TOMUtil;
@@ -69,6 +73,14 @@ public class ServersCommunicationLayer extends Thread {
     private ServiceReplica replica;
     private SecretKey selfPwd;
     private static final String PASSWORD = "commsyst";
+
+    public WriteLatencyMonitor writeLatenciesMonitor;
+
+    public ServersCommunicationLayer(ServerViewController controller, LinkedBlockingQueue<SystemMessage> inQueue,
+                                     ServiceReplica replica, WriteLatencyMonitor writeLatenciesMonitor) throws Exception {
+        this(controller, inQueue, replica);
+        this.writeLatenciesMonitor = writeLatenciesMonitor;
+    }
 
     public ServersCommunicationLayer(ServerViewController controller,
             LinkedBlockingQueue<SystemMessage> inQueue, ServiceReplica replica) throws Exception {
@@ -203,6 +215,14 @@ public class ServersCommunicationLayer extends Thread {
 
         for (int i : targetsShuffled) {
             try {
+                /** DynWHEAT **/
+                if (sm instanceof ConsensusMessage && ((ConsensusMessage) sm).getPaxosVerboseType().equals("WRITE") &&
+                        writeLatenciesMonitor != null ) {
+                    Long timestamp = System.nanoTime();
+                    writeLatenciesMonitor.addSentTime(i, ((ConsensusMessage) sm).getNumber(), timestamp);
+                }
+                /** End DynWHEAT **/
+
                 if (i == me) {
                     sm.authenticated = true;
                     inQueue.put(sm);
@@ -210,6 +230,7 @@ public class ServersCommunicationLayer extends Thread {
                     //System.out.println("Going to send message to: "+i);
                     //******* EDUARDO BEGIN **************//
                     //connections[i].send(data);
+
                     getConnection(i).send(data, useMAC);
                     //******* EDUARDO END **************//
                 }

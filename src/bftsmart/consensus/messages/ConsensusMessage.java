@@ -35,8 +35,8 @@ public class ConsensusMessage extends SystemMessage {
     // Can be either a MAC vector or a signature
 
     /** DynWHEAT **/
-    protected long sentTimestamp;
-    protected long receivedTimestamp;
+    public long sentTimestamp;
+    public long receivedTimestamp;
 
     /**
      * Creates a consensus message. Not used. TODO: How about making it private?

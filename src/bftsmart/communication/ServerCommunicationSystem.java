@@ -23,6 +23,7 @@ import bftsmart.communication.client.CommunicationSystemServerSideFactory;
 import bftsmart.communication.client.RequestReceiver;
 import bftsmart.communication.server.ServersCommunicationLayer;
 import bftsmart.consensus.roles.Acceptor;
+import bftsmart.dynwheat.monitoring.WriteLatencyMonitor;
 import bftsmart.reconfiguration.ServerViewController;
 import bftsmart.tom.ServiceReplica;
 import bftsmart.tom.core.TOMLayer;
@@ -47,6 +48,9 @@ public class ServerCommunicationSystem extends Thread {
     private CommunicationSystemServerSide clientsConn;
     private ServerViewController controller;
 
+    /** DynWHEAT **/
+    public WriteLatencyMonitor writeLatencyMonitor = null;
+
     /**
      * Creates a new instance of ServerCommunicationSystem
      */
@@ -65,7 +69,9 @@ public class ServerCommunicationSystem extends Thread {
 
         //serversConf.increasePortNumber();
 
-        serversConn = new ServersCommunicationLayer(controller, inQueue, replica);
+        /** DynWHEAT **/
+        writeLatencyMonitor = controller.getStaticConf().isUseDynamicWeights() ? new WriteLatencyMonitor(controller) : null;
+        serversConn = new ServersCommunicationLayer(controller, inQueue, replica, writeLatencyMonitor);
 
         //******* EDUARDO BEGIN **************//
        // if (manager.isInCurrentView() || manager.isInInitView()) {
