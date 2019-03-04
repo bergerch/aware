@@ -403,7 +403,7 @@ public final class TOMLayer extends Thread implements RequestReceiver {
         logger.debug("Running."); // TODO: can't this be outside of the loop?
         while (doWork) {
 
-          //  if (!this.controller.getStaticConf().isUseDynamicWeights()) {
+            if (!this.controller.getStaticConf().isUseDynamicWeights()) {
 
 
                 // blocks until this replica learns to be the leader for the current epoch of the current consensus
@@ -419,7 +419,7 @@ public final class TOMLayer extends Thread implements RequestReceiver {
                 leaderLock.unlock();
 
 
-         //   }
+            }
 
             
             if (!doWork) break;
@@ -454,9 +454,12 @@ public final class TOMLayer extends Thread implements RequestReceiver {
 
             logger.debug("I can try to propose.");
 
-            // TODO DynWHEAT
-            // System.out.println("I am going to propose");
-            // dummyPropose();
+            /** DynWHEAT TODO **/
+            if (shouldDoDummyPropose()) {
+                logger.debug("I am going to DUMMY propose");
+                dummyPropose();
+            }
+            /** End DynWHEAT **/
 
             if ((execManager.getCurrentLeader() == this.controller.getStaticConf().getProcessId()) && //I'm the leader
                     (clientsManager.havePendingRequests()) && //there are messages to be ordered
@@ -663,16 +666,20 @@ public final class TOMLayer extends Thread implements RequestReceiver {
  
     }
 
-
-    private void dummyPropose() {
-        /**
-         * DynWHEAT
-         * I am not the leader but I will send a DUMMY-PROPOSE for monitoring purposes anyway
-         */
-        if (this.controller.getStaticConf().isUseDynamicWeights() &&
-                (execManager.getCurrentLeader() != this.controller.getStaticConf().getProcessId()) && //I'm NOT the leader
+    /**
+     * DynWHEAT
+     */
+    private boolean shouldDoDummyPropose() {
+        return this.controller.getStaticConf().isUseDynamicWeights() && // Config says Dummy-Propose is enabled
+                (execManager.getCurrentLeader() != this.controller.getStaticConf().getProcessId()) && // I'm NOT the leader
                 (clientsManager.havePendingRequests()) && //there are messages to be ordered
-                (getInExec() == -1)) {
+                (getInExec() == -1); // Not currently in some execution
+    }
+
+    /**
+     * DynWHEAT
+     */
+    private void dummyPropose() {
             // Sets the current consensus
             int execId = getLastExec() + 1;
             setInExec(execId);
@@ -683,5 +690,5 @@ public final class TOMLayer extends Thread implements RequestReceiver {
                     monitoringMsgFactory.createDummyPropose(execId, 0, value));
 
         }
-    }
+
 }

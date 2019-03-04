@@ -188,7 +188,8 @@ public class MessageHandler {
 	            } else if(sm instanceof MonitoringMessage) {
 
 	                // TODO DynWHEAT Monitoring message received
-                    System.out.println("Monitoring message received from " + sm.sender + " WITH NUMBER " + ((MonitoringMessage) sm).getNumber());
+                    logger.debug(" <--| MM | Monitoring message received " + ((MonitoringMessage) sm).getPaxosVerboseType()
+                            +  "from " + sm.sender + " WITH NUMBER " + ((MonitoringMessage) sm).getNumber());
 
                 /******************************************************************/
                 } else {
