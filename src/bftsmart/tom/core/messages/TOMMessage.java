@@ -388,4 +388,5 @@ public class TOMMessage extends SystemMessage implements Externalizable, Compara
 	public void setReplyServer(int replyServer) {
 		this.replyServer = replyServer;
 	}
+
 }

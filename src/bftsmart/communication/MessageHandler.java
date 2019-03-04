@@ -73,12 +73,13 @@ public class MessageHandler {
             ConsensusMessage consMsg = (ConsensusMessage) sm;
 
             /** DynWHEAT: Send back WRITE_RESPONSE **/
-            if (tomLayer.controller.getStaticConf().isUseWriteResponse() && consMsg.getPaxosVerboseType() == "WRITE") {
-                System.out.println("I send WRITE-RSPONSE for consensus message " + consMsg.getNumber() + " to process " + consMsg.getSender());
+            if (tomLayer.controller.getStaticConf().isUseWriteResponse() && consMsg.getPaxosVerboseType() == "WRITE" &&
+            sm.sender != myId) {
+                System.out.println("I send WRITE-RESPONSE for consensus message " + consMsg.getNumber() + " to process " + consMsg.getSender());
                 int[] destination = new int[1];
                 destination[0] = consMsg.sender;
-               // tomLayer.communication.send(destination, tomLayer.monitoringMsgFactory
-                //        .createWriteResponse(consMsg.getNumber(), consMsg.getEpoch(), null));
+                tomLayer.communication.send(destination, tomLayer.monitoringMsgFactory
+                       .createWriteResponse(consMsg.getNumber(), consMsg.getEpoch(), null));
             }
 
             if (tomLayer.controller.getStaticConf().getUseMACs() == 0 || consMsg.authenticated || consMsg.getSender() == myId) acceptor.deliver(consMsg);
@@ -132,7 +133,8 @@ public class MessageHandler {
 	            /*** This is Joao's code, related to leader change */
 	            if (sm instanceof LCMessage) {
 	                LCMessage lcMsg = (LCMessage) sm;
-	
+
+
 	                String type = null;
 	                switch(lcMsg.getType()) {
 	
@@ -149,8 +151,8 @@ public class MessageHandler {
 	                        type = "LOCAL";
 	                        break;
 	                }
-	
-                        if (lcMsg.getReg() != -1 && lcMsg.getSender() != -1)
+                    logger.info("Received leader change message of type {} for regency {} from replica {}", type, lcMsg.getReg(), lcMsg.getSender());
+                    if (lcMsg.getReg() != -1 && lcMsg.getSender() != -1)
                             logger.info("Received leader change message of type {} for regency {} from replica {}", type, lcMsg.getReg(), lcMsg.getSender());
                         else logger.debug("Received leader change message from myself");
 	                if (lcMsg.TRIGGER_LC_LOCALLY) tomLayer.requestsTimer.run_lc_protocol();

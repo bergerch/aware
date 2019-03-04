@@ -168,9 +168,11 @@ public class RequestsTimer {
         }
         
         if (!pendingRequests.isEmpty()) {
-            
-            logger.info("The following requests timed out: " + pendingRequests);
-            
+
+            for (TOMMessage tm: pendingRequests) {
+                logger.info("The following requests timed out: " + tm);
+            }
+
             for (ListIterator<TOMMessage> li = pendingRequests.listIterator(); li.hasNext(); ) {
                 TOMMessage request = li.next();
                 if (!request.timeout) {

@@ -2,11 +2,19 @@ package bftsmart.dynwheat.messages;
 
 import bftsmart.consensus.messages.ConsensusMessage;
 
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+
+
 /**
  * This class represents a message used for monitoring the consensus protocol.
  */
 public class MonitoringMessage extends ConsensusMessage {
 
+
+
+    public MonitoringMessage() {}
 
     /**
      * Creates a monitoring message. Used by the message factory to create a COLLECT or PROPOSE message
@@ -19,6 +27,20 @@ public class MonitoringMessage extends ConsensusMessage {
      */
     public MonitoringMessage(int paxosType, int id, int epoch, int from, byte[] value) {
         super(paxosType, id, epoch, from, value);
+    }
+
+
+    /**
+     * Creates a monitoring message. Used by the message factory to create a FREEZE message
+     * @param type This should be MessageFactory.FREEZE
+     * @param id Consensus's consensus ID
+     * @param epoch Epoch timestamp
+     * @param from This should be this process ID
+     */
+    public MonitoringMessage(int type, int id, int epoch, int from) {
+
+        super(type, id, epoch, from, null);
+
     }
 
     @Override
@@ -37,6 +59,24 @@ public class MonitoringMessage extends ConsensusMessage {
     public String toString() {
         return "type=" + getPaxosVerboseType() + ", consensusID=" + this.getNumber() + ", epoch=" +
                 getEpoch() + ", from=" + getSender();
+    }
+
+
+    // Implemented method of the Externalizable interface
+    @Override
+    public void writeExternal(ObjectOutput out) throws IOException {
+
+        super.writeExternal(out);
+
+
+    }
+
+    // Implemented method of the Externalizable interface
+    @Override
+    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+
+        super.readExternal(in);
+
     }
 
 }
