@@ -130,6 +130,10 @@ public class View implements Serializable {
         return weights.get(p);
     }
 
+    public Map<Integer, Double> getWeights() {
+        return weights;
+    }
+
     public int getOverlayF() {
         return overlayF;
     }
