@@ -13,8 +13,8 @@ import java.io.ObjectOutput;
 public class MonitoringMessage extends ConsensusMessage {
 
 
-
-    public MonitoringMessage() {}
+    public MonitoringMessage() {
+    }
 
     /**
      * Creates a monitoring message. Used by the message factory to create a COLLECT or PROPOSE message
@@ -32,10 +32,11 @@ public class MonitoringMessage extends ConsensusMessage {
 
     /**
      * Creates a monitoring message. Used by the message factory to create a FREEZE message
-     * @param type This should be MessageFactory.FREEZE
-     * @param id Consensus's consensus ID
+     *
+     * @param type  This should be MessageFactory.FREEZE
+     * @param id    Consensus's consensus ID
      * @param epoch Epoch timestamp
-     * @param from This should be this process ID
+     * @param from  This should be this process ID
      */
     public MonitoringMessage(int type, int id, int epoch, int from) {
 

@@ -25,14 +25,14 @@ public class Simulator {
     /**
      * Predics the latency of the SMR system for a given weight configuration and leader selection
      *
-     * @param replicaSet all replicas
-     * @param leader selected leader for protocol simulation
+     * @param replicaSet   all replicas
+     * @param leader       selected leader for protocol simulation
      * @param weightConfig weight configuration to be simulated
-     * @param m_propose sanitized PROPOSE latencies
-     * @param m_write sanitized WRITE/ACCEPT latencies
-     * @param n system size
-     * @param f number of faults
-     * @param delta number of additional spare replicas
+     * @param m_propose    sanitized PROPOSE latencies
+     * @param m_write      sanitized WRITE/ACCEPT latencies
+     * @param n            system size
+     * @param f            number of faults
+     * @param delta        number of additional spare replicas
      * @return
      */
     public Long PredictLatency(int[] replicaSet, int leader, WeightConfiguration weightConfig, long[][] m_propose,
@@ -67,7 +67,6 @@ public class Simulator {
 
         return Long.MAX_VALUE;
     }
-
 
 
     public class Vote {

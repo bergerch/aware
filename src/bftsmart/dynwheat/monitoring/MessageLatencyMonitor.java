@@ -57,7 +57,7 @@ public class MessageLatencyMonitor {
             int count = 0;
             for (Integer monitoringInstance : replicaSentTimes.keySet()) {
                 Long rcvd = replicaRecvdTimes.get(monitoringInstance);
-                Long sent = replicaSentTimes.get(monitoringInstance) ;
+                Long sent = replicaSentTimes.get(monitoringInstance);
                 if (rcvd != null) {
                     long latency = rcvd - sent;
                     sum += latency;

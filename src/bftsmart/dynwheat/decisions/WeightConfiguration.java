@@ -39,7 +39,7 @@ public class WeightConfiguration {
     /**
      * Creates new Weight Config from replica array (permutation) assuming the V_max Replicas are listed first
      *
-     * @param u nmuber of Vmax replicass: 2f (BFT) or f (CFT)
+     * @param u          nmuber of Vmax replicass: 2f (BFT) or f (CFT)
      * @param replicaSet all replicas
      */
     WeightConfiguration(int u, int[] replicaSet) {
@@ -56,7 +56,7 @@ public class WeightConfiguration {
 
     }
 
-    public static WeightConfiguration allPossibleWeightConfigurations(int u, int[] replicaSet){
+    public static WeightConfiguration allPossibleWeightConfigurations(int u, int[] replicaSet) {
         // TODO
         return null;
     }
