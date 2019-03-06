@@ -403,7 +403,7 @@ public final class TOMLayer extends Thread implements RequestReceiver {
         logger.debug("Running."); // TODO: can't this be outside of the loop?
         while (doWork) {
 
-            if (!this.controller.getStaticConf().isUseDynamicWeights()) {
+            if (!this.controller.getStaticConf().isUseDummyPropose()) {
 
 
                 // blocks until this replica learns to be the leader for the current epoch of the current consensus
@@ -492,7 +492,7 @@ public final class TOMLayer extends Thread implements RequestReceiver {
                     continue;
 
                 }
-                System.out.println("I am the leader and start consensus");
+                logger.debug("I am the leader and start consensus");
                 execManager.getProposer().startConsensus(execId, createPropose(dec));
             }
 
@@ -685,7 +685,7 @@ public final class TOMLayer extends Thread implements RequestReceiver {
             setInExec(execId);
             Decision dec = execManager.getConsensus(execId).getDecision();
             byte[] value = createPropose(dec); // Send (possibly large) dummy propose with consensus value
-            System.out.println("I SEND A DUMMY PROPOSE");
+            logger.debug("I SEND A DUMMY PROPOSE");
             communication.send(this.controller.getCurrentViewAcceptors(),
                     monitoringMsgFactory.createDummyPropose(execId, 0, value));
 

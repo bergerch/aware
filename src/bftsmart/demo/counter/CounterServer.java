@@ -65,8 +65,9 @@ public final class CounterServer extends DefaultSingleRecoverable  {
         try {
             int increment = new DataInputStream(new ByteArrayInputStream(command)).readInt();
             counter += increment;
-            
-            System.out.println("(" + iterations + ") Counter was incremented. Current value = " + counter);
+
+            if (counter % 100 == 0)
+                System.out.println("(" + iterations + ") Counter was incremented. Current value = " + counter);
             
             ByteArrayOutputStream out = new ByteArrayOutputStream(4);
             new DataOutputStream(out).writeInt(counter);

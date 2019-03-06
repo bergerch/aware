@@ -4,9 +4,7 @@ package bftsmart.dynwheat.monitoring;
 import bftsmart.communication.SystemMessage;
 import bftsmart.reconfiguration.ServerViewController;
 
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 public class MessageLatencyMonitor {
 
@@ -32,47 +30,74 @@ public class MessageLatencyMonitor {
     }
 
     public synchronized void addSentTime(int replicaID, int monitoringInstanceID, Long timestamp) {
-        System.out.println("Add Sent Time " + timestamp);
         this.SentTimes.get(replicaID).put(monitoringInstanceID, timestamp);
-        System.out.println("Sent times of " + this.SentTimes.get(replicaID));
     }
 
     public synchronized void addRecvdTime(int replicaID, int monitoringInstanceID, Long timestamp) {
-        this.RecvdTimes.get(replicaID).put(monitoringInstanceID, timestamp);
+        if (this.SentTimes.get(replicaID).get(monitoringInstanceID) != null) {
+            this.RecvdTimes.get(replicaID).put(monitoringInstanceID, timestamp);
+        }
     }
 
     /**
      * @return
      */
     public synchronized Long[] create_M() {
-        System.out.println("!!!!! SENT-TIMES " + SentTimes);
         int n = controller.getCurrentViewN();
-        Long[] latency_vector = new Long[n];
-        for (int i = 0; i < n; i++) {
-            Map<Integer, Long> replicaRecvdTimes = RecvdTimes.get(i);
-            Map<Integer, Long> replicaSentTimes = SentTimes.get(i);
 
-            System.out.println("SENT TIMES " + replicaSentTimes);
-            long sum = 0;
-            int count = 0;
+        // Initialize latency vector (current replica's perspective of other nodes latencies
+        Long[] latency_vector = new Long[n];
+        int myself = controller.getStaticConf().getProcessId();
+
+
+        // Compute latencies to all other nodes
+        for (int i = 0; i < n; i++) {
+
+            Map<Integer, Long> replicaRecvdTimes = RecvdTimes.get(i).subMap(lastQuery, lastQuery + window);
+            Map<Integer, Long> replicaSentTimes = SentTimes.get(i).subMap(lastQuery, lastQuery + window);
+
+            ArrayList<Long> latencies = new ArrayList<>();
             for (Integer monitoringInstance : replicaSentTimes.keySet()) {
                 Long rcvd = replicaRecvdTimes.get(monitoringInstance);
                 Long sent = replicaSentTimes.get(monitoringInstance);
                 if (rcvd != null) {
                     long latency = rcvd - sent;
-                    sum += latency;
-                    count++;
-                    System.out.println("Computed Latency :" + latency);
+                    System.out.println("Latency computed " + (double) Math.round((double) latency / 1000) / 1000.00 + " ms");
+                    latencies.add(latency);
                 }
             }
-            latency_vector[i] = sum / count;
+            latencies.sort(Comparator.naturalOrder());
+            Long medianValue = latencies.size() > 0 ? latencies.get(latencies.size()/2) : Long.MAX_VALUE;
+
+            //latency_vector[i] = count > 0 ? sum / count : Long.MAX_VALUE;
+            latency_vector[i] = medianValue;
+            latency_vector[myself] = 0L;
         }
 
-        // TODO remove
-        System.out.println("..........................................");
-        System.out.println("Measured latencies are " + latency_vector);
-        System.out.println("............................................");
+        printLatencyVector(latenciesToMillis(latency_vector));
+
         return latency_vector;
+    }
+
+    private double[] latenciesToMillis(Long[] m){
+        double[] latencies = new double[m.length];
+        for (int i = 0; i < m.length; i++) {
+            double latency = Math.round((double) m[i] / 1000.00); // round to precision of micro seconds
+            latencies[i] = latency / 1000.00; // convert to milliseconds
+        }
+        return latencies;
+    }
+
+    private void printLatencyVector(double[] m) {
+        System.out.println(".....................Measured latencies .......................");
+        System.out.println("   0      1      2       3       4       ....    ");
+        System.out.println("...............................................................");
+        for (double d : m) {
+            System.out.print("  " + d + "  ");
+        }
+        System.out.println();
+        System.out.println("...............................................................");
+
     }
 
 }

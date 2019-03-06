@@ -73,9 +73,8 @@ public class MessageHandler {
             ConsensusMessage consMsg = (ConsensusMessage) sm;
 
             /** DynWHEAT: Send back WRITE_RESPONSE **/
-            if (tomLayer.controller.getStaticConf().isUseWriteResponse() && consMsg.getPaxosVerboseType() == "WRITE" &&
-            sm.sender != myId) {
-                System.out.println("I send WRITE-RESPONSE for consensus message " + consMsg.getNumber() + " to process " + consMsg.getSender());
+            if (tomLayer.controller.getStaticConf().isUseWriteResponse() && consMsg.getPaxosVerboseType().equals("WRITE")) {
+                logger.debug("I send WRITE-RESPONSE for consensus message " + consMsg.getNumber() + " to process " + consMsg.getSender());
                 int[] destination = new int[1];
                 destination[0] = consMsg.sender;
                 tomLayer.communication.send(destination, tomLayer.monitoringMsgFactory
@@ -187,13 +186,14 @@ public class MessageHandler {
                 /**************       DynWHEAT     **********************************/
 	            } else if(sm instanceof MonitoringMessage) {
 
-                    tomLayer.communication.writeLatencyMonitor.addRecvdTime(sm.sender,
-                            ((MonitoringMessage) sm).getNumber(), ((MonitoringMessage) sm).receivedTimestamp);
+	                if (((MonitoringMessage) sm).getPaxosVerboseType().equals("WRITE_RESPONSE")) {
+                        tomLayer.communication.writeLatencyMonitor.addRecvdTime(sm.sender,
+                                ((MonitoringMessage) sm).getNumber(), ((MonitoringMessage) sm).receivedTimestamp);
 
-                    // TODO remove this check:
-
-                    if (((MonitoringMessage) sm).getNumber() > 1000) {
-                        tomLayer.communication.writeLatencyMonitor.create_M();
+                        // TODO remove this check:
+                        if (((MonitoringMessage) sm).getNumber() % 1001 == 0 && ((MonitoringMessage) sm).getNumber() > 1) {
+                            tomLayer.communication.writeLatencyMonitor.create_M();
+                        }
                     }
 
 	                // TODO DynWHEAT Monitoring message received
