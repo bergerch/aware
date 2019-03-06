@@ -80,6 +80,7 @@ public class MessageHandler {
                 tomLayer.communication.send(destination, tomLayer.monitoringMsgFactory
                        .createWriteResponse(consMsg.getNumber(), consMsg.getEpoch(), null));
             }
+            /** END DynWHEAT **/
 
             if (tomLayer.controller.getStaticConf().getUseMACs() == 0 || consMsg.authenticated || consMsg.getSender() == myId) acceptor.deliver(consMsg);
             else if (consMsg.getType() == MessageFactory.ACCEPT && consMsg.getProof() != null) {
@@ -186,19 +187,37 @@ public class MessageHandler {
                 /**************       DynWHEAT     **********************************/
 	            } else if(sm instanceof MonitoringMessage) {
 
-	                if (((MonitoringMessage) sm).getPaxosVerboseType().equals("WRITE_RESPONSE")) {
-                        tomLayer.communication.writeLatencyMonitor.addRecvdTime(sm.sender,
-                                ((MonitoringMessage) sm).getNumber(), ((MonitoringMessage) sm).receivedTimestamp);
-
-                        // TODO remove this check:
-                        if (((MonitoringMessage) sm).getNumber() % 1001 == 0 && ((MonitoringMessage) sm).getNumber() > 1) {
-                            tomLayer.communication.writeLatencyMonitor.create_M();
-                        }
-                    }
-
-	                // TODO DynWHEAT Monitoring message received
                     logger.debug(" <--| MM | Monitoring message received " + ((MonitoringMessage) sm).getPaxosVerboseType()
                             +  "from " + sm.sender + " WITH NUMBER " + ((MonitoringMessage) sm).getNumber());
+
+	                switch (((MonitoringMessage) sm).getPaxosVerboseType()) {
+
+                        case "DUMMY_PROPOSE":
+                            // Send back PROPOSE_RESPONSE
+                            logger.debug("I send PROPOSE_RESPONSE for consensus message " +
+                                    ((MonitoringMessage) sm).getNumber() + " to process " + sm.getSender());
+                            int[] destination = new int[1];
+                            destination[0] = ((MonitoringMessage) sm).sender;
+                            tomLayer.communication.send(destination, tomLayer.monitoringMsgFactory
+                                    .createWriteResponse(((MonitoringMessage) sm).getNumber(), ((MonitoringMessage) sm).getEpoch(),
+                                            ((MonitoringMessage) sm).getValue()));
+                            break;
+                        case "PROPOSE_RESPONSE":
+                            // TODO Add receive time to Monitor
+                            break;
+                        case "WRITE_RESPONSE":
+                            tomLayer.communication.writeLatencyMonitor.addRecvdTime(sm.sender,
+                                    ((MonitoringMessage) sm).getNumber(), ((MonitoringMessage) sm).receivedTimestamp);
+
+                            // TODO remove this check:
+                            if (((MonitoringMessage) sm).getNumber() % 1001 == 0 && ((MonitoringMessage) sm).getNumber() > 1) {
+                                tomLayer.communication.writeLatencyMonitor.create_M();
+                            }
+                            break;
+                        default:
+                            logger.error("Unknown Monitoring message type");
+                            break;
+                    }
 
                 /******************************************************************/
                 } else {
