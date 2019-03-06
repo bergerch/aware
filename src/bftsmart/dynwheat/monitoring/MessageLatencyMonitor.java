@@ -1,46 +1,60 @@
 package bftsmart.dynwheat.monitoring;
 
-
-import bftsmart.communication.SystemMessage;
 import bftsmart.reconfiguration.ServerViewController;
-
 import java.util.*;
 
 public class MessageLatencyMonitor {
 
-    private int window = 1000;
+    private int window;
     private ServerViewController controller;
-    private ArrayList<TreeMap<Integer, Long>> SentTimes;
-    private ArrayList<TreeMap<Integer, Long>> RecvdTimes;
+    private ArrayList<TreeMap<Integer, Long>> sentTimestamps;
+    private ArrayList<TreeMap<Integer, Long>> recvdTimestamps;
     private int lastQuery = 0;
 
 
+    /**
+     * Creates a new instance of a latency monitor
+     *
+     * @param controller server view controller
+     */
     MessageLatencyMonitor(ServerViewController controller) {
         this.window = controller.getStaticConf().getMonitoringWindow();
         this.controller = controller;
         int n = controller.getCurrentViewN();
-        this.SentTimes = new ArrayList<>();
+        this.sentTimestamps = new ArrayList<>();
+        this.recvdTimestamps = new ArrayList<>();
         for (int i = 0; i < n; i++) {
-            SentTimes.add(i, new TreeMap<>());
-        }
-        this.RecvdTimes = new ArrayList<>();
-        for (int i = 0; i < n; i++) {
-            RecvdTimes.add(i, new TreeMap<>());
-        }
-    }
-
-    public synchronized void addSentTime(int replicaID, int monitoringInstanceID, Long timestamp) {
-        this.SentTimes.get(replicaID).put(monitoringInstanceID, timestamp);
-    }
-
-    public synchronized void addRecvdTime(int replicaID, int monitoringInstanceID, Long timestamp) {
-        if (this.SentTimes.get(replicaID).get(monitoringInstanceID) != null) {
-            this.RecvdTimes.get(replicaID).put(monitoringInstanceID, timestamp);
+            sentTimestamps.add(i, new TreeMap<>());
+            recvdTimestamps.add(i, new TreeMap<>());
         }
     }
 
     /**
-     * @return
+     * Adds a sent timestamp
+     * @param replicaID receiver
+     * @param monitoringInstanceID id
+     * @param timestamp time
+     */
+    public synchronized void addSentTime(int replicaID, int monitoringInstanceID, Long timestamp) {
+        this.sentTimestamps.get(replicaID).put(monitoringInstanceID, timestamp);
+    }
+
+    /**
+     * Adds a received timestamp
+     * @param replicaID sender
+     * @param monitoringInstanceID id
+     * @param timestamp time
+     */
+    public synchronized void addRecvdTime(int replicaID, int monitoringInstanceID, Long timestamp) {
+        // Only add a response message if there is a corresponding sent message
+        if (this.sentTimestamps.get(replicaID).get(monitoringInstanceID) != null) {
+            this.recvdTimestamps.get(replicaID).put(monitoringInstanceID, timestamp);
+        }
+    }
+
+    /**
+     * Creates a latency vector from the current replicas perspective
+     * @return latencies to all other nodes
      */
     public synchronized Long[] create_M() {
         int n = controller.getCurrentViewN();
@@ -53,8 +67,8 @@ public class MessageLatencyMonitor {
         for (int i = 0; i < n; i++) {
 
             // within monitoring interval [start = lastQuery; end = lastQuery + window]
-            Map<Integer, Long> replicaRecvdTimes = RecvdTimes.get(i).subMap(lastQuery, lastQuery + window);
-            Map<Integer, Long> replicaSentTimes = SentTimes.get(i).subMap(lastQuery, lastQuery + window);
+            Map<Integer, Long> replicaRecvdTimes = recvdTimestamps.get(i).subMap(lastQuery, lastQuery + window);
+            Map<Integer, Long> replicaSentTimes = sentTimestamps.get(i).subMap(lastQuery, lastQuery + window);
 
             ArrayList<Long> latencies = new ArrayList<>();
             for (Integer monitoringInstance : replicaSentTimes.keySet()) {
@@ -73,9 +87,18 @@ public class MessageLatencyMonitor {
         // Assume self-latency is zero
         latency_vector[myself] = 0L;
 
+        lastQuery = lastQuery + window;
         printLatencyVector(latenciesToMillis(latency_vector));
 
         return latency_vector;
+    }
+
+    /**
+     * Clears timestamps
+     */
+    public synchronized  void clear() {
+        sentTimestamps.clear();
+        recvdTimestamps.clear();
     }
 
     private double[] latenciesToMillis(Long[] m){
