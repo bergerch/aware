@@ -201,6 +201,8 @@ public class MessageHandler {
                             tomLayer.communication.send(destination, tomLayer.monitoringMsgFactory
                                     .createWriteResponse(((MonitoringMessage) sm).getNumber(), ((MonitoringMessage) sm).getEpoch(),
                                             ((MonitoringMessage) sm).getValue()));
+
+                            // Todo remember to send POPOSE_RESPONSE also for the leaders PROPOSE
                             break;
                         case "PROPOSE_RESPONSE":
                             // TODO Add receive time to Monitor

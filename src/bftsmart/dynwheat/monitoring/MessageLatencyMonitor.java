@@ -87,7 +87,7 @@ public class MessageLatencyMonitor {
         // Assume self-latency is zero
         latency_vector[myself] = 0L;
 
-        lastQuery = lastQuery + window;
+        // todo lastQuery = lastQuery + window;
         printLatencyVector(latenciesToMillis(latency_vector));
 
         return latency_vector;
