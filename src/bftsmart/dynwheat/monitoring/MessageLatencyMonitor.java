@@ -49,10 +49,10 @@ public class MessageLatencyMonitor {
         Long[] latency_vector = new Long[n];
         int myself = controller.getStaticConf().getProcessId();
 
-
         // Compute latencies to all other nodes
         for (int i = 0; i < n; i++) {
 
+            // within monitoring interval [start = lastQuery; end = lastQuery + window]
             Map<Integer, Long> replicaRecvdTimes = RecvdTimes.get(i).subMap(lastQuery, lastQuery + window);
             Map<Integer, Long> replicaSentTimes = SentTimes.get(i).subMap(lastQuery, lastQuery + window);
 
@@ -61,18 +61,17 @@ public class MessageLatencyMonitor {
                 Long rcvd = replicaRecvdTimes.get(monitoringInstance);
                 Long sent = replicaSentTimes.get(monitoringInstance);
                 if (rcvd != null) {
-                    long latency = rcvd - sent;
+                    long latency = (rcvd - sent) / 2; // one-way latency as half of round trip time
                     System.out.println("Latency computed " + (double) Math.round((double) latency / 1000) / 1000.00 + " ms");
                     latencies.add(latency);
                 }
             }
             latencies.sort(Comparator.naturalOrder());
             Long medianValue = latencies.size() > 0 ? latencies.get(latencies.size()/2) : Long.MAX_VALUE;
-
-            //latency_vector[i] = count > 0 ? sum / count : Long.MAX_VALUE;
             latency_vector[i] = medianValue;
-            latency_vector[myself] = 0L;
         }
+        // Assume self-latency is zero
+        latency_vector[myself] = 0L;
 
         printLatencyVector(latenciesToMillis(latency_vector));
 
@@ -90,7 +89,7 @@ public class MessageLatencyMonitor {
 
     private void printLatencyVector(double[] m) {
         System.out.println(".....................Measured latencies .......................");
-        System.out.println("   0      1      2       3       4       ....    ");
+        System.out.println("    0       1       2        3        4        ....    ");
         System.out.println("...............................................................");
         for (double d : m) {
             System.out.print("  " + d + "  ");
