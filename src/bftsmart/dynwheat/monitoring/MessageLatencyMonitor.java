@@ -1,12 +1,15 @@
 package bftsmart.dynwheat.monitoring;
 
 import bftsmart.reconfiguration.ServerViewController;
+
 import java.util.*;
 
 public class MessageLatencyMonitor {
 
     private int window;
     private ServerViewController controller;
+    private ArrayList<TreeMap<Integer, Integer>> sentMsgNonces;
+
     private ArrayList<TreeMap<Integer, Long>> sentTimestamps;
     private ArrayList<TreeMap<Integer, Long>> recvdTimestamps;
     private int lastQuery = 0;
@@ -23,37 +26,72 @@ public class MessageLatencyMonitor {
         int n = controller.getCurrentViewN();
         this.sentTimestamps = new ArrayList<>();
         this.recvdTimestamps = new ArrayList<>();
+        this.sentMsgNonces = new ArrayList<>();
         for (int i = 0; i < n; i++) {
             sentTimestamps.add(i, new TreeMap<>());
             recvdTimestamps.add(i, new TreeMap<>());
+            sentMsgNonces.add(i, new TreeMap<>());  // Todo only in BFT
         }
     }
 
     /**
      * Adds a sent timestamp
-     * @param replicaID receiver
+     *
+     * @param replicaID            receiver
      * @param monitoringInstanceID id
-     * @param timestamp time
+     * @param timestamp            time
      */
     public synchronized void addSentTime(int replicaID, int monitoringInstanceID, Long timestamp) {
         this.sentTimestamps.get(replicaID).put(monitoringInstanceID, timestamp);
     }
 
     /**
-     * Adds a received timestamp
-     * @param replicaID sender
+     * Adds a sent timestamp with a nonce
+     *
+     * @param replicaID            receiver
      * @param monitoringInstanceID id
-     * @param timestamp time
+     * @param timestamp            time
+     */
+    public synchronized void addSentTime(int replicaID, int monitoringInstanceID, Long timestamp, int nonce) {
+        this.sentTimestamps.get(replicaID).put(monitoringInstanceID, timestamp);
+
+        // Todo only in BFT:
+        this.sentMsgNonces.get(replicaID).put(monitoringInstanceID, nonce);
+    }
+
+
+    /**
+     * Adds a received timestamp
+     *
+     * @param replicaID            sender
+     * @param monitoringInstanceID id
+     * @param timestamp            time
      */
     public synchronized void addRecvdTime(int replicaID, int monitoringInstanceID, Long timestamp) {
-        // Only add a response message if there is a corresponding sent message
-        if (this.sentTimestamps.get(replicaID).get(monitoringInstanceID) != null) {
+        // Only add a response message timestamp if there is a corresponding sent message
+        if (this.sentTimestamps.get(replicaID).get(monitoringInstanceID) != null) { //
+            this.recvdTimestamps.get(replicaID).put(monitoringInstanceID, timestamp);
+        }
+    }
+
+    /**
+     * Adds a received timestamp and checks for valid Nonce ... ONLY IN BFT
+     *
+     * @param replicaID            sender
+     * @param monitoringInstanceID id
+     * @param timestamp            time
+     */
+    public synchronized void addRecvdTime(int replicaID, int monitoringInstanceID, Long timestamp, int nonce) {
+        // Only add a response message timestamp if there is a corresponding sent message AND nonce was included in response
+        if (this.sentTimestamps.get(replicaID).get(monitoringInstanceID) != null
+                && this.sentMsgNonces.get(replicaID).get(monitoringInstanceID).equals(nonce)) {
             this.recvdTimestamps.get(replicaID).put(monitoringInstanceID, timestamp);
         }
     }
 
     /**
      * Creates a latency vector from the current replicas perspective
+     *
      * @return latencies to all other nodes
      */
     public synchronized Long[] create_M() {
@@ -81,7 +119,7 @@ public class MessageLatencyMonitor {
                 }
             }
             latencies.sort(Comparator.naturalOrder());
-            Long medianValue = latencies.size() > 0 ? latencies.get(latencies.size()/2) : Long.MAX_VALUE;
+            Long medianValue = latencies.size() > 0 ? latencies.get(latencies.size() / 2) : Long.MAX_VALUE;
             latency_vector[i] = medianValue;
         }
         // Assume self-latency is zero
@@ -96,12 +134,14 @@ public class MessageLatencyMonitor {
     /**
      * Clears timestamps
      */
-    public synchronized  void clear() {
+    public synchronized void clear() {
         sentTimestamps.clear();
         recvdTimestamps.clear();
+        if (sentMsgNonces != null)
+            sentMsgNonces.clear();
     }
 
-    private double[] latenciesToMillis(Long[] m){
+    public static double[] latenciesToMillis(Long[] m) {
         double[] latencies = new double[m.length];
         for (int i = 0; i < m.length; i++) {
             double latency = Math.round((double) m[i] / 1000.00); // round to precision of micro seconds
@@ -110,7 +150,7 @@ public class MessageLatencyMonitor {
         return latencies;
     }
 
-    private void printLatencyVector(double[] m) {
+    public static void printLatencyVector(double[] m) {
         System.out.println(".....................Measured latencies .......................");
         System.out.println("    0       1       2        3        4        ....    ");
         System.out.println("...............................................................");
