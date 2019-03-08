@@ -17,8 +17,6 @@ public class MessageLatencyMonitor {
 
     private ArrayList<TreeMap<Integer, Long>> sentTimestamps;
     private ArrayList<TreeMap<Integer, Long>> recvdTimestamps;
-    private int lastQuery = 0;
-
 
     /**
      * Creates a new instance of a latency monitor
@@ -47,7 +45,11 @@ public class MessageLatencyMonitor {
      * @param timestamp            time
      */
     public synchronized void addSentTime(int replicaID, int monitoringInstanceID, Long timestamp) {
-        this.sentTimestamps.get(replicaID).put(monitoringInstanceID, timestamp);
+        // Clear old received timestamp from last monitoring window
+        Map<Integer, Long> lastWindowRcvd = recvdTimestamps.get(replicaID);
+        lastWindowRcvd.remove(monitoringInstanceID);
+
+        this.sentTimestamps.get(replicaID).put(monitoringInstanceID % window , timestamp);
     }
 
     /**
@@ -58,10 +60,10 @@ public class MessageLatencyMonitor {
      * @param timestamp            time
      */
     public synchronized void addSentTime(int replicaID, int monitoringInstanceID, Long timestamp, int nonce) {
-        this.sentTimestamps.get(replicaID).put(monitoringInstanceID, timestamp);
+        this.addSentTime(replicaID, monitoringInstanceID, timestamp);
 
         // Todo only in BFT:
-        this.sentMsgNonces.get(replicaID).put(monitoringInstanceID, nonce);
+        this.sentMsgNonces.get(replicaID).put(monitoringInstanceID % window, nonce);
     }
 
 
@@ -74,8 +76,8 @@ public class MessageLatencyMonitor {
      */
     public synchronized void addRecvdTime(int replicaID, int monitoringInstanceID, Long timestamp) {
         // Only add a response message timestamp if there is a corresponding sent message
-        if (this.sentTimestamps.get(replicaID).get(monitoringInstanceID) != null) { //
-            this.recvdTimestamps.get(replicaID).put(monitoringInstanceID, timestamp);
+        if (this.sentTimestamps.get(replicaID).get(monitoringInstanceID % window) != null) { //
+            this.recvdTimestamps.get(replicaID).put(monitoringInstanceID % window, timestamp);
         }
     }
 
@@ -88,9 +90,9 @@ public class MessageLatencyMonitor {
      */
     public synchronized void addRecvdTime(int replicaID, int monitoringInstanceID, Long timestamp, int nonce) {
         // Only add a response message timestamp if there is a corresponding sent message AND nonce was included in response
-        if (this.sentTimestamps.get(replicaID).get(monitoringInstanceID) != null
-                && this.sentMsgNonces.get(replicaID).get(monitoringInstanceID).equals(nonce)) {
-            this.recvdTimestamps.get(replicaID).put(monitoringInstanceID, timestamp);
+        if (this.sentTimestamps.get(replicaID).get(monitoringInstanceID % window) != null
+                && this.sentMsgNonces.get(replicaID).get(monitoringInstanceID % window).equals(nonce)) {
+            this.recvdTimestamps.get(replicaID).put(monitoringInstanceID % window, timestamp);
         }
     }
 
@@ -110,11 +112,11 @@ public class MessageLatencyMonitor {
         for (int i = 0; i < n; i++) {
 
             // within monitoring interval [start = lastQuery; end = lastQuery + window]
-            Map<Integer, Long> replicaRecvdTimes = recvdTimestamps.get(i).subMap(lastQuery, lastQuery + window);
-            Map<Integer, Long> replicaSentTimes = sentTimestamps.get(i).subMap(lastQuery, lastQuery + window);
+            Map<Integer, Long> replicaRecvdTimes = recvdTimestamps.get(i).subMap(0,  window); // Todo should not be necessary anymore?
+            Map<Integer, Long> replicaSentTimes = sentTimestamps.get(i).subMap(0, window);
 
             ArrayList<Long> latencies = new ArrayList<>();
-            for (Integer monitoringInstance : replicaSentTimes.keySet()) {
+            for (Integer monitoringInstance : replicaRecvdTimes.keySet()) {
                 Long rcvd = replicaRecvdTimes.get(monitoringInstance);
                 Long sent = replicaSentTimes.get(monitoringInstance);
                 if (rcvd != null) {
@@ -126,11 +128,11 @@ public class MessageLatencyMonitor {
             latencies.sort(Comparator.naturalOrder());
             Long medianValue = latencies.size() > 0 ? latencies.get(latencies.size() / 2) : Long.MAX_VALUE;
             latency_vector[i] = medianValue;
+            System.out.println("-- Size of " + replicaRecvdTimes.size());
         }
         // Assume self-latency is zero
         latency_vector[myself] = 0L;
 
-        // todo lastQuery = lastQuery + window;
         printLatencyVector(latenciesToMillis(latency_vector));
 
         return latency_vector;

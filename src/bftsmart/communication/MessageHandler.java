@@ -212,7 +212,7 @@ public class MessageHandler {
                                     ((MonitoringMessage) sm).getNumber(), ((MonitoringMessage) sm).receivedTimestamp);
 
                             // TODO remove this check:
-                            if (((MonitoringMessage) sm).getNumber() % 1001 == 0 && ((MonitoringMessage) sm).getNumber() > 1) {
+                            if (((MonitoringMessage) sm).getNumber() % 1000 == 0 && ((MonitoringMessage) sm).getNumber() > 1) {
                                 tomLayer.communication.writeLatencyMonitor.create_M();
                             }
                             break;

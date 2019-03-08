@@ -19,6 +19,8 @@ public class FindOptimalWeightConfigTest {
      */
     public static void main(String[] args) throws Exception {
 
+        long start = System.nanoTime();
+
         Simulator simulator = new Simulator(null);
 
         int[] replicaSet = {0, 1, 2, 3, 4};
@@ -82,12 +84,16 @@ public class FindOptimalWeightConfigTest {
             }
         }
 
+        long end = System.nanoTime();
+
         System.out.println("-----------------------------------------------------" +
                 "---------------------------------------------------------------");
         System.out.println("The best weight configuration is " + best + " with leader " + bestLeader +
                 " it achieves consensus in " + bestLatency);
         System.out.println("The worst weight configuration is " + worst + " with leader " + worstLeader +
                 " it achieves consensus in " + worstLatency);
+
+        System.out.println("Computed in " + ((double) (end-start))/1000000.00 + " ms");
 
     }
 }
