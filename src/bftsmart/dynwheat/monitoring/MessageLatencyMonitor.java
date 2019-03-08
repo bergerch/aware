@@ -26,6 +26,10 @@ public class MessageLatencyMonitor {
     public MessageLatencyMonitor(ServerViewController controller) {
         this.window = controller.getStaticConf().getMonitoringWindow();
         this.controller = controller;
+        init();
+    }
+
+    private void init() {
         int n = controller.getCurrentViewN();
         this.sentTimestamps = new ArrayList<>();
         this.recvdTimestamps = new ArrayList<>();
@@ -126,13 +130,13 @@ public class MessageLatencyMonitor {
                 }
             }
             latencies.sort(Comparator.naturalOrder());
-            Long medianValue = latencies.size() > 0 ? latencies.get(latencies.size() / 2) : Long.MAX_VALUE;
+            // If there are not latencies (e.g. a replica crashed) report with -1 (Failure value)
+            Long medianValue = latencies.size() > 0 ? latencies.get(latencies.size() / 2) : -1L;
             latency_vector[i] = medianValue;
             System.out.println("-- Size of " + replicaRecvdTimes.size());
         }
         // Assume self-latency is zero
         latency_vector[myself] = 0L;
-
         printLatencyVector(latenciesToMillis(latency_vector));
 
         return latency_vector;
@@ -146,6 +150,8 @@ public class MessageLatencyMonitor {
         recvdTimestamps.clear();
         if (sentMsgNonces != null)
             sentMsgNonces.clear();
+
+        init();
     }
 
     public static double[] latenciesToMillis(Long[] m) {
@@ -162,7 +168,11 @@ public class MessageLatencyMonitor {
         System.out.println("    0       1       2        3        4        ....    ");
         System.out.println("...............................................................");
         for (double d : m) {
-            System.out.print("  " + d + "  ");
+            if (d >= 0) {
+                System.out.print("  " + d + "  ");
+            } else {
+                System.out.print("crashed");
+            }
         }
         System.out.println();
         System.out.println("...............................................................");
