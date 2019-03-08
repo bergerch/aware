@@ -9,6 +9,7 @@ import java.io.ObjectOutput;
 
 /**
  * This class represents a message used for monitoring the consensus protocol.
+ * @author cb
  */
 public class MonitoringMessage extends ConsensusMessage {
 

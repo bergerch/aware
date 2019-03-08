@@ -1,17 +1,31 @@
 package bftsmart.dynwheat.decisions;
 
 import bftsmart.reconfiguration.ServerViewController;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.PriorityQueue;
+import java.util.Set;
+import java.util.TreeSet;
 
+/**
+ * The class contains an algorithm to predict the latency of the BFT-SMaRt consensus algorithm based on
+ * sever-to-server measurements and configurable voting weights (WHEAT). In particular, it simulates a protocol run
+ * given the measured point-to-point latencies and computes the time each replica received a PROPOSE by the leader,
+ * and the time at which each client forms a quorum in the WRITE phase. It then computes the time at which a client
+ * quorum of replicas is ready to execute the request.
+ *
+ * @author cb
+ */
 public class Simulator {
 
     private ServerViewController viewControl;
 
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
+
     public Simulator(ServerViewController controller) {
         this.viewControl = controller;
     }
-
 
     /**
      * Wrapper for PredictLatency using current view information and approximating PROPOSE latencies using WRITE latencies
@@ -97,14 +111,17 @@ public class Simulator {
         PriorityQueue<Long> readyToExecute = new PriorityQueue<>();
         for (int i : replicaSet) {
             double votes = 0.00;
+            Set<Integer> quorumUsed = new TreeSet<>();
             long t_written = Long.MAX_VALUE;
             while (votes < Q_v) {
                 Vote vote = writesRcvd[i].poll();
                 if (vote != null) {
                     votes += vote.weight;
                     t_written = vote.arrivalTime;
+                    quorumUsed.add(vote.castBy);
                 }
             }
+            logger.debug("Write quorum used " + quorumUsed);
             readyToExecute.add(t_written);
         }
 
@@ -113,6 +130,12 @@ public class Simulator {
         // time a client quorum of replicas is ready to execute which requires having formed a weighted quorum of Q_v
         int responsesToClient = 0;
         long t_prediction = Long.MAX_VALUE;
+        logger.debug("client quorum " + Math.ceil((double) (n + f + 1) / 2.00));
+        logger.debug("ReadyToExec: [");
+        for (Long l : readyToExecute) {
+            logger.debug(l + ",");
+        }
+
         while (responsesToClient < Math.ceil((double) (n + f + 1) / 2.00)) {
             responsesToClient++;
             t_prediction = readyToExecute.poll();

@@ -1,10 +1,18 @@
-package bftsmart.dynwheat.decisions;
+package bftsmart.dynwheat.tests;
 
+import bftsmart.dynwheat.decisions.Simulator;
+import bftsmart.dynwheat.decisions.WeightConfiguration;
+
+/**
+ * Tests if the simulation works
+ * @author cb
+ */
 public class SimulatorTest {
 
     /**
-     * Tests if Simulator works. For the given params, the result should be 220 ms
+     * Tests if simulator works. For the given params, the result should be 220 ms
      *
+     * @author cb
      * @param args the command line arguments
      */
     public static void main(String[] args) throws Exception {

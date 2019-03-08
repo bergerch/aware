@@ -3,6 +3,7 @@ package bftsmart.dynwheat.messages;
 
 /**
  * This class work as a factory of messages used in the paxos protocol.
+ * @author cb
  */
 public class MonitoringMessageFactory {
 

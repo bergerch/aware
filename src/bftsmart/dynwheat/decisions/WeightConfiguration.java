@@ -3,20 +3,33 @@ package bftsmart.dynwheat.decisions;
 import bftsmart.reconfiguration.ServerViewController;
 import bftsmart.reconfiguration.views.View;
 
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 
+import java.util.Map;
+
+/**
+ *
+ * This class manages a weight configuration.
+ * We call the partitioning of a WHEAT replica set I in R_max and R_min a weight configuration W = {R_max, R_min}
+ *      if R_max contains 2f (BFT) or f replicas (CFT)
+ * This class also contains a helper function to generate all possible weight configurations
+ *      (combinations of drawing R_max from replica set
+ *
+ * @author cb
+ */
 public class WeightConfiguration {
 
     private Set<Integer> R_max;
     private Set<Integer> R_min;
 
+    private long predictedLatency;
+
+    private List<List<Integer>> rmaxCombinations = new ArrayList<>();
+
     /**
      * Creates a weight configuration from the current view
      */
-    WeightConfiguration(boolean isBFT, ServerViewController controller) {
+    public WeightConfiguration(boolean isBFT, ServerViewController controller) {
 
         int n = controller.getCurrentViewN();
 
@@ -42,7 +55,7 @@ public class WeightConfiguration {
      * @param u          nmuber of Vmax replicass: 2f (BFT) or f (CFT)
      * @param replicaSet all replicas
      */
-    WeightConfiguration(int u, int[] replicaSet) {
+    public WeightConfiguration(int u, int[] replicaSet) {
 
         R_max = new TreeSet<Integer>();
         R_min = new TreeSet<Integer>();
@@ -56,10 +69,91 @@ public class WeightConfiguration {
 
     }
 
-    public static WeightConfiguration allPossibleWeightConfigurations(int u, int[] replicaSet) {
-        // TODO
-        return null;
+
+    /**
+     * Creates new Weight Config from replica array (permutation) assuming the V_max Replicas are listed first
+     *
+     * @param r_max nmuber of Vmax replicass: 2f (BFT) or f (CFT)
+     * @param r_min all replicas
+     */
+    public WeightConfiguration(Set<Integer> r_max, Set<Integer> r_min) {
+
+        this.R_max = r_max;
+        this.R_min = r_min;
+
     }
+
+
+    /**
+     * Creates all possible WeightConfigurations from given a replica set and the u param (number of Vmax replicas)
+     *
+     * @param u          nmuber of Vmax replicass: 2f (BFT) or f (CFT)
+     * @param replicaSet all replicas
+     */
+    public static List<WeightConfiguration> allPossibleWeightConfigurations(int u, int[] replicaSet) {
+
+
+        int data[] = new int[u];
+        WeightConfiguration w = new WeightConfiguration(u, replicaSet);
+
+        // Print all combination using temprary array 'data[]'
+        w.combinationUtil(replicaSet, data, 0, replicaSet.length - 1, 0, u);
+
+        List<List<Integer>> combinations = w.getRmaxCombinations();
+
+        List<WeightConfiguration> weightConfigs = new ArrayList<>();
+
+        for (List<Integer> combination : combinations) {
+
+            Set<Integer> r_max = new TreeSet<>(combination);
+
+            Set<Integer> r_min = new TreeSet<>();
+            for (int i = 0; i < replicaSet.length; i++) {
+                if (!r_max.contains(i)) {
+                    r_min.add(i);
+                }
+            }
+
+            WeightConfiguration weightConfig = new WeightConfiguration(r_max, r_min);
+            weightConfigs.add(weightConfig);
+        }
+
+        return weightConfigs;
+    }
+
+    /**
+     * Wrapper
+     * Creates all possible WeightConfigurations by computing all combinations based on this weight configuration
+     */
+    public List<WeightConfiguration> allPossibleWeightConfigurations() {
+
+        int u = R_max.size();
+        int[] replicaSet = this.getReplicaSet();
+
+        return WeightConfiguration.allPossibleWeightConfigurations(u, replicaSet);
+    }
+
+
+    private void combinationUtil(int arr[], int data[], int start, int end, int index, int r) {
+        // Current combination is ready to be printed, print it
+        if (index == r) {
+            List<Integer> combination = new ArrayList<>();
+            for (int j = 0; j < r; j++) {
+                combination.add(data[j]);
+            }
+            this.rmaxCombinations.add(combination);
+            return;
+        }
+        // replace index with all possible elements. The condition
+        // "end-i+1 >= r-index" makes sure that including one element
+        // at index will make a combination with remaining elements
+        // at remaining positions
+        for (int i = start; i <= end && end - i + 1 >= r - index; i++) {
+            data[index] = arr[i];
+            combinationUtil(arr, data, i + 1, end, index + 1, r);
+        }
+    }
+
 
     public Set<Integer> getR_max() {
         return R_max;
@@ -69,12 +163,44 @@ public class WeightConfiguration {
         return R_min;
     }
 
+    public long getPredictedLatency(){
+        return predictedLatency;
+    }
+
+    public void setPredictedLatency(long predictedLatency) {
+         this.predictedLatency = predictedLatency;
+    }
+
+    public int[] getReplicaSet() {
+        int[] replicaSet = new int[R_max.size() + R_min.size()];
+        int i = 0;
+        for (Integer replica : R_max) {
+            replicaSet[i] = replica;
+            i++;
+        }
+        for (Integer replica : R_min) {
+            replicaSet[i] = replica;
+            i++;
+        }
+        return replicaSet;
+    }
+
+    public List<List<Integer>> getRmaxCombinations() {
+        return rmaxCombinations;
+    }
+
     @Override
     public String toString() {
-        return "WeightConfiguration{" +
-                "R_max=" + R_max +
-                ", R_min=" + R_min +
-                '}';
+        String result = "R_max: ";
+        for (int i : R_max)
+            result += i + " ";
+
+        result += " | R_min: ";
+
+        for (int i : R_min)
+            result += i + " ";
+
+        return result;
     }
 
     @Override
@@ -85,6 +211,7 @@ public class WeightConfiguration {
         return Objects.equals(R_max, that.R_max) &&
                 Objects.equals(R_min, that.R_min);
     }
+
 
     @Override
     public int hashCode() {

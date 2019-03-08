@@ -1,8 +1,10 @@
 package bftsmart.dynwheat.decisions;
 
-import bftsmart.dynwheat.monitoring.WriteLatencyMonitor;
 import bftsmart.reconfiguration.ServerViewController;
 
+/**
+ * @author cb
+ */
 public class WeightController {
 
     private WeightConfiguration current;

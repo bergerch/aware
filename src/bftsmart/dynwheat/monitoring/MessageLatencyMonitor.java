@@ -4,6 +4,11 @@ import bftsmart.reconfiguration.ServerViewController;
 
 import java.util.*;
 
+/**
+ * This class allows to store and receive a replica's own  monitoring information. Note that all measurement data in here
+ * is viewed by the perspective of what a single replica has measured recently by itself without a guarantee to be synchronized yet
+ * @author cb
+ */
 public class MessageLatencyMonitor {
 
     private int window;
@@ -20,7 +25,7 @@ public class MessageLatencyMonitor {
      *
      * @param controller server view controller
      */
-    MessageLatencyMonitor(ServerViewController controller) {
+    public MessageLatencyMonitor(ServerViewController controller) {
         this.window = controller.getStaticConf().getMonitoringWindow();
         this.controller = controller;
         int n = controller.getCurrentViewN();
