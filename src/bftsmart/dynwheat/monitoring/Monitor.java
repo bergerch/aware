@@ -18,6 +18,9 @@ public class Monitor {
     private MessageLatencyMonitor proposeLatencyMonitor;
     private MessageLatencyMonitor writeLatencyMonitor;
 
+    private Long[] freshestProposeLatencies;
+    private Long[] freshestWriteLatencies;
+
 
     private Monitor (ServerViewController svc) {
         this.writeLatencyMonitor = new MessageLatencyMonitor(svc);
@@ -27,7 +30,7 @@ public class Monitor {
         timer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
-                writeLatencyMonitor.create_M();
+                freshestWriteLatencies = writeLatencyMonitor.create_M();
             }
         }, 10*1000, 10*1000);
     }
@@ -53,4 +56,11 @@ public class Monitor {
         return proposeLatencyMonitor;
     }
 
+    public Long[] getFreshestProposeLatencies() {
+        return freshestProposeLatencies;
+    }
+
+    public Long[] getFreshestWriteLatencies() {
+        return freshestWriteLatencies;
+    }
 }

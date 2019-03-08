@@ -133,7 +133,7 @@ public class MessageLatencyMonitor {
             // If there are not latencies (e.g. a replica crashed) report with -1 (Failure value)
             Long medianValue = latencies.size() > 0 ? latencies.get(latencies.size() / 2) : -1L;
             latency_vector[i] = medianValue;
-            System.out.println("-- Size of " + replicaRecvdTimes.size());
+            // System.out.println("-- Size of " + replicaRecvdTimes.size());
         }
         // Assume self-latency is zero
         latency_vector[myself] = 0L;
