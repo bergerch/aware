@@ -125,7 +125,7 @@ public class MessageLatencyMonitor {
                 Long sent = replicaSentTimes.get(monitoringInstance);
                 if (rcvd != null) {
                     long latency = (rcvd - sent) / 2; // one-way latency as half of round trip time
-                    System.out.println("Latency computed " + (double) Math.round((double) latency / 1000) / 1000.00 + " ms");
+                    // System.out.println("Latency computed " + (double) Math.round((double) latency / 1000) / 1000.00 + " ms");
                     latencies.add(latency);
                 }
             }

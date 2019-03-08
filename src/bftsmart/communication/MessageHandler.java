@@ -210,11 +210,6 @@ public class MessageHandler {
                         case "WRITE_RESPONSE":
                             tomLayer.communication.writeLatencyMonitor.addRecvdTime(sm.sender,
                                     ((MonitoringMessage) sm).getNumber(), ((MonitoringMessage) sm).receivedTimestamp);
-
-                            // TODO remove this check:
-                            if (((MonitoringMessage) sm).getNumber() % 1000 == 0 && ((MonitoringMessage) sm).getNumber() > 1) {
-                                tomLayer.communication.writeLatencyMonitor.create_M();
-                            }
                             break;
                         default:
                             logger.error("Unknown Monitoring message type");

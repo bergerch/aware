@@ -92,7 +92,6 @@ public class WeightConfiguration {
      */
     public static List<WeightConfiguration> allPossibleWeightConfigurations(int u, int[] replicaSet) {
 
-
         int data[] = new int[u];
         WeightConfiguration w = new WeightConfiguration(u, replicaSet);
 

@@ -14,7 +14,7 @@ public class WeightController {
 
     private Simulator simulator;
 
-    // TODO LatencySynchronizer: disseminates monitored latencies and collects from other replicas
+    // TODO MonitoringDataSynchronizer: disseminates monitored latencies and collects from other replicas
 
 
     public WeightController(ServerViewController viewControl) {

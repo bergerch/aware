@@ -2,6 +2,9 @@ package bftsmart.dynwheat.monitoring;
 
 import bftsmart.reconfiguration.ServerViewController;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 /**
  * Singelton pattern. Only one instance of Monitor should be used
  *
@@ -19,6 +22,14 @@ public class Monitor {
     private Monitor (ServerViewController svc) {
         this.writeLatencyMonitor = new MessageLatencyMonitor(svc);
         this.proposeLatencyMonitor = new MessageLatencyMonitor(svc);
+
+        Timer timer = new Timer();
+        timer.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                writeLatencyMonitor.create_M();
+            }
+        }, 10*1000, 10*1000);
     }
 
     /**
@@ -41,4 +52,5 @@ public class Monitor {
     public MessageLatencyMonitor getProposeLatencyMonitor() {
         return proposeLatencyMonitor;
     }
+
 }
