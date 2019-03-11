@@ -95,24 +95,26 @@ public class WeightConfiguration {
         int data[] = new int[u];
         WeightConfiguration w = new WeightConfiguration(u, replicaSet);
 
-        // Print all combination using temprary array 'data[]'
+        // Recursively create all possible binominal combinations of "drawing u out of n"
         w.combinationUtil(replicaSet, data, 0, replicaSet.length - 1, 0, u);
 
+        // Get all weight configurations as int array
         List<List<Integer>> combinations = w.getRmaxCombinations();
-
         List<WeightConfiguration> weightConfigs = new ArrayList<>();
 
+        // Build the R_max and R_min sets for each combination array
         for (List<Integer> combination : combinations) {
 
             Set<Integer> r_max = new TreeSet<>(combination);
-
             Set<Integer> r_min = new TreeSet<>();
+
             for (int i = 0; i < replicaSet.length; i++) {
                 if (!r_max.contains(i)) {
                     r_min.add(i);
                 }
             }
 
+            // Create and add weight config to list
             WeightConfiguration weightConfig = new WeightConfiguration(r_max, r_min);
             weightConfigs.add(weightConfig);
         }

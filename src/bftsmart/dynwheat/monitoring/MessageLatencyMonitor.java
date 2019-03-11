@@ -106,6 +106,7 @@ public class MessageLatencyMonitor {
      * @return latencies to all other nodes
      */
     public synchronized Long[] create_M() {
+        long start = System.nanoTime();
         int n = controller.getCurrentViewN();
 
         // Initialize latency vector (current replica's perspective of other nodes latencies
@@ -139,6 +140,8 @@ public class MessageLatencyMonitor {
         latency_vector[myself] = 0L;
         printLatencyVector(latenciesToMillis(latency_vector));
 
+        long end = System.nanoTime();
+        System.out.println("Computed median latencies in " + (double)(end-start)/1000000.00 + " ms");
         return latency_vector;
     }
 

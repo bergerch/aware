@@ -65,6 +65,7 @@ public class FindOptimalWeightConfigTest {
          * the search space is factorial in N and needs to be handled with a cut & branch heuristic in larger systems
          */
         List<WeightConfiguration> weightConfigs = WeightConfiguration.allPossibleWeightConfigurations(u, replicaSet);
+
         for (WeightConfiguration w: weightConfigs) {
             for (int primary : w.getR_max()) { // Only replicas in R_max will be considered to become leader ?
                 Long predict = simulator.predictLatency(replicaSet, primary, w, propose, write, n, f, delta);
