@@ -16,6 +16,10 @@ public class Monitor {
     private static final int MONITORING_DELAY = 10*1000;
     private static final int MONITORING_PERIOD = 10*1000;
 
+    public static final long MISSING_VALUE = 1000000000000000L; // Long does not have an infinity value, but this
+                                                               // value is very large for a latency, roughly
+                                                               // 10.000 seconds and will be used
+
     // Singelton
     private static Monitor instance;
 
@@ -52,8 +56,8 @@ public class Monitor {
         this.m_write = new Long[n][n];
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
-                m_write[i][j] = -1000000L;       //todo use zero as initial value or -1 ? use sth negative  to indicate
-                                                            // missing values
+                m_write[i][j] = MISSING_VALUE;
+                m_propose[i][j] = MISSING_VALUE;
             }
         }
 
@@ -118,7 +122,25 @@ public class Monitor {
             e.printStackTrace();
         }
         // Debugging and testing:
-        printM(m_write, consensusID, n);
+        printM(sanitize(m_write), consensusID, n);
+    }
+
+
+    /**
+     * Assume communication link delays are symmetric and use the maximum
+     *
+     * @param m latency matrix
+     * @return sanitized latency matrix
+     */
+    public Long[][] sanitize(Long[][] m) {
+        int n = svc.getCurrentViewN();
+        Long[][] m_ast = new Long[n][n];
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                m_ast[i][j] = Math.max(m[i][j], m[j][i]);
+            }
+        }
+        return m_ast;
     }
 
     private static void printM(Long[][] matrix, int consensusID, int n) {
@@ -132,10 +154,10 @@ public class Monitor {
 
                 double latency = Math.round((double)  matrix[i][j] / 1000.00); // round to precision of micro seconds
                 latency = latency / 1000.00; // convert to milliseconds
-                if (latency >= 0.00)
+                if (latency >= 0.00 & latency < 1.0E9)
                      System.out.print("  " + latency + "  ");
                 else
-                    System.out.print(" silent ");
+                    System.out.print("  silent  ");
             }
             System.out.println();
         }

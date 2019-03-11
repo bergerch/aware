@@ -133,7 +133,7 @@ public class MessageLatencyMonitor {
             }
             latencies.sort(Comparator.naturalOrder());
             // If there are not latencies (e.g. a replica crashed) report with -1 (Failure value)
-            Long medianValue = latencies.size() > 0 ? latencies.get(latencies.size() / 2) : -1000000L;
+            Long medianValue = latencies.size() > 0 ? latencies.get(latencies.size() / 2) : Monitor.MISSING_VALUE;
             latency_vector[i] = medianValue;
             // System.out.println("-- Size of " + replicaRecvdTimes.size());
         }
@@ -172,7 +172,7 @@ public class MessageLatencyMonitor {
         System.out.println("    0       1       2        3        4        ....    ");
         System.out.println("...............................................................");
         for (double d : m) {
-            if (d >= 0) {
+            if (d >= 0 && d < Monitor.MISSING_VALUE) {
                 System.out.print("  " + d + "  ");
             } else {
                 System.out.print("silent");

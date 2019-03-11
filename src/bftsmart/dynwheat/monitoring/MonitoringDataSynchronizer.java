@@ -15,7 +15,7 @@ import java.util.TimerTask;
 public class MonitoringDataSynchronizer {
 
 
-    private static final int SYNCHRONISING_DELAY = 15 * 1000;
+    private static final int SYNCHRONISING_DELAY = 20 * 1000;
     private static final int SYNCHRONISING_PERIOD = 20 * 1000;
 
     private ServiceProxy monitoringDataDisseminationProxy;
