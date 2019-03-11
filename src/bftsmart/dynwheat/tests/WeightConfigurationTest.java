@@ -4,6 +4,7 @@ import bftsmart.dynwheat.decisions.WeightConfiguration;
 
 import java.util.List;
 
+
 public class WeightConfigurationTest {
 
     /**

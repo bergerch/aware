@@ -56,7 +56,7 @@ public class ServiceProxy extends TOMSender {
 	private TOMMessage replies[] = null; // Replies from replicas are stored here
 	private int receivedReplies = 0; // Number of received replies
 	private TOMMessage response = null; // Reply delivered to the application
-	private int invokeTimeout = 40;
+	private int invokeTimeout = 10;
 	private Comparator<byte[]> comparator;
 	private Extractor extractor;
 	private Random rand = new Random(System.currentTimeMillis());
@@ -180,6 +180,15 @@ public class ServiceProxy extends TOMSender {
 		return invoke(request, TOMMessageType.ORDERED_REQUEST);
 	}
 
+	/**
+	 * DynWHEAT
+	 * @param monitoringInformation
+	 * @return
+	 */
+	public byte[] invokeOrderedMonitoring(byte[] monitoringInformation) {
+		return invoke(monitoringInformation, TOMMessageType.MONITORING);
+	}
+
         /**
          * This method sends an unordered request to the replicas, and returns the related reply.
 	 * If the servers take more than invokeTimeout seconds the method returns null.
@@ -237,6 +246,8 @@ public class ServiceProxy extends TOMSender {
 		replyServer = -1;
 		hashResponseController = null;
 
+		boolean isMonitoringMessage = reqType == TOMMessageType.MONITORING; // DynWHEAT
+
 		if(requestType == TOMMessageType.UNORDERED_HASHED_REQUEST){
 
 			replyServer = getRandomlyServerId();
@@ -252,7 +263,12 @@ public class ServiceProxy extends TOMSender {
 
 			TOMulticast(sm);
 		}else{
-			TOMulticast(request, reqId, operationId, reqType);
+			if (isMonitoringMessage){
+				TOMulticast(request, reqId, operationId, TOMMessageType.ORDERED_REQUEST, true);
+				return null;  // just disseminate data, do not expect response
+			} else {
+				TOMulticast(request, reqId, operationId, reqType);
+			}
 		}
 
 		logger.debug("Sending request (" + reqType + ") with reqId=" + reqId);

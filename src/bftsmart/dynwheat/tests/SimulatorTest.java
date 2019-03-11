@@ -5,6 +5,7 @@ import bftsmart.dynwheat.decisions.WeightConfiguration;
 
 /**
  * Tests if the simulation works
+ *
  * @author cb
  */
 public class SimulatorTest {

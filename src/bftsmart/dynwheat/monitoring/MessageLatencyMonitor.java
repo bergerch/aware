@@ -7,6 +7,7 @@ import java.util.*;
 /**
  * This class allows to store and receive a replica's own  monitoring information. Note that all measurement data in here
  * is viewed by the perspective of what a single replica has measured recently by itself without a guarantee to be synchronized yet
+ *
  * @author cb
  */
 public class MessageLatencyMonitor {
@@ -132,7 +133,7 @@ public class MessageLatencyMonitor {
             }
             latencies.sort(Comparator.naturalOrder());
             // If there are not latencies (e.g. a replica crashed) report with -1 (Failure value)
-            Long medianValue = latencies.size() > 0 ? latencies.get(latencies.size() / 2) : -1L;
+            Long medianValue = latencies.size() > 0 ? latencies.get(latencies.size() / 2) : -1000000L;
             latency_vector[i] = medianValue;
             // System.out.println("-- Size of " + replicaRecvdTimes.size());
         }
@@ -174,7 +175,7 @@ public class MessageLatencyMonitor {
             if (d >= 0) {
                 System.out.print("  " + d + "  ");
             } else {
-                System.out.print("crashed");
+                System.out.print("silent");
             }
         }
         System.out.println();

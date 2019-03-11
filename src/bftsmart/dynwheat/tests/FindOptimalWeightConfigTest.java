@@ -7,6 +7,7 @@ import java.util.List;
 
 /**
  * Tests finding the best weight configuration and the best leader
+ *
  * @author cb
  */
 public class FindOptimalWeightConfigTest {

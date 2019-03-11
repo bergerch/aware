@@ -22,6 +22,7 @@ import java.util.Arrays;
 
 import bftsmart.communication.ServerCommunicationSystem;
 import bftsmart.consensus.Consensus;
+import bftsmart.dynwheat.monitoring.Monitor;
 import bftsmart.tom.core.ExecutionManager;
 import bftsmart.consensus.Epoch;
 import bftsmart.consensus.messages.MessageFactory;
@@ -482,6 +483,22 @@ public final class Acceptor {
         if (acceptWeights > controller.getOverlayQuorum() && !epoch.getConsensus().isDecided()) {
             logger.debug("Deciding consensus " + cid);
             decide(epoch);
+
+            /** DynWHEAT */
+            /*
+             * We inspect of there are monitoring data dissemination messages included in this consensus:
+             *      - if so call Monitor to handled received monitoring messages of other processes
+             */
+            for (TOMMessage tm: epoch.getConsensus().getDecision().getDeserializedValue()) {
+                if (tm.getIsMonitoringMessage()) {
+                    logger.debug("Received disseminated monitoring message ");
+                    Monitor.getInstance(controller).onReceiveMonitoringInformation(tm.getSender(), tm.getContent(), cid);
+                }
+
+                // TODO of cid % some threshold == 0
+                //  then call to DynWHEAT Controller to check for best weight distribution?
+            }
+            /** End DynWHEAT */
         }
     }
 
