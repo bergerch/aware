@@ -15,6 +15,8 @@
  */
 package bftsmart.reconfiguration.views;
 
+import bftsmart.dynwheat.decisions.WeightConfiguration;
+
 import java.io.Serializable;
 import java.util.Arrays;
 import java.net.InetSocketAddress;
@@ -65,6 +67,13 @@ public class View implements Serializable {
 
         Arrays.sort(this.processes);
 
+    }
+
+    public View(int id, int[] processes, int f, InetSocketAddress[] addresses, boolean isBFT, int delta,
+                WeightConfiguration weightConfiguration) {
+
+        this(id, processes, f, addresses, isBFT, delta);
+        this.setWeights(weightConfiguration);
     }
 
     private void computeWeights() {
@@ -123,6 +132,17 @@ public class View implements Serializable {
 
     public int[] getProcesses() {
         return processes;
+    }
+
+    public void setWeights(WeightConfiguration w) {
+        double wMax = 1.00 + ((double) delta / (double) f);
+        double wMin = 1.00;
+        this.weights = new HashMap<Integer, Double>();
+        for (int replica: w.getR_max())
+            this.weights.put(replica, wMax);
+
+        for (int replica: w.getR_min())
+            this.weights.put(replica,wMin);
     }
 
     public double getWeight(int p) {
