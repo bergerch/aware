@@ -10,8 +10,8 @@ public class WeightConfigurationTest {
     /**
      * Tests if generating all possible weight configurations works
      *
-     * @author cb
      * @param args the command line arguments
+     * @author cb
      */
     public static void main(String[] args) throws Exception {
 
@@ -21,7 +21,7 @@ public class WeightConfigurationTest {
         WeightConfiguration weightConfiguration = new WeightConfiguration(u, replicaSet);
         List<WeightConfiguration> weightConfigurations = weightConfiguration.allPossibleWeightConfigurations();
 
-        for (WeightConfiguration w: weightConfigurations) {
+        for (WeightConfiguration w : weightConfigurations) {
             System.out.println(w);
         }
 

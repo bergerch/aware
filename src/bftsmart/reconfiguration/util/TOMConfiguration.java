@@ -71,6 +71,7 @@ public class TOMConfiguration extends Configuration {
     // DynWHEAT Leader and weights configs
     private int initialLeader;
     private boolean useDynamicWeights;
+    private boolean useLeaderSelection;
 
     // DynWHEAT calc & monitoring overhead config
     private int calculationInterval;
@@ -391,6 +392,9 @@ public class TOMConfiguration extends Configuration {
             s = (String) configs.remove("system.dw.useDynamicWeights");
             useDynamicWeights = Boolean.parseBoolean(s);
 
+            s = (String) configs.remove("system.dw.useLeaderSelection");
+            useLeaderSelection = Boolean.parseBoolean(s);
+
             s = (String) configs.remove("system.dw.calculationInterval");
             calculationInterval = s != null ? Integer.parseInt(s) : 0;
 
@@ -629,5 +633,9 @@ public class TOMConfiguration extends Configuration {
 
     public int getMonitoringWindow() {
         return this.monitoringWindow;
+    }
+
+    public boolean isUseLeaderSelection() {
+        return useLeaderSelection;
     }
 }

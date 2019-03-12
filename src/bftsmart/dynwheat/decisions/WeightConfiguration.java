@@ -8,12 +8,11 @@ import java.util.*;
 import java.util.Map;
 
 /**
- *
  * This class manages a weight configuration.
  * We call the partitioning of a WHEAT replica set I in R_max and R_min a weight configuration W = {R_max, R_min}
- *      if R_max contains 2f (BFT) or f replicas (CFT)
+ * if R_max contains 2f (BFT) or f replicas (CFT)
  * This class also contains a helper function to generate all possible weight configurations
- *      (combinations of drawing R_max from replica set
+ * (combinations of drawing R_max from replica set
  *
  * @author cb
  */
@@ -164,12 +163,12 @@ public class WeightConfiguration {
         return R_min;
     }
 
-    public long getPredictedLatency(){
+    public long getPredictedLatency() {
         return predictedLatency;
     }
 
     public void setPredictedLatency(long predictedLatency) {
-         this.predictedLatency = predictedLatency;
+        this.predictedLatency = predictedLatency;
     }
 
     public int[] getReplicaSet() {

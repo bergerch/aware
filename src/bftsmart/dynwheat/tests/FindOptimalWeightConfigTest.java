@@ -15,8 +15,8 @@ public class FindOptimalWeightConfigTest {
     /**
      * Tests if simulator works. For the given params, the result should be 220 ms
      *
-     * @author cb
      * @param args the command line arguments
+     * @author cb
      */
     public static void main(String[] args) throws Exception {
 
@@ -67,7 +67,7 @@ public class FindOptimalWeightConfigTest {
          */
         List<WeightConfiguration> weightConfigs = WeightConfiguration.allPossibleWeightConfigurations(u, replicaSet);
 
-        for (WeightConfiguration w: weightConfigs) {
+        for (WeightConfiguration w : weightConfigs) {
             for (int primary : w.getR_max()) { // Only replicas in R_max will be considered to become leader ?
                 Long predict = simulator.predictLatency(replicaSet, primary, w, propose, write, n, f, delta);
                 System.out.println("WeightConfig " + w + "with leader " + primary + " has predicted latency of " + predict);
@@ -95,7 +95,7 @@ public class FindOptimalWeightConfigTest {
         System.out.println("The worst weight configuration is " + worst + " with leader " + worstLeader +
                 " it achieves consensus in " + worstLatency);
 
-        System.out.println("Computed in " + ((double) (end-start))/1000000.00 + " ms");
+        System.out.println("Computed in " + ((double) (end - start)) / 1000000.00 + " ms");
 
     }
 }

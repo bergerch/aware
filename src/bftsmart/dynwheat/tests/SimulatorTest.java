@@ -13,8 +13,8 @@ public class SimulatorTest {
     /**
      * Tests if simulator works. For the given params, the result should be 220 ms
      *
-     * @author cb
      * @param args the command line arguments
+     * @author cb
      */
     public static void main(String[] args) throws Exception {
 

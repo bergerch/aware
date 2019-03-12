@@ -54,7 +54,7 @@ public class MessageLatencyMonitor {
         Map<Integer, Long> lastWindowRcvd = recvdTimestamps.get(replicaID);
         lastWindowRcvd.remove(monitoringInstanceID);
 
-        this.sentTimestamps.get(replicaID).put(monitoringInstanceID % window , timestamp);
+        this.sentTimestamps.get(replicaID).put(monitoringInstanceID % window, timestamp);
     }
 
     /**
@@ -118,7 +118,7 @@ public class MessageLatencyMonitor {
         for (int i = 0; i < n; i++) {
 
             // within monitoring interval [start = lastQuery; end = lastQuery + window]
-            Map<Integer, Long> replicaRecvdTimes = recvdTimestamps.get(i).subMap(0,  window); // Todo should not be necessary anymore?
+            Map<Integer, Long> replicaRecvdTimes = recvdTimestamps.get(i).subMap(0, window); // Todo should not be necessary anymore?
             Map<Integer, Long> replicaSentTimes = sentTimestamps.get(i).subMap(0, window);
 
             ArrayList<Long> latencies = new ArrayList<>();
@@ -142,7 +142,7 @@ public class MessageLatencyMonitor {
         printLatencyVector(latenciesToMillis(latency_vector));
 
         long end = System.nanoTime();
-        System.out.println("Computed median latencies in " + (double)(end-start)/1000000.00 + " ms");
+        System.out.println("Computed median latencies in " + (double) (end - start) / 1000000.00 + " ms");
         return latency_vector;
     }
 

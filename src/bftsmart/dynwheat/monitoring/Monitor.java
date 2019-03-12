@@ -13,12 +13,12 @@ import java.util.TimerTask;
  */
 public class Monitor {
 
-    private static final int MONITORING_DELAY = 10*1000;
-    private static final int MONITORING_PERIOD = 10*1000;
+    private static final int MONITORING_DELAY = 10 * 1000;
+    private static final int MONITORING_PERIOD = 10 * 1000;
 
     public static final long MISSING_VALUE = 1000000000000000L; // Long does not have an infinity value, but this
-                                                               // value is very large for a latency, roughly
-                                                               // 10.000 seconds and will be used
+    // value is very large for a latency, roughly
+    // 10.000 seconds and will be used
 
     // Singelton
     private static Monitor instance;
@@ -42,7 +42,7 @@ public class Monitor {
     private Long[][] m_propose;
     private Long[][] m_write;
 
-    private Monitor (ServerViewController svc) {
+    private Monitor(ServerViewController svc) {
 
         this.svc = svc;
 
@@ -82,9 +82,9 @@ public class Monitor {
      * @param svc server view controller
      * @return the monitoring instance
      */
-    public static Monitor getInstance (ServerViewController svc) {
+    public static Monitor getInstance(ServerViewController svc) {
         if (Monitor.instance == null) {
-            Monitor.instance = new Monitor (svc);
+            Monitor.instance = new Monitor(svc);
         }
         return Monitor.instance;
     }
@@ -108,8 +108,8 @@ public class Monitor {
     /**
      * Gets called when a consensus completes and the consensus includes monitoring TOMMessages with measurement information
      *
-     * @param sender a replica reporting its own measurement from its own perspective
-     * @param value a byte array containing the measurements
+     * @param sender      a replica reporting its own measurement from its own perspective
+     * @param value       a byte array containing the measurements
      * @param consensusID the specified consensus instance
      */
     public void onReceiveMonitoringInformation(int sender, byte[] value, int consensusID) {
@@ -152,14 +152,22 @@ public class Monitor {
             System.out.print(i + " | ");
             for (int j = 0; j < n; j++) {
 
-                double latency = Math.round((double)  matrix[i][j] / 1000.00); // round to precision of micro seconds
+                double latency = Math.round((double) matrix[i][j] / 1000.00); // round to precision of micro seconds
                 latency = latency / 1000.00; // convert to milliseconds
                 if (latency >= 0.00 & latency < 1.0E9)
-                     System.out.print("  " + latency + "  ");
+                    System.out.print("  " + latency + "  ");
                 else
                     System.out.print("  silent  ");
             }
             System.out.println();
         }
+    }
+
+    public Long[][] getM_propose() {
+        return m_propose;
+    }
+
+    public Long[][] getM_write() {
+        return m_write;
     }
 }

@@ -56,6 +56,7 @@ public class MonitoringDataSynchronizer {
 
     /**
      * Converts Long array to byte array
+     *
      * @param array Long array
      * @return byte array
      * @throws IOException
@@ -63,7 +64,7 @@ public class MonitoringDataSynchronizer {
     public static byte[] longToBytes(Long[] array) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         DataOutputStream dos = new DataOutputStream(baos);
-        for (Long l: array)
+        for (Long l : array)
             dos.writeLong(l);
 
         dos.close();
@@ -72,6 +73,7 @@ public class MonitoringDataSynchronizer {
 
     /**
      * Converts byte array to Long array
+     *
      * @param array byte array
      * @return Long array
      * @throws IOException
@@ -84,7 +86,8 @@ public class MonitoringDataSynchronizer {
         for (int i = 0; i < n; i++)
             result[i] = dis.readLong();
 
-        dis.close();;
+        dis.close();
+        ;
         return result;
     }
 
