@@ -2,6 +2,8 @@ package bftsmart.dynwheat.decisions;
 
 import bftsmart.dynwheat.monitoring.Monitor;
 
+import java.util.Objects;
+
 /**
  * DynWHEAT Configuration includes a weight configuration and a leader selection
  *
@@ -65,5 +67,17 @@ public class DWConfiguration implements Comparable {
         return result;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        DWConfiguration that = (DWConfiguration) o;
+        return leader == that.leader &&
+                weightConfiguration.equals(that.weightConfiguration);
+    }
 
+    @Override
+    public int hashCode() {
+        return Objects.hash(weightConfiguration, leader);
+    }
 }

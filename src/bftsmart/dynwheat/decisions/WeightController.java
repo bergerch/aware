@@ -30,10 +30,15 @@ public class WeightController {
 
     private Simulator simulator;
 
+    public ServerViewController svc;
+
 
     public static WeightController getInstance(ServerViewController svc, ExecutionManager executionManager) {
         if (instance == null) {
             instance = new WeightController(svc, executionManager);
+            WeightConfiguration current = new WeightConfiguration(svc.getStaticConf().isBFT(), svc);
+            instance.setCurrent(current);
+            instance.svc = svc;
         }
         return instance;
     }
@@ -98,13 +103,17 @@ public class WeightController {
             }
         }
 
+        if (!instance.svc.getStaticConf().isUseDummyPropose()) {
+            propose = write;
+        }
+
         // Compute the predictet latencies of all possible configurations using the simulator
         for (DWConfiguration dwc : dwConfigurations) {
             Long predictedLatency = simulator.predictLatency(replicaSet, dwc.getLeader(), dwc.getWeightConfiguration(),
                     propose, write, n, f, delta);
             dwc.setPredictedLatency(predictedLatency);
             System.out.println("WeightConfig " + dwc.getWeightConfiguration() + "with leader " + dwc.getLeader() +
-                    " has predicted latency of " + predictedLatency);
+                    " has predicted latency of " + ((double) Math.round(predictedLatency) / 1000) / 1000.00 + " ms");
         }
 
         // Sort configurations for ascending predicted latency

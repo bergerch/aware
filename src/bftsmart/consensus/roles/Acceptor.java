@@ -22,6 +22,9 @@ import java.util.Arrays;
 
 import bftsmart.communication.ServerCommunicationSystem;
 import bftsmart.consensus.Consensus;
+import bftsmart.dynwheat.decisions.DWConfiguration;
+import bftsmart.dynwheat.decisions.WeightConfiguration;
+import bftsmart.dynwheat.decisions.WeightController;
 import bftsmart.dynwheat.monitoring.Monitor;
 import bftsmart.tom.core.ExecutionManager;
 import bftsmart.consensus.Epoch;
@@ -40,6 +43,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 import javax.crypto.Mac;
 import javax.crypto.SecretKey;
 
@@ -494,10 +498,30 @@ public final class Acceptor {
                     logger.debug("Received disseminated monitoring message ");
                     Monitor.getInstance(controller).onReceiveMonitoringInformation(tm.getSender(), tm.getContent(), cid);
                 }
-
-                // TODO of cid % some threshold == 0
-                //  then call to DynWHEAT Controller to check for best weight distribution?
             }
+
+            // Re-calculate best weight distribution after every x consensus
+            if (cid % controller.getStaticConf().getCalculationInterval() == 0 & cid > 0) {
+
+                WeightController weightController = WeightController.getInstance(controller, executionManager);
+                DWConfiguration best = weightController.computeBest();
+
+                // What is the best weight config and what is the current one?
+                WeightConfiguration bestWeights = best.getWeightConfiguration();
+                WeightConfiguration current = weightController.getCurrent();
+
+
+                if (!current.equals(bestWeights)) { // The current weight configuration is not the best
+                    // Deterministically change weights (this decision will be the same in all correct replicas)
+                    controller.getCurrentView().setWeights(bestWeights);
+                    System.out.print("|DynWHEAT|  [X] Optimization: Weight adjustment, now using " + bestWeights);
+                } else {
+                    // Kepp the current configuration
+                    System.out.print("|DynWHEAT|  [ ] Optimization: Weight adjustment, no adjustment," +
+                            " current weight config is the best weight config");
+                }
+            }
+
             /** End DynWHEAT */
         }
     }

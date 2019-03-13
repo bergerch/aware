@@ -289,7 +289,13 @@ public class ServiceReplica {
             int requestCount = 0;
             noop = true;
             for (TOMMessage request : requestsFromConsensus) {
-                
+
+                /** DynWHEAT: do not deliver monitoring messages to the application
+                 * (possible: consensus finished but no commands delived to application) **/
+                if (request.getIsMonitoringMessage())
+                    continue;
+                 /** END DynWHEAT **/
+
                 logger.debug("Processing TOMMessage from client " + request.getSender() + " with sequence number " + request.getSequence() + " for session " + request.getSession() + " decided in consensus " + consId[consensusCount]);
 
                 if (request.getViewID() == SVController.getCurrentViewId()) {

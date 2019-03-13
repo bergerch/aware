@@ -117,6 +117,10 @@ public class Decision {
         return deserializedValue;
     }
 
+    public void setDeserializedValue(TOMMessage[] messages) {
+        deserializedValue = messages;
+    }
+
     /**
      * The ID for the associated consensus
      * @return ID for the associated consensus

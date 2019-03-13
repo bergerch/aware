@@ -144,23 +144,25 @@ public class Monitor {
     }
 
     private static void printM(Long[][] matrix, int consensusID, int n) {
-        System.out.println("Sever Latency Matrix for consensus ID " + consensusID);
-        System.out.println("----------------------------------------------------------");
-        System.out.println("       0       1       2        3        4        ....    ");
-        System.out.println("----------------------------------------------------------");
+        String result = "";
+        result += ("Sever Latency Matrix for consensus ID " + consensusID + "\n");
+        result += ("----------------------------------------------------------\n");
+        result += ("       0       1       2        3        4        ....    \n");
+        result += ("----------------------------------------------------------\n");
         for (int i = 0; i < n; i++) {
-            System.out.print(i + " | ");
+            result = result + i + " | ";
             for (int j = 0; j < n; j++) {
 
                 double latency = Math.round((double) matrix[i][j] / 1000.00); // round to precision of micro seconds
                 latency = latency / 1000.00; // convert to milliseconds
                 if (latency >= 0.00 & latency < 1.0E9)
-                    System.out.print("  " + latency + "  ");
+                    result += ("  " + latency + "  ");
                 else
-                    System.out.print("  silent  ");
+                    result += ("  silent  ");
             }
-            System.out.println();
+            result += "\n";
         }
+        System.out.println(result);
     }
 
     public Long[][] getM_propose() {

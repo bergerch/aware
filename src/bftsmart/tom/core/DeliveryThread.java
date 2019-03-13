@@ -16,6 +16,8 @@ limitations under the License.
 package bftsmart.tom.core;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import java.util.concurrent.locks.Condition;
@@ -88,6 +90,7 @@ public final class DeliveryThread extends Thread {
             
             // clean the ordered messages from the pending buffer
             TOMMessage[] requests = extractMessagesFromDecision(dec);
+
             tomLayer.clientsManager.requestsOrdered(requests);
             
             notEmptyQueue.signalAll();

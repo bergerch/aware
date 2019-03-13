@@ -66,7 +66,6 @@ public class View implements Serializable {
         }
 
         Arrays.sort(this.processes);
-
     }
 
     public View(int id, int[] processes, int f, InetSocketAddress[] addresses, boolean isBFT, int delta,

@@ -208,8 +208,8 @@ public class WeightConfiguration {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         WeightConfiguration that = (WeightConfiguration) o;
-        return Objects.equals(R_max, that.R_max) &&
-                Objects.equals(R_min, that.R_min);
+        return this.R_max.containsAll(that.R_max) && this.R_min.containsAll(that.R_min) &&
+                that.R_max.containsAll(this.R_max) && that.R_min.containsAll(this.R_min);
     }
 
 

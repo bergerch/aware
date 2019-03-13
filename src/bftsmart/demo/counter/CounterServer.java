@@ -17,6 +17,7 @@ package bftsmart.demo.counter;
 
 import bftsmart.tom.MessageContext;
 import bftsmart.tom.ServiceReplica;
+import bftsmart.tom.core.messages.TOMMessage;
 import bftsmart.tom.server.defaultservices.DefaultSingleRecoverable;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
