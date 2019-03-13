@@ -144,7 +144,7 @@ public class View implements Serializable {
             this.weights.put(replica,wMin);
     }
 
-    public double getWeight(int p) {
+    public synchronized double getWeight(int p) {
 
         return weights.get(p);
     }

@@ -119,7 +119,7 @@ public class Epoch implements Serializable {
 
     // If a view change takes place and concurrentely this consensus is still
     // receiving messages, the write and accept arrays must be updated
-    private void updateArrays() {
+    private synchronized void updateArrays() {
         
         if (lastView.getId() != controller.getCurrentViewId()) {
             
@@ -213,7 +213,7 @@ public class Epoch implements Serializable {
      * @param acceptor The replica ID
      * @return True if there is a WRITE value from a replica, false otherwise
      */
-    public boolean isWriteSetted(int acceptor) {
+    public synchronized boolean isWriteSetted(int acceptor) {
         
         updateArrays();
         
@@ -269,7 +269,7 @@ public class Epoch implements Serializable {
      * Retrieves all WRITE value from all replicas
      * @return The values from all replicas
      */
-    public byte[][] getWrite() {
+    public synchronized byte[][] getWrite() {
         return this.write;
     }
 
@@ -278,16 +278,17 @@ public class Epoch implements Serializable {
      * @param acceptor The replica ID
      * @param value The valuefrom the specified replica
      */
-    public void setWrite(int acceptor, byte[] value) { // TODO: Race condition?
+    public synchronized void setWrite(int acceptor, byte[] value) { // TODO: Race condition?
         
         updateArrays();
-        
+        // TODO here is (or was)  a NullPointer in line 290
         //******* EDUARDO BEGIN **************//
         int p = this.controller.getCurrentViewPos(acceptor);
         if (p >=0 /*&& !writeSetted[p] && !isFrozen() */) { //it can only be setted once
             write[p] = value;
             writeSetted[p] = true;
-            sumWeightsWrite[p]  = this.controller.getCurrentView().getWeight(acceptor);
+            if (this.controller != null && this.controller.getCurrentView() != null)
+                 sumWeightsWrite[p]  = this.controller.getCurrentView().getWeight(acceptor);
         }
         //******* EDUARDO END **************//
     }
@@ -450,7 +451,7 @@ public class Epoch implements Serializable {
      * @param value The value in question
      * @return total weights from which this process received the specified value
      */
-    public int countWriteWeigths(byte[] value) {
+    public synchronized int countWriteWeigths(byte[] value) {
         return countWeigths(writeSetted,sumWeightsWrite, write, value);
     }
 
@@ -520,7 +521,7 @@ public class Epoch implements Serializable {
     /**
      * Clear all epoch info.
      */
-    public void clear() {
+    public synchronized void clear() {
 
         int n = controller.getCurrentViewN();
         

@@ -22,6 +22,8 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
 import bftsmart.communication.ServerCommunicationSystem;
+import bftsmart.dynwheat.decisions.WeightController;
+import bftsmart.dynwheat.monitoring.Monitor;
 import bftsmart.tom.core.ExecutionManager;
 import bftsmart.consensus.messages.MessageFactory;
 import bftsmart.consensus.roles.Acceptor;
@@ -496,6 +498,10 @@ public class ServiceReplica {
         tomLayer.start(); // start the layer execution
         tomStackCreated = true;
 
+        /** DynWHEAT */
+        Monitor.getInstance(SVController);
+        WeightController.getInstance(SVController, executionManager);
+        /** End DynWHEAT */
     }
 
     /**

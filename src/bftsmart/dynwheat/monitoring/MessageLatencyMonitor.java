@@ -1,5 +1,6 @@
 package bftsmart.dynwheat.monitoring;
 
+import bftsmart.dynwheat.decisions.WeightController;
 import bftsmart.reconfiguration.ServerViewController;
 
 import java.util.*;
@@ -168,19 +169,21 @@ public class MessageLatencyMonitor {
     }
 
     public static void printLatencyVector(double[] m) {
-        System.out.println(".....................Measured latencies .......................");
-        System.out.println("    0       1       2        3        4        ....    ");
-        System.out.println("...............................................................");
+        String result = "\n";
+        result += (".....................Measured latencies .......................\n");
+        result += ("    0       1       2        3        4        ....    \n");
+        result += ("...............................................................\n");
         for (double d : m) {
             if (d >= 0 && d < Monitor.MISSING_VALUE) {
-                System.out.print("  " + d + "  ");
+                result = result + "  " + d + "  ";
             } else {
-                System.out.print("silent");
+                result += "silent";
             }
         }
-        System.out.println();
-        System.out.println("...............................................................");
-
+        result += "\n";
+        result += ("...............................................................\n");
+        result += "\n";
+        System.out.println(result);
     }
 
 }

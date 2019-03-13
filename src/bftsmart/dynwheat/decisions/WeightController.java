@@ -4,9 +4,7 @@ import bftsmart.dynwheat.monitoring.Monitor;
 import bftsmart.reconfiguration.ServerViewController;
 import bftsmart.tom.core.ExecutionManager;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 /**
  * Computes the best DynWHEAT configuration used for a reconfiguration
@@ -23,7 +21,7 @@ public class WeightController {
     // We will compute the worst, median and best weight configurations
     private WeightConfiguration worst; // for evaluations
     private WeightConfiguration median; // for evaluations
-    private WeightConfiguration optimum;
+    private DWConfiguration best;
 
     private ServerViewController viewControl;
     private ExecutionManager executionManager;
@@ -49,6 +47,17 @@ public class WeightController {
         this.viewControl = viewControl;
         this.executionManager = executionManager;
         this.simulator = new Simulator(viewControl);
+
+
+        // Debug
+        // Periodically outputs current configuration
+        Timer timer = new Timer();
+        timer.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                System.out.println("%%%%%%%%% WeightController: Currently using weight config " + instance.getCurrent() + " with leader " + executionManager.getCurrentLeader());
+            }
+        }, 15*1000, 5*1000);
     }
 
 
@@ -128,6 +137,8 @@ public class WeightController {
         System.out.println("the median config is " + median);
         System.out.println("the worst config is " + worst);
 
+        this.best = best;
+
         return best;
     }
 
@@ -159,12 +170,8 @@ public class WeightController {
         this.median = median;
     }
 
-    public WeightConfiguration getOptimum() {
-        return optimum;
-    }
-
-    public void setOptimum(WeightConfiguration optimum) {
-        this.optimum = optimum;
+    public DWConfiguration getBest() {
+        return best;
     }
 
     public ServerViewController getViewControl() {

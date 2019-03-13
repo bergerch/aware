@@ -27,6 +27,7 @@ import java.util.Set;
 
 import bftsmart.consensus.TimestampValuePair;
 import bftsmart.consensus.messages.ConsensusMessage;
+import bftsmart.dynwheat.decisions.WeightController;
 import bftsmart.reconfiguration.ServerViewController;
 import bftsmart.tom.core.TOMLayer;
 import bftsmart.tom.core.messages.TOMMessage;
@@ -865,14 +866,28 @@ public class LCManager {
                 pubKey = SVController.getStaticConf().getPublicKey(consMsg.getSender());
                    
                 byte[] signature = (byte[]) consMsg.getProof();
-                            
-                if (Arrays.equals(consMsg.getValue(), hashedValue) &&
+
+
+
+                 if (Arrays.equals(consMsg.getValue(), hashedValue) &&
                         TOMUtil.verifySignature(pubKey, data, signature) && !alreadyCounted.contains(consMsg.getSender())) {
                     
                     alreadyCounted.add(consMsg.getSender());
                     countValid++;
-                } else {
-                    logger.error("Invalid signature in message from " + consMsg.getSender());
+                 } else {
+                     /** DynWheat testing (work in progress) */
+                     // todo this code is for highly experimental testing only, remove later
+                     // todo note this code endangers the correctness of the LC protocol and may result in unpredictable
+                     // todo behaviour such as spinning leaders ?
+                     if (WeightController.getInstance(this.SVController, tomLayer.execManager).getBest().getLeader()
+                             != tomLayer.execManager.getCurrentLeader()) { // current leader is not the best one,
+                                                                            // just replace it anyway
+                         alreadyCounted.add(consMsg.getSender());
+                         countValid++;
+                     } else {
+                         logger.error("Invalid signature in message from " + consMsg.getSender());
+                     }
+                     /** End DynWHEAT */
                 }
    
             } else {

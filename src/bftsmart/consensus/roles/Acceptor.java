@@ -18,6 +18,7 @@ package bftsmart.consensus.roles;
 
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.Arrays;
 
 import bftsmart.communication.ServerCommunicationSystem;
@@ -514,14 +515,26 @@ public final class Acceptor {
                 if (!current.equals(bestWeights)) { // The current weight configuration is not the best
                     // Deterministically change weights (this decision will be the same in all correct replicas)
                     controller.getCurrentView().setWeights(bestWeights);
-                    System.out.print("|DynWHEAT|  [X] Optimization: Weight adjustment, now using " + bestWeights);
+                    WeightController.getInstance(controller, executionManager).setCurrent(bestWeights);
+                    System.out.println("|DynWHEAT|  [X] Optimization: Weight adjustment, now using " + bestWeights);
                 } else {
                     // Keep the current configuration
-                    System.out.print("|DynWHEAT|  [ ] Optimization: Weight adjustment, no adjustment," +
+                    System.out.println("|DynWHEAT|  [ ] Optimization: Weight adjustment, no adjustment," +
                             " current weight config is the best weight config");
                 }
-            }
 
+                if (executionManager.getCurrentLeader() != best.getLeader()) { // The current leader is not the best
+                    // Deterministically enforce regency of the best leader;
+                    // todo this code is for highly experimental testing only, remove later
+                    // todo note this code endangers the correctness of the LC protocol and may result in unpredictable
+                    // todo behaviour such as spinning leaders ?
+                    executionManager.getTOMLayer().getSynchronizer().triggerTimeout(new ArrayList<>());
+                    System.out.println("|DynWHEAT|  [X] Optimization: leader selection, new leader is " + best.getLeader());
+                } else { // Keep the current configuration
+                    System.out.println("|DynWHEAT|  [ ] Optimization: leader selection: no leader change," +
+                            " current leader is the best leader");
+                }
+            }
             /** End DynWHEAT */
         }
     }
