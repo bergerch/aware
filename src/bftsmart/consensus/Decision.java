@@ -116,7 +116,7 @@ public class Decision {
         }
         return deserializedValue;
     }
-    
+
 
     /**
      * The ID for the associated consensus

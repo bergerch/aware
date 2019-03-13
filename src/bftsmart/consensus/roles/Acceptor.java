@@ -516,7 +516,7 @@ public final class Acceptor {
                     controller.getCurrentView().setWeights(bestWeights);
                     System.out.print("|DynWHEAT|  [X] Optimization: Weight adjustment, now using " + bestWeights);
                 } else {
-                    // Kepp the current configuration
+                    // Keep the current configuration
                     System.out.print("|DynWHEAT|  [ ] Optimization: Weight adjustment, no adjustment," +
                             " current weight config is the best weight config");
                 }
