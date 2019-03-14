@@ -2,6 +2,7 @@ package bftsmart.dynwheat.monitoring;
 
 import bftsmart.reconfiguration.ServerViewController;
 import bftsmart.tom.ServiceProxy;
+import ch.qos.logback.core.encoder.EchoEncoder;
 
 import java.io.*;
 import java.util.Timer;
@@ -45,8 +46,12 @@ public class MonitoringDataSynchronizer {
                     e.printStackTrace();
                 }
 
+                try {
                 // Invoke monitoring data with total order
-                monitoringDataDisseminationProxy.invokeOrderedMonitoring(data);
+                     monitoringDataDisseminationProxy.invokeOrderedMonitoring(data);
+                } catch (Exception e) {
+                     System.out.println("Could not disseminate monitoring data :(");
+                }
 
                 // Testing, remove later:
                 System.out.println("|---> Disseminating monitoring information with total order! ");

@@ -879,8 +879,7 @@ public class LCManager {
                      // todo this code is for highly experimental testing only, remove later
                      // todo note this code endangers the correctness of the LC protocol and may result in unpredictable
                      // todo behaviour such as spinning leaders ?
-                     if (WeightController.getInstance(this.SVController, tomLayer.execManager).getBest().getLeader()
-                             != tomLayer.execManager.getCurrentLeader()) { // current leader is not the best one,
+                     if ( this.SVController.getStaticConf().isUseDynamicWeights()) { // current leader is not the best one,
                                                                             // just replace it anyway
                          alreadyCounted.add(consMsg.getSender());
                          countValid++;

@@ -61,9 +61,6 @@ public class Monitor {
             }
         }
 
-        // Start the synchroniser
-        this.monitoringDataSynchronizer = new MonitoringDataSynchronizer(svc);
-
         // Periodically compute point-to-pont latencies
         Timer timer = new Timer();
         timer.scheduleAtFixedRate(new TimerTask() {
@@ -87,6 +84,10 @@ public class Monitor {
             Monitor.instance = new Monitor(svc);
         }
         return Monitor.instance;
+    }
+
+    public void startSync() {
+        this.monitoringDataSynchronizer = new MonitoringDataSynchronizer(this.svc);
     }
 
     public MessageLatencyMonitor getWriteLatencyMonitor() {
