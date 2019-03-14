@@ -287,7 +287,7 @@ public class Epoch implements Serializable {
         if (p >=0 /*&& !writeSetted[p] && !isFrozen() */) { //it can only be setted once
             write[p] = value;
             writeSetted[p] = true;
-            if (this.controller != null && this.controller.getCurrentView() != null)
+            if (sumWeightsWrite != null)
                  sumWeightsWrite[p]  = this.controller.getCurrentView().getWeight(acceptor);
         }
         //******* EDUARDO END **************//
@@ -460,7 +460,7 @@ public class Epoch implements Serializable {
      * @param value The value in question
      * @return total weights from which this process accepted the specified value
      */
-    public int countAcceptWeigths(byte[] value) {
+    public synchronized int countAcceptWeigths(byte[] value) {
         return countWeigths(acceptSetted,sumWeightsAccept, accept, value);
     }
 
@@ -470,11 +470,11 @@ public class Epoch implements Serializable {
      * @param value Value to count
      * @return Ammount of times that 'value' was find in 'array'
      */
-    private int countWeigths(boolean[] arraySetted, double[] arrayWeights, byte[][] array, byte[] value) {
+    private synchronized int countWeigths(boolean[] arraySetted, double[] arrayWeights, byte[][] array, byte[] value) {
         if (value != null) {
             int counter = 0;
             for (int i = 0; i < array.length; i++) {
-                if (arraySetted != null && arraySetted[i] && Arrays.equals(value, array[i])) {
+                if (arrayWeights != null && arraySetted != null && arraySetted[i] && Arrays.equals(value, array[i])) {
                     counter += arrayWeights[i];
                 }
             }

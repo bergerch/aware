@@ -15,6 +15,7 @@ public class WeightController {
 
     private static WeightController instance;
 
+    private DWConfiguration currentDW;
 
     private WeightConfiguration current;
 
@@ -137,6 +138,16 @@ public class WeightController {
         System.out.println("the median config is " + median);
         System.out.println("the worst config is " + worst);
 
+        System.out.println();
+
+        currentDW = new DWConfiguration(current, executionManager.getCurrentLeader());
+
+        Long estimate_current = simulator.predictLatency(replicaSet, currentDW.getLeader(), currentDW.getWeightConfiguration(),
+                propose, write, n, f, delta);
+        currentDW.setPredictedLatency(estimate_current);
+
+        System.out.println("current config is estimated to be " + estimate_current);
+
         this.best = best;
 
         return best;
@@ -188,5 +199,13 @@ public class WeightController {
 
     public void setSimulator(Simulator simulator) {
         this.simulator = simulator;
+    }
+
+    public DWConfiguration getCurrentDW() {
+        return currentDW;
+    }
+
+    public void setCurrentDW(DWConfiguration currentDW) {
+        this.currentDW = currentDW;
     }
 }

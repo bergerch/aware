@@ -76,6 +76,7 @@ public class TOMConfiguration extends Configuration {
     // DynWHEAT calc & monitoring overhead config
     private int calculationInterval;
     private double monitoringOverhead;
+    private double optimizationGoal;
 
     // DynWHEAT messages
     private boolean useDummyPropose;
@@ -401,6 +402,9 @@ public class TOMConfiguration extends Configuration {
             s = (String) configs.remove("system.dw.monitoringOverhead");
             monitoringOverhead = s != null ? Double.parseDouble(s) : 0;
 
+            s = (String) configs.remove("system.dv.optimizationGoal");
+            optimizationGoal = s != null ? Double.parseDouble(s) : 1.00;
+
             s = (String) configs.remove("system.dw.useDummyPropose");
             useDummyPropose = Boolean.parseBoolean(s);
 
@@ -637,5 +641,13 @@ public class TOMConfiguration extends Configuration {
 
     public boolean isUseLeaderSelection() {
         return useLeaderSelection;
+    }
+
+    public double getOptimizationGoal() {
+        return optimizationGoal;
+    }
+
+    public void setOptimizationGoal(double optimizationGoal) {
+        this.optimizationGoal = optimizationGoal;
     }
 }
