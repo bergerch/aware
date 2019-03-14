@@ -503,7 +503,7 @@ public final class Acceptor {
             }
 
             // Re-calculate best weight distribution after every x consensus
-            if (cid % controller.getStaticConf().getCalculationInterval() == 0 & cid > 0) {
+            if (controller.getStaticConf().isUseDynamicWeights() && cid % controller.getStaticConf().getCalculationInterval() == 0 & cid > 0) {
 
                 WeightController weightController = WeightController.getInstance(controller, executionManager);
                 DWConfiguration best = weightController.computeBest();
@@ -514,8 +514,9 @@ public final class Acceptor {
                 WeightConfiguration currentWeights = current.getWeightConfiguration();
 
 
-                if (!currentWeights.equals(bestWeights) && current.getPredictedLatency() >= best.getPredictedLatency() *
-                controller.getStaticConf().getOptimizationGoal()) { // The current weight configuration is not the best
+                if (controller.getStaticConf().isUseDynamicWeights() && !currentWeights.equals(bestWeights) &&
+                        current.getPredictedLatency() >= best.getPredictedLatency() * controller.getStaticConf().getOptimizationGoal()) {
+                    // The current weight configuration is not the best
                     // Deterministically change weights (this decision will be the same in all correct replicas)
                     controller.getCurrentView().setWeights(bestWeights);
                     WeightController.getInstance(controller, executionManager).setCurrent(bestWeights);
@@ -526,9 +527,11 @@ public final class Acceptor {
                             " current weight config is the best weight config");
                 }
 
-                if (executionManager.getCurrentLeader() != best.getLeader() && current.getPredictedLatency() >= best.getPredictedLatency() *
-                        controller.getStaticConf().getOptimizationGoal()) { // The current leader is not the best
+                if (controller.getStaticConf().isUseLeaderSelection() && executionManager.getCurrentLeader() != best.getLeader() &&
+                        current.getPredictedLatency() >= best.getPredictedLatency() * controller.getStaticConf().getOptimizationGoal()) {
+                    // The current leader is not the best
                     // Deterministically enforce regency of the best leader;
+
                     // todo this code is for highly experimental testing only, remove later
                     // todo note this code endangers the correctness of the LC protocol and may result in unpredictable
                     // todo behaviour such as spinning leaders ?
