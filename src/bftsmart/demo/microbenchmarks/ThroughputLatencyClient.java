@@ -233,7 +233,7 @@ public class ThroughputLatencyClient {
                 else
                         proxy.invokeOrdered(request);
                         
-                if (verbose) System.out.println(this.id + " // sent!");
+                if (verbose) System.out.println(numberOfOps + " // sent!");
                 st.store(System.nanoTime() - last_send_instant);
 
                 if (interval > 0) {
@@ -253,6 +253,8 @@ public class ThroughputLatencyClient {
                 System.out.println(this.id + " // Average time for " + numberOfOps / 2 + " executions (all samples) = " + st.getAverage(false) / 1000 + " us ");
                 System.out.println(this.id + " // Standard desviation for " + numberOfOps / 2 + " executions (all samples) = " + st.getDP(false) / 1000 + " us ");
                 System.out.println(this.id + " // Maximum time for " + numberOfOps / 2 + " executions (all samples) = " + st.getMax(false) / 1000 + " us ");
+                System.out.println(this.id + " // 50th percentile latencies " + numberOfOps / 2 + " executions (all samples) = " + st.getPercentile(0.5) / 1000 + " us ");
+                System.out.println(this.id + " // 90th percentile latencies " + numberOfOps / 2 + " executions (all samples) = " + st.getPercentile(0.9) / 1000 + " us ");
             }
             
             proxy.close();

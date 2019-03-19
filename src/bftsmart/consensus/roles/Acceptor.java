@@ -495,10 +495,12 @@ public final class Acceptor {
              * We inspect of there are monitoring data dissemination messages included in this consensus:
              *      - if so call Monitor to handled received monitoring messages of other processes
              */
-            for (TOMMessage tm: epoch.getConsensus().getDecision().getDeserializedValue()) {
-                if (tm.getIsMonitoringMessage()) {
-                    logger.debug("Received disseminated monitoring message ");
-                    Monitor.getInstance(controller).onReceiveMonitoringInformation(tm.getSender(), tm.getContent(), cid);
+            if (controller.getStaticConf().isUseDynamicWeights()) {
+                for (TOMMessage tm : epoch.getConsensus().getDecision().getDeserializedValue()) {
+                    if (tm.getIsMonitoringMessage()) {
+                        logger.debug("Received disseminated monitoring message ");
+                        Monitor.getInstance(controller).onReceiveMonitoringInformation(tm.getSender(), tm.getContent(), cid);
+                    }
                 }
             }
 

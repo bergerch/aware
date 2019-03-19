@@ -499,8 +499,10 @@ public class ServiceReplica {
         tomStackCreated = true;
 
         /** DynWHEAT */
-        Monitor.getInstance(SVController);
-        WeightController.getInstance(SVController, executionManager);
+        if (SVController.getStaticConf().isUseDynamicWeights()) {
+            Monitor.getInstance(SVController);
+            WeightController.getInstance(SVController, executionManager);
+        }
         /** End DynWHEAT */
     }
 

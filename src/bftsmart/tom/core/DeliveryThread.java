@@ -189,7 +189,8 @@ public final class DeliveryThread extends Thread {
                 if (init) {
                     logger.info("Ready to process operations");
                     /** DynWHEAT **/
-                    Monitor.getInstance(controller).startSync();
+                    if (controller.getStaticConf().isUseDynamicWeights())
+                        Monitor.getInstance(controller).startSync();
                     /** End DynWHEAT **/
                     init = false;
                 }
