@@ -15,11 +15,15 @@ limitations under the License.
 */
 package bftsmart.demo.microbenchmarks;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.IOException;
 
 import bftsmart.tom.ServiceProxy;
 import bftsmart.tom.util.Storage;
 import bftsmart.tom.util.TOMUtil;
+
+import java.io.Writer;
 import java.nio.ByteBuffer;
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;
@@ -247,14 +251,51 @@ public class ThroughputLatencyClient {
                 if (verbose && (req % 1000 == 0)) System.out.println(this.id + " // " + req + " operations sent!");
             }
 
+
+
             if(id == initId) {
+                String line = "" + proxy.getViewManager().getStaticConf().getInitialLeader() + "," + proxy.getViewManager().getCurrentView().getViewString() + ",";
                 System.out.println(this.id + " // Average time for " + numberOfOps / 2 + " executions (-10%) = " + st.getAverage(true) / 1000 + " us ");
+                line += st.getAverage(true) / 1000 + ",";
                 System.out.println(this.id + " // Standard desviation for " + numberOfOps / 2 + " executions (-10%) = " + st.getDP(true) / 1000 + " us ");
+                line += st.getDP(true) / 1000 + ",";
                 System.out.println(this.id + " // Average time for " + numberOfOps / 2 + " executions (all samples) = " + st.getAverage(false) / 1000 + " us ");
                 System.out.println(this.id + " // Standard desviation for " + numberOfOps / 2 + " executions (all samples) = " + st.getDP(false) / 1000 + " us ");
                 System.out.println(this.id + " // Maximum time for " + numberOfOps / 2 + " executions (all samples) = " + st.getMax(false) / 1000 + " us ");
                 System.out.println(this.id + " // 50th percentile latencies " + numberOfOps / 2 + " executions (all samples) = " + st.getPercentile(0.5) / 1000 + " us ");
+                line +=  st.getPercentile(0.5) / 1000 + ",";
                 System.out.println(this.id + " // 90th percentile latencies " + numberOfOps / 2 + " executions (all samples) = " + st.getPercentile(0.9) / 1000 + " us ");
+                line +=  st.getPercentile(0.9) / 1000 + ",";
+                line += "\n";
+
+                Writer output;
+                try {
+                    output = new BufferedWriter(new FileWriter("measurement-client" + id, true));
+                    output.append(line);
+                    output.close();
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            System.out.println("Fnished! ... but will continue sending requests...");
+            for (int i = 0; i < numberOfOps-1 ; i++, req++) {
+                if(readOnly)
+                    proxy.invokeUnordered(request);
+                else
+                    proxy.invokeOrdered(request);
+
+
+                if (verbose && (req % 100 == 0)) System.out.println(this.id + " // " + req + " operations sent!");
+
+                if (interval > 0) {
+                    try {
+                        //sleeps interval ms before sending next request
+                        Thread.sleep(interval);
+                    } catch (InterruptedException ex) {
+                    }
+                }
             }
             
             proxy.close();

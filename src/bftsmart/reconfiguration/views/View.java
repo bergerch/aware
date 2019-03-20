@@ -161,6 +161,15 @@ public class View implements Serializable {
         return overlayN;
     }
 
+    public String getViewString() {
+        String s = "";
+        for (int i = 0; i < this.getN(); i++) {
+          if (weights.get(i) > 1.00)
+              s += i + "_";
+        }
+        return s;
+    }
+
     @Override
     public String toString() {
         String ret = "ID:" + id + "; F:" + f + "; N_O:" + overlayN + "; F_O:" + overlayF + "; D: " + delta + "; Processes:";
