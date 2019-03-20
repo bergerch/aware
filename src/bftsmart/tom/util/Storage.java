@@ -16,6 +16,7 @@ limitations under the License.
 package bftsmart.tom.util;
 
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
 
 public class Storage {
@@ -123,7 +124,7 @@ public class Storage {
         }
 
         double toSubtract = num*(med*med);
-        BigInteger toSub = BigInteger.valueOf(Math.round(toSubtract));
+        BigInteger toSub =  BigDecimal.valueOf(toSubtract).toBigInteger();
         BigInteger var = (quad.subtract(toSub)).divide(BigInteger.valueOf(num-1));
         //double var = (quad - (num*(med*med)))/(num-1);
         ////br.ufsc.das.util.Logger.println("mim: "+values[limit]);
