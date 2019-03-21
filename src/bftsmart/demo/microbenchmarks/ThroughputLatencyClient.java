@@ -198,7 +198,8 @@ public class ThroughputLatencyClient {
         }
 
         public void run() {
-            
+
+
             System.out.println("Warm up...");
 
             int req = 0;
@@ -222,6 +223,14 @@ public class ThroughputLatencyClient {
                     } catch (InterruptedException ex) {
                     }
                 }
+                if (interval < 0) { // if interval negative, use it as upper limit for a randomized interval
+                    try {    // so wait between 0ms and interval ms
+                        double waitTime = Math.random() * interval * -1;
+                        System.out.println("waiting for " + waitTime + " ms");
+                        Thread.sleep(Math.round(waitTime));
+                    } catch (InterruptedException ex) {
+                    }
+                }
             }
 
             Storage st = new Storage(numberOfOps / 2);
@@ -229,6 +238,10 @@ public class ThroughputLatencyClient {
             System.out.println("Executing experiment for " + numberOfOps / 2 + " ops");
 
             for (int i = 0; i < numberOfOps / 2; i++, req++) {
+                try {
+                    Thread.sleep(Math.round(Math.random() * 500));
+                } catch (InterruptedException ex) {
+                }
                 long last_send_instant = System.nanoTime();
                 if (verbose) System.out.print(this.id + " // Sending req " + req + "...");
 
@@ -244,6 +257,14 @@ public class ThroughputLatencyClient {
                     try {
                         //sleeps interval ms before sending next request
                         Thread.sleep(interval);
+                    } catch (InterruptedException ex) {
+                    }
+                }
+                if (interval < 0) { // if interval negative, use it as upper limit for a randomized interval
+                    try {    // so wait between 0ms and interval ms
+                        double waitTime = Math.random() * interval * -1;
+                        System.out.println("waiting for " + waitTime + " ms");
+                        Thread.sleep(Math.round(waitTime));
                     } catch (InterruptedException ex) {
                     }
                 }
@@ -281,6 +302,7 @@ public class ThroughputLatencyClient {
 
             System.out.println("Fnished! ... but will continue sending requests...");
             for (int i = 0; i < numberOfOps-1 ; i++, req++) {
+
                 if(readOnly)
                     proxy.invokeUnordered(request);
                 else
@@ -293,6 +315,14 @@ public class ThroughputLatencyClient {
                     try {
                         //sleeps interval ms before sending next request
                         Thread.sleep(interval);
+                    } catch (InterruptedException ex) {
+                    }
+                }
+                if (interval < 0) { // if interval negative, use it as upper limit for a randomized interval
+                    try {    // so wait between 0ms and interval ms
+                        double waitTime = Math.random() * interval * -1;
+                        System.out.println("waiting for " + waitTime + " ms");
+                        Thread.sleep(Math.round(waitTime));
                     } catch (InterruptedException ex) {
                     }
                 }
