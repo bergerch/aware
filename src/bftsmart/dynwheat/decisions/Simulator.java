@@ -91,13 +91,19 @@ public class Simulator {
 
         // Simulate time every replica has been proposed to by the selected leader
         long[] t_proposed = new long[n];
+        long[] t_write_finished = new long[n];
+        long[] t_decided = new long[n];
 
         @SuppressWarnings("unchecked")
         PriorityQueue<Vote>[] writesRcvd = new PriorityQueue[n];
 
+        @SuppressWarnings("unchecked")
+        PriorityQueue<Vote>[] acceptRcvd = new PriorityQueue[n];
+
         for (int i : replicaSet) {
             t_proposed[i] = m_propose[leader][i];
             writesRcvd[i] = new PriorityQueue<>();
+            acceptRcvd[i] = new PriorityQueue<>();
         }
 
         // Compute time at which WRITE of replica j arrives at replica i
@@ -123,8 +129,29 @@ public class Simulator {
             }
             logger.debug("Write quorum used " + quorumUsed);
             readyToExecute.add(t_written);
+            t_write_finished[i] = t_written;
         }
 
+        // Compute time at which ACCEPT of replica j arrives at replica i
+        for (int i : replicaSet) {
+            for (int j : replicaSet) {
+                acceptRcvd[i].add(new Vote(j, V[j], t_write_finished[j] + m_write[j][i]));
+            }
+        }
+
+        // Compute time at which replica i decides a value
+
+        for (int i : replicaSet) {
+            double votes = 0.00;
+            while (votes < Q_v) {
+                Vote vote = acceptRcvd[i].poll();
+                if (vote != null) {
+                    votes += vote.weight;
+                    t_decided[i] = vote.arrivalTime;
+                }
+            }
+        }
+        /*
         // Compute time at which a client has enough responses to accept a result
         // Note that we ignore latencies between client and replicas and hence estimate the time by computing the
         // time a client quorum of replicas is ready to execute which requires having formed a weighted quorum of Q_v
@@ -141,8 +168,12 @@ public class Simulator {
             t_prediction = readyToExecute.poll();
         }
 
+
         // The predicted latency according to our considerations in the paper
         return t_prediction;
+        */
+
+        return t_decided[leader];
     }
 
 

@@ -70,7 +70,12 @@ public class ServerCommunicationSystem extends Thread {
 
         //serversConf.increasePortNumber();
 
-        serversConn = new ServersCommunicationLayer(controller, inQueue, replica);
+        /** DynWHEAT **/
+        if (controller.getStaticConf().isUseWriteResponse())
+            writeLatencyMonitor = Monitor.getInstance(controller).getWriteLatencyMonitor();
+
+
+        serversConn = new ServersCommunicationLayer(controller, inQueue, replica, writeLatencyMonitor);
 
         //******* EDUARDO BEGIN **************//
        // if (manager.isInCurrentView() || manager.isInInitView()) {

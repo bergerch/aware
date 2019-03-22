@@ -3,6 +3,10 @@ package bftsmart.dynwheat.tests;
 import bftsmart.dynwheat.decisions.Simulator;
 import bftsmart.dynwheat.decisions.WeightConfiguration;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.Writer;
 import java.util.List;
 
 /**
@@ -35,19 +39,19 @@ public class FindOptimalWeightConfigTest {
         System.out.println("----------------------------------------------------------------");
 
         long[][] propose = {
-                {0, 20, 50, 70, 30},
-                {20, 0, 45, 65, 40},
-                {50, 45, 0, 60, 80},
-                {70, 65, 60, 0, 30},
-                {30, 40, 80, 30, 0}
+                {0, 65077, 69092, 92136, 39558},
+                {65077, 0, 132417, 93243, 37637},
+                {69092, 132417, 0, 158277, 104796},
+                {92136, 93243, 158277, 0, 61356},
+                {39558, 37673, 104796, 61356, 0}
         };
 
         long[][] write = {
-                {0, 20, 50, 70, 30},
-                {20, 0, 45, 65, 40},
-                {50, 45, 0, 60, 80},
-                {70, 65, 60, 0, 30},
-                {30, 40, 80, 30, 0}
+                {0, 65077, 69092, 92136, 39558},
+                {65077, 0, 132417, 93243, 37637},
+                {69092, 132417, 0, 158277, 104796},
+                {92136, 93243, 158277, 0, 61356},
+                {39558, 37673, 104796, 61356, 0}
         };
 
         long bestLatency = Long.MAX_VALUE;
@@ -67,9 +71,14 @@ public class FindOptimalWeightConfigTest {
          */
         List<WeightConfiguration> weightConfigs = WeightConfiguration.allPossibleWeightConfigurations(u, replicaSet);
 
+        String lines = "";
+
         for (WeightConfiguration w : weightConfigs) {
             for (int primary : w.getR_max()) { // Only replicas in R_max will be considered to become leader ?
                 Long predict = simulator.predictLatency(replicaSet, primary, w, propose, write, n, f, delta);
+
+                lines += predict + "\n";
+
                 System.out.println("WeightConfig " + w + "with leader " + primary + " has predicted latency of " + predict);
 
                 if (predict > worstLatency) {
@@ -84,6 +93,15 @@ public class FindOptimalWeightConfigTest {
                     best = w;
                 }
             }
+        }
+        Writer output;
+        try {
+            output = new BufferedWriter(new FileWriter("model-predictions" , false));
+            output.append(lines);
+            output.close();
+
+        } catch (IOException e) {
+            e.printStackTrace();
         }
 
         long end = System.nanoTime();
