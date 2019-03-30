@@ -120,7 +120,7 @@ public class WeightController {
         // Compute the predictet latencies of all possible configurations using the simulator
         for (DWConfiguration dwc : dwConfigurations) {
             Long predictedLatency = simulator.predictLatency(replicaSet, dwc.getLeader(), dwc.getWeightConfiguration(),
-                    propose, write, n, f, delta);
+                    propose, write, n, f, delta, 1, null, null);
             dwc.setPredictedLatency(predictedLatency);
             System.out.println("WeightConfig " + dwc.getWeightConfiguration() + "with leader " + dwc.getLeader() +
                     " has predicted latency of " + ((double) Math.round(predictedLatency) / 1000) / 1000.00 + " ms");
@@ -143,7 +143,7 @@ public class WeightController {
         currentDW = new DWConfiguration(current, executionManager.getCurrentLeader());
 
         Long estimate_current = simulator.predictLatency(replicaSet, currentDW.getLeader(), currentDW.getWeightConfiguration(),
-                propose, write, n, f, delta);
+                propose, write, n, f, delta, 1, null, null);
         currentDW.setPredictedLatency(estimate_current);
 
         System.out.println("current config is estimated to be " + estimate_current);

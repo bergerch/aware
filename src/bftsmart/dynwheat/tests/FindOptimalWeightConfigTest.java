@@ -24,7 +24,7 @@ public class FindOptimalWeightConfigTest {
      */
     public static void main(String[] args) throws Exception {
 
-        long start = System.nanoTime();
+        //long start = System.nanoTime();
 
         Simulator simulator = new Simulator(null);
 
@@ -54,6 +54,24 @@ public class FindOptimalWeightConfigTest {
                 {39558, 37673, 104796, 61356, 0}
         };
 
+/*
+        long[][] propose = {
+                {0, 5077, 9092, 2136, 9558},
+                {5077, 0, 132417, 93243, 37637},
+                {9092, 132417, 0, 158277, 104796},
+                {2136, 93243, 158277, 0, 61356},
+                {9558, 37673, 104796, 61356, 0}
+        };
+
+        long[][] write = {
+                {0, 5077, 9092, 2136, 9558},
+                {5077, 0, 132417, 93243, 37637},
+                {9092, 132417, 0, 158277, 104796},
+                {2136, 93243, 158277, 0, 61356},
+                {9558, 37673, 104796, 61356, 0}
+        };
+*/
+
         long bestLatency = Long.MAX_VALUE;
         long worstLatency = Long.MIN_VALUE;
 
@@ -73,27 +91,41 @@ public class FindOptimalWeightConfigTest {
 
         String lines = "";
 
+        long start = System.nanoTime();
+        boolean isSingleRunAlwaysAmortized = true;
         for (WeightConfiguration w : weightConfigs) {
             for (int primary : w.getR_max()) { // Only replicas in R_max will be considered to become leader ?
-                Long predict = simulator.predictLatency(replicaSet, primary, w, propose, write, n, f, delta);
 
-                lines += predict + "\n";
+                Long prediction = simulator.predictLatency(replicaSet, primary, w, propose, write, n, f, delta, 1, null, null);
+                Long predictAmortized10 = simulator.predictLatency(replicaSet, primary, w, propose, write, n, f, delta, 10, null, null);
 
-                System.out.println("WeightConfig " + w + "with leader " + primary + " has predicted latency of " + predict);
+                System.out.println("WeightConfig " + w + "with leader " + primary + " has predicted latency of " + prediction + " (single run)");
+                if (!prediction.equals(predictAmortized10)) {
+                    isSingleRunAlwaysAmortized = false;
+                    System.out.println("WeightConfig " + w + "with leader " + primary + " has predicted latency of " + predictAmortized10 + " (predictAmortized10)");
+                    prediction = predictAmortized10;
+                }
 
-                if (predict > worstLatency) {
-                    worstLatency = predict;
+                lines += prediction + "\n";
+
+                if (prediction > worstLatency) {
+                    worstLatency = prediction;
                     worstLeader = primary;
                     worst = w;
                 }
 
-                if (predict < bestLatency) {
-                    bestLatency = predict;
+                if (prediction < bestLatency) {
+                    bestLatency = prediction;
                     bestLeader = primary;
                     best = w;
                 }
             }
         }
+        long end = System.nanoTime();
+        if (!isSingleRunAlwaysAmortized){
+            System.out.println("Single Run is NOT always the same as amortized");
+        }
+
         Writer output;
         try {
             output = new BufferedWriter(new FileWriter("model-predictions" , false));
@@ -104,7 +136,7 @@ public class FindOptimalWeightConfigTest {
             e.printStackTrace();
         }
 
-        long end = System.nanoTime();
+
 
         System.out.println("-----------------------------------------------------" +
                 "---------------------------------------------------------------");

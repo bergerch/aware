@@ -57,7 +57,7 @@ public class Simulator {
         int delta = viewControl.getStaticConf().getDelta();
 
         // Use the PredictLatency Algorithm
-        return this.predictLatency(replicaSet, leader, weightConfig, m_propose, m_write, n, f, delta);
+        return this.predictLatency(replicaSet, leader, weightConfig, m_propose, m_write, n, f, delta, 1, null, null);
     }
 
     /**
@@ -71,10 +71,17 @@ public class Simulator {
      * @param n            system size
      * @param f            number of faults
      * @param delta        number of additional spare replicas
+     * @param rounds       number of consensus rounds used for calculation of amortized costs (calculation depth)
+     * @param offsets      offsets for next round (time other replicas need to finish their consensus relative to the leader)
+     * @param consensusTimes array to store latency of consenus rounds
      * @return predicted latency of the SMR protocol
      */
     public Long predictLatency(int[] replicaSet, int leader, WeightConfiguration weightConfig, long[][] m_propose,
-                               long[][] m_write, int n, int f, int delta) {
+                               long[][] m_write, int n, int f, int delta, int rounds, long[] offsets, long[] consensusTimes) {
+
+        if (consensusTimes == null) {
+            consensusTimes = new long[rounds];
+        }
 
         // Compute weights and quorum
         double V_min = 1.00;
@@ -101,9 +108,12 @@ public class Simulator {
         PriorityQueue<Vote>[] acceptRcvd = new PriorityQueue[n];
 
         for (int i : replicaSet) {
-            t_proposed[i] = m_propose[leader][i];
+
+            t_proposed[i] = offsets == null ? m_propose[leader][i] : Math.max(offsets[i], m_propose[leader][i]);
+
             writesRcvd[i] = new PriorityQueue<>();
             acceptRcvd[i] = new PriorityQueue<>();
+            //System.out.println("was proposed to " + i + " " + t_proposed[i]);
         }
 
         // Compute time at which WRITE of replica j arrives at replica i
@@ -127,7 +137,8 @@ public class Simulator {
                     quorumUsed.add(vote.castBy);
                 }
             }
-            logger.debug("Write quorum used " + quorumUsed);
+            //System.out.println("WRITTEN " + i + " " + t_written);
+            //logger.debug("Write quorum used " + quorumUsed);
             readyToExecute.add(t_written);
             t_write_finished[i] = t_written;
         }
@@ -150,31 +161,31 @@ public class Simulator {
                     t_decided[i] = vote.arrivalTime;
                 }
             }
-        }
-        /*
-        // Compute time at which a client has enough responses to accept a result
-        // Note that we ignore latencies between client and replicas and hence estimate the time by computing the
-        // time a client quorum of replicas is ready to execute which requires having formed a weighted quorum of Q_v
-        int responsesToClient = 0;
-        long t_prediction = Long.MAX_VALUE;
-        logger.debug("client quorum " + Math.ceil((double) (n + f + 1) / 2.00));
-        logger.debug("ReadyToExec: [");
-        for (Long l : readyToExecute) {
-            logger.debug(l + ",");
+           // System.out.println(i + " decided in " + t_decided[i]);
         }
 
-        while (responsesToClient < Math.ceil((double) (n + f + 1) / 2.00)) {
-            responsesToClient++;
-            t_prediction = readyToExecute.poll();
+        consensusTimes[rounds -1] = t_decided[leader];
+
+        // termination criteria
+        if (rounds == 1) {
+            long sum = 0L;
+            for (int i = 0; i < consensusTimes.length; i++) {
+                sum += consensusTimes[i];
+            }
+            return sum / consensusTimes.length;
         }
 
+        // Compute offsets (time the other replicas need to finish their consensus round relative to the leader)
+        long [] offsetsNew = new long[n];
+        for (int i = 0; i <n; i++)
+            offsetsNew[i] = t_decided[i] > t_decided[leader] ? t_decided[i] - t_decided[leader] : 0L;
 
-        // The predicted latency according to our considerations in the paper
-        return t_prediction;
-        */
 
-        return t_decided[leader];
+        // Continue with the next consensus round
+        return predictLatency(replicaSet, leader, weightConfig,  m_propose, m_write,  n, f,  delta, rounds - 1, offsetsNew, consensusTimes);
     }
+
+
 
 
     public class Vote implements Comparable {
