@@ -60,6 +60,48 @@ public class Simulator {
         return this.predictLatency(replicaSet, leader, weightConfig, m_propose, m_write, n, f, delta, 1, null, null);
     }
 
+
+
+    /**
+     * Predics the latency of the SMR system for a given weight configuration and leader selection
+     *
+     * @param replicaSet   all replicas
+     * @param leader       selected leader for protocol simulation
+     * @param weightConfig weight configuration to be simulated
+     * @param m_propose    sanitized PROPOSE latencies
+     * @param m_write      sanitized WRITE/ACCEPT latencies
+     * @param n            system size
+     * @param f            number of faults
+     * @param delta        number of additional spare replicas
+     * @return predicted latency of the SMR protocol
+     */
+    public Long predictLatency(int[] replicaSet, int leader, WeightConfiguration weightConfig, long[][] m_propose,
+                               long[][] m_write, int n, int f, int delta) {
+
+        return this.predictLatency(replicaSet, leader, weightConfig, m_propose, m_write, n, f, delta, 1);
+    }
+
+
+    /**
+     * Predics the latency of the SMR system for a given weight configuration and leader selection
+     *
+     * @param replicaSet   all replicas
+     * @param leader       selected leader for protocol simulation
+     * @param weightConfig weight configuration to be simulated
+     * @param m_propose    sanitized PROPOSE latencies
+     * @param m_write      sanitized WRITE/ACCEPT latencies
+     * @param n            system size
+     * @param f            number of faults
+     * @param delta        number of additional spare replicas
+     * @param rounds       number of consensus rounds used for calculation of amortized costs (calculation depth)
+     * @return predicted latency of the SMR protocol
+     */
+    public Long predictLatency(int[] replicaSet, int leader, WeightConfiguration weightConfig, long[][] m_propose,
+                               long[][] m_write, int n, int f, int delta, int rounds) {
+
+        return this.predictLatency(replicaSet, leader, weightConfig, m_propose, m_write, n, f, delta, rounds, null, null);
+    }
+
     /**
      * Predics the latency of the SMR system for a given weight configuration and leader selection
      *

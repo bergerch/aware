@@ -24,7 +24,7 @@ public class FindOptimalWeightConfigTest {
      */
     public static void main(String[] args) throws Exception {
 
-        //long start = System.nanoTime();
+        long start = System.nanoTime();
 
         Simulator simulator = new Simulator(null);
 
@@ -91,13 +91,13 @@ public class FindOptimalWeightConfigTest {
 
         String lines = "";
 
-        long start = System.nanoTime();
+        long middle = System.nanoTime();
         boolean isSingleRunAlwaysAmortized = true;
         for (WeightConfiguration w : weightConfigs) {
             for (int primary : w.getR_max()) { // Only replicas in R_max will be considered to become leader ?
 
-                Long prediction = simulator.predictLatency(replicaSet, primary, w, propose, write, n, f, delta, 1, null, null);
-                Long predictAmortized10 = simulator.predictLatency(replicaSet, primary, w, propose, write, n, f, delta, 10, null, null);
+                Long prediction = simulator.predictLatency(replicaSet, primary, w, propose, write, n, f, delta);
+                Long predictAmortized10 = simulator.predictLatency(replicaSet, primary, w, propose, write, n, f, delta, 100);
 
                 System.out.println("WeightConfig " + w + "with leader " + primary + " has predicted latency of " + prediction + " (single run)");
                 if (!prediction.equals(predictAmortized10)) {
@@ -145,7 +145,8 @@ public class FindOptimalWeightConfigTest {
         System.out.println("The worst weight configuration is " + worst + " with leader " + worstLeader +
                 " it achieves consensus in " + worstLatency);
 
-        System.out.println("Computed in " + ((double) (end - start)) / 1000000.00 + " ms");
+        System.out.println("Computed combinations in " + ((double) (middle - start)) / 1000000.00 + " ms");
+        System.out.println("Computed prediction model (amortized 100) " + ((double) (end - middle)) / 1000000.00 + " ms");
 
     }
 }
