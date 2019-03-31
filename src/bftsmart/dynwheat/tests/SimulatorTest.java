@@ -36,7 +36,7 @@ public class SimulatorTest {
         int f = 1;
         int delta = 1;
 
-        Long prediction = simulator.predictLatency(replicaSet, leader, weightConfig, m, m, n, f, delta, 1, null, null);
+        Long prediction = simulator.predictLatency(replicaSet, leader, weightConfig, m, m, n, f, delta, 1);
 
         System.out.println("Predicted Latency is " + prediction + " ms");
 

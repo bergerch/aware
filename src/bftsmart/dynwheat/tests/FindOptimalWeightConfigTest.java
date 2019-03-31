@@ -97,7 +97,7 @@ public class FindOptimalWeightConfigTest {
             for (int primary : w.getR_max()) { // Only replicas in R_max will be considered to become leader ?
 
                 Long prediction = simulator.predictLatency(replicaSet, primary, w, propose, write, n, f, delta);
-                Long predictAmortized10 = simulator.predictLatency(replicaSet, primary, w, propose, write, n, f, delta, 100);
+                Long predictAmortized10 = simulator.predictLatency(replicaSet, primary, w, propose, write, n, f, delta, 1000);
 
                 System.out.println("WeightConfig " + w + "with leader " + primary + " has predicted latency of " + prediction + " (single run)");
                 if (!prediction.equals(predictAmortized10)) {
