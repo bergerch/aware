@@ -133,7 +133,7 @@ public class Simulator {
             //  (1) replica i has received the PROPOSE and (2) replica 1 has finished its last consensus
             //                                                 (respected by offsets that express waiting time)
             for (int i : replicaSet) {
-                t_proposed[i] = offsets == null ? m_propose[leader][i] : Math.max(offsets[i], m_propose[leader][i]);
+                t_proposed[i] = Math.max(offsets[i], m_propose[leader][i]);
                 writesRcvd[i] = new PriorityQueue<>();
                 acceptRcvd[i] = new PriorityQueue<>();
             }
@@ -185,9 +185,8 @@ public class Simulator {
             consensusTimes[rounds - 1] = t_decided[leader];
 
             // Compute offsets (time the other replicas need to finish their consensus round relative to the leader)
-            long[] offsetsNew = new long[n];
             for (int i = 0; i < n; i++)
-                offsetsNew[i] = t_decided[i] > t_decided[leader] ? t_decided[i] - t_decided[leader] : 0L;
+                offsets[i] = t_decided[i] > t_decided[leader] ? t_decided[i] - t_decided[leader] : 0L;
 
             rounds--;
         }
