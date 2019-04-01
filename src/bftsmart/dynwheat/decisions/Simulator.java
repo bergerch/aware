@@ -61,7 +61,6 @@ public class Simulator {
     }
 
 
-
     /**
      * Predics the latency of the SMR system for a given weight configuration and leader selection
      *
@@ -102,17 +101,18 @@ public class Simulator {
 
         long[] consensusTimes = new long[rounds];
         long[] offsets = new long[n];
+        boolean isBFT =  (viewControl == null) || viewControl.getStaticConf().isBFT();
 
-        while (rounds > 0) {
+
+
+        while (rounds > 0) { // If r > 1, compute the amortized consensus latency for multiple times r under the
+            // assumptions that a new consensus starts immediately after the last instance finishes
 
             // Compute weights and quorum
             double V_min = 1.00;
             double V_max = V_min + (double) delta / (double) f;
             double[] V = new double[n];
-            double Q_v = 2 * f * V_max + 1;
-            if (viewControl != null) { // Set Q_v to BFT or CFT quorum
-                Q_v = viewControl.getStaticConf().isBFT() ? 2 * f * V_max + 1 : f * V_max + 1;
-            }
+            double Q_v = isBFT ? 2 * f * V_max + 1 : f * V_max + 1;
 
             // Assign binary voting weights to replicas
             for (int i : replicaSet)
@@ -129,13 +129,13 @@ public class Simulator {
             @SuppressWarnings("unchecked")
             PriorityQueue<Vote>[] acceptRcvd = new PriorityQueue[n];
 
+            // Compute time proposed time for all replicas. the proposed time is the maximum out of two times:
+            //  (1) replica i has received the PROPOSE and (2) replica 1 has finished its last consensus
+            //                                                 (respected by offsets that express waiting time)
             for (int i : replicaSet) {
-
                 t_proposed[i] = offsets == null ? m_propose[leader][i] : Math.max(offsets[i], m_propose[leader][i]);
-
                 writesRcvd[i] = new PriorityQueue<>();
                 acceptRcvd[i] = new PriorityQueue<>();
-                //System.out.println("was proposed to " + i + " " + t_proposed[i]);
             }
 
             // Compute time at which WRITE of replica j arrives at replica i
@@ -145,7 +145,7 @@ public class Simulator {
                 }
             }
 
-            // Compute time at which replica i will execute a client request and sent a response to the client
+            // Compute time at which replica i will finish its WRITE quorum
             PriorityQueue<Long> readyToExecute = new PriorityQueue<>();
             for (int i : replicaSet) {
                 double votes = 0.00;
@@ -159,21 +159,19 @@ public class Simulator {
                         quorumUsed.add(vote.castBy);
                     }
                 }
-                //System.out.println("WRITTEN " + i + " " + t_written);
-                //logger.debug("Write quorum used " + quorumUsed);
                 readyToExecute.add(t_written);
                 t_write_finished[i] = t_written;
             }
 
             // Compute time at which ACCEPT of replica j arrives at replica i
+            // CFT: we use proposed instead of write_finished because WRITE is skipped
             for (int i : replicaSet) {
                 for (int j : replicaSet) {
-                    acceptRcvd[i].add(new Vote(j, V[j], t_write_finished[j] + m_write[j][i]));
+                    acceptRcvd[i].add(new Vote(j, V[j], (isBFT ? t_write_finished[j] : t_proposed[i]) + m_write[j][i]));
                 }
             }
 
-            // Compute time at which replica i decides a value
-
+            // Compute time at which replica i decides a value (finishes consensus)
             for (int i : replicaSet) {
                 double votes = 0.00;
                 while (votes < Q_v) {
@@ -183,31 +181,24 @@ public class Simulator {
                         t_decided[i] = vote.arrivalTime;
                     }
                 }
-                // System.out.println(i + " decided in " + t_decided[i]);
             }
-
             consensusTimes[rounds - 1] = t_decided[leader];
 
             // Compute offsets (time the other replicas need to finish their consensus round relative to the leader)
-            long [] offsetsNew = new long[n];
-            for (int i = 0; i <n; i++)
+            long[] offsetsNew = new long[n];
+            for (int i = 0; i < n; i++)
                 offsetsNew[i] = t_decided[i] > t_decided[leader] ? t_decided[i] - t_decided[leader] : 0L;
 
             rounds--;
         }
-        // termination
 
+        // Compute amortized consensus latency
         long sum = 0L;
         for (int i = 0; i < consensusTimes.length; i++) {
             sum += consensusTimes[i];
         }
         return sum / consensusTimes.length;
-
-        // Continue with the next consensus round
-       // return predictLatency(replicaSet, leader, weightConfig,  m_propose, m_write,  n, f,  delta, rounds - 1, offsetsNew, consensusTimes);
     }
-
-
 
 
     public class Vote implements Comparable {
