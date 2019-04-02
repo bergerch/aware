@@ -82,6 +82,17 @@ public class MessageHandler {
             }
             /** END DynWHEAT **/
 
+
+            /** DynWHEAT: Send back PROPOSE_RESPONSE **/
+            if (tomLayer.controller.getStaticConf().isUseProposeResponse() && consMsg.getPaxosVerboseType().equals("PROPOSE")) {
+                logger.debug("I send PROPOSE-RESPONSE for consensus message " + consMsg.getNumber() + " to process " + consMsg.getSender());
+                int[] destination = new int[1];
+                destination[0] = consMsg.sender;
+                tomLayer.communication.send(destination, tomLayer.monitoringMsgFactory
+                        .createProposeResponse(consMsg.getNumber(), consMsg.getEpoch(), ((ConsensusMessage) sm).getValue()));
+            }
+            /** END DynWHEAT **/
+
             if (tomLayer.controller.getStaticConf().getUseMACs() == 0 || consMsg.authenticated || consMsg.getSender() == myId) acceptor.deliver(consMsg);
             else if (consMsg.getType() == MessageFactory.ACCEPT && consMsg.getProof() != null) {
                                         
@@ -191,21 +202,21 @@ public class MessageHandler {
                             +  "from " + sm.sender + " WITH NUMBER " + ((MonitoringMessage) sm).getNumber());
 
 	                switch (((MonitoringMessage) sm).getPaxosVerboseType()) {
-
                         case "DUMMY_PROPOSE":
                             // Send back PROPOSE_RESPONSE
-                            logger.debug("I send PROPOSE_RESPONSE for consensus message " +
-                                    ((MonitoringMessage) sm).getNumber() + " to process " + sm.getSender());
-                            int[] destination = new int[1];
-                            destination[0] = ((MonitoringMessage) sm).sender;
-                            tomLayer.communication.send(destination, tomLayer.monitoringMsgFactory
-                                    .createWriteResponse(((MonitoringMessage) sm).getNumber(), ((MonitoringMessage) sm).getEpoch(),
-                                            ((MonitoringMessage) sm).getValue()));
-
-                            // Todo remember to send POPOSE_RESPONSE also for the leaders PROPOSE
+                            if (tomLayer.controller.getStaticConf().isUseProposeResponse()) {
+                                logger.debug("I send PROPOSE_RESPONSE for consensus message " +
+                                        ((MonitoringMessage) sm).getNumber() + " to process " + sm.getSender());
+                                int[] destination = new int[1];
+                                destination[0] = ((MonitoringMessage) sm).sender;
+                                tomLayer.communication.send(destination, tomLayer.monitoringMsgFactory
+                                        .createProposeResponse(((MonitoringMessage) sm).getNumber(), ((MonitoringMessage) sm).getEpoch(),
+                                                ((MonitoringMessage) sm).getValue()));
+                            }
                             break;
                         case "PROPOSE_RESPONSE":
-                            // TODO Add receive time to Monitor
+                            tomLayer.communication.proposeLatencyMonitor.addRecvdTime(sm.sender,
+                                    ((MonitoringMessage) sm).getNumber(), ((MonitoringMessage) sm).receivedTimestamp);
                             break;
                         case "WRITE_RESPONSE":
                             tomLayer.communication.writeLatencyMonitor.addRecvdTime(sm.sender,

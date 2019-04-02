@@ -51,6 +51,7 @@ public class ServerCommunicationSystem extends Thread {
 
     /** DynWHEAT **/
     public MessageLatencyMonitor writeLatencyMonitor = null;
+    public MessageLatencyMonitor proposeLatencyMonitor = null;
 
     /**
      * Creates a new instance of ServerCommunicationSystem
@@ -71,8 +72,12 @@ public class ServerCommunicationSystem extends Thread {
         //serversConf.increasePortNumber();
 
         /** DynWHEAT **/
-        if (controller.getStaticConf().isUseWriteResponse())
+        if (controller.getStaticConf().isUseDynamicWeights())
             writeLatencyMonitor = Monitor.getInstance(controller).getWriteLatencyMonitor();
+
+        /** DynWHEAT **/
+        if (controller.getStaticConf().isUseDynamicWeights() && controller.getStaticConf().isUseDummyPropose())
+            proposeLatencyMonitor = Monitor.getInstance(controller).getProposeLatencyMonitor();
 
 
         serversConn = new ServersCommunicationLayer(controller, inQueue, replica, writeLatencyMonitor);

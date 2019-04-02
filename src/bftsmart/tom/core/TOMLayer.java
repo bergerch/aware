@@ -393,6 +393,8 @@ public final class TOMLayer extends Thread implements RequestReceiver {
         return bb.makeBatch(pendingRequests, numberOfNonces, System.currentTimeMillis(), controller.getStaticConf().getUseSignatures() == 1);
     }
 
+
+
     /**
      * This is the main code for this thread. It basically waits until this
      * replica becomes the leader, and when so, proposes a value to the other
@@ -432,7 +434,7 @@ public final class TOMLayer extends Thread implements RequestReceiver {
                 canPropose.awaitUninterruptibly();
             }
             proposeLock.unlock();
-            
+
             if (!doWork) break;
 
             logger.debug("I'm the leader.");
@@ -458,6 +460,7 @@ public final class TOMLayer extends Thread implements RequestReceiver {
             if (shouldDoDummyPropose()) {
                 logger.debug("I am going to DUMMY propose");
                 dummyPropose();
+                continue;
             }
             /** End DynWHEAT **/
 
@@ -673,7 +676,9 @@ public final class TOMLayer extends Thread implements RequestReceiver {
         return this.controller.getStaticConf().isUseDynamicWeights() && // Config says Dummy-Propose is enabled
                 (execManager.getCurrentLeader() != this.controller.getStaticConf().getProcessId()) && // I'm NOT the leader
                 (clientsManager.havePendingRequests()) && //there are messages to be ordered
-                (getInExec() == -1); // Not currently in some execution
+                (getInExec() == -1) && // Not currently in some execution
+                ((getLastExec() + 1) % controller.getCurrentViewN() == controller.getStaticConf().getProcessId()); // It's
+                                                                                      // my turn to send a dummy propose
     }
 
     /**

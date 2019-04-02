@@ -34,7 +34,9 @@ import bftsmart.communication.ServerCommunicationSystem;
 import bftsmart.communication.SystemMessage;
 import bftsmart.consensus.Consensus;
 import bftsmart.consensus.messages.ConsensusMessage;
+import bftsmart.dynwheat.messages.MonitoringMessage;
 import bftsmart.dynwheat.monitoring.MessageLatencyMonitor;
+import bftsmart.dynwheat.monitoring.Monitor;
 import bftsmart.reconfiguration.ServerViewController;
 import bftsmart.tom.ServiceReplica;
 import bftsmart.tom.util.TOMUtil;
@@ -76,11 +78,13 @@ public class ServersCommunicationLayer extends Thread {
 
     // DynWHEAT
     public MessageLatencyMonitor writeLatenciesMonitor;
+    public MessageLatencyMonitor proposeLatenciesMonitor;
 
     public ServersCommunicationLayer(ServerViewController controller, LinkedBlockingQueue<SystemMessage> inQueue,
                                      ServiceReplica replica, MessageLatencyMonitor writeLatenciesMonitor) throws Exception {
         this(controller, inQueue, replica);
         this.writeLatenciesMonitor = writeLatenciesMonitor;
+        this.proposeLatenciesMonitor = Monitor.getInstance(controller).getProposeLatencyMonitor();
     }
 
     public ServersCommunicationLayer(ServerViewController controller,
@@ -221,6 +225,13 @@ public class ServersCommunicationLayer extends Thread {
                         writeLatenciesMonitor != null ) {
                     Long timestamp = System.nanoTime();
                     writeLatenciesMonitor.addSentTime(i, ((ConsensusMessage) sm).getNumber(), timestamp);
+                }
+                if (proposeLatenciesMonitor != null && (
+                        (sm instanceof ConsensusMessage && ((ConsensusMessage) sm).getPaxosVerboseType().equals("PROPOSE")) ||
+                         sm instanceof MonitoringMessage && ((MonitoringMessage) sm).getPaxosVerboseType().equals("DUMMY_PROPOSE")))
+                {
+                    Long timestamp = System.nanoTime();
+                    proposeLatenciesMonitor.addSentTime(i, ((ConsensusMessage) sm).getNumber(), timestamp);
                 }
                 /** End DynWHEAT **/
 

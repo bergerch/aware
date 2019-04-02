@@ -498,7 +498,7 @@ public final class Acceptor {
             if (controller.getStaticConf().isUseDynamicWeights()) {
                 for (TOMMessage tm : epoch.getConsensus().getDecision().getDeserializedValue()) {
                     if (tm.getIsMonitoringMessage()) {
-                        logger.debug("Received disseminated monitoring message ");
+                        System.out.println("Received disseminated monitoring message ");
                         Monitor.getInstance(controller).onReceiveMonitoringInformation(tm.getSender(), tm.getContent(), cid);
                     }
                 }

@@ -2,7 +2,6 @@ package bftsmart.dynwheat.monitoring;
 
 import bftsmart.reconfiguration.ServerViewController;
 
-import java.io.IOException;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -68,7 +67,8 @@ public class Monitor {
             public void run() {
                 // Computes the most recent point-to-point latency using the last 1000 (monitoring window) measurements
                 // from consensus rounds
-                freshestWriteLatencies = writeLatencyMonitor.create_M();
+                freshestWriteLatencies = writeLatencyMonitor.create_L("WRITE");
+                freshestProposeLatencies = proposeLatencyMonitor.create_L("PROPOSE");
             }
         }, MONITORING_DELAY, MONITORING_PERIOD);
     }
@@ -116,14 +116,13 @@ public class Monitor {
     public void onReceiveMonitoringInformation(int sender, byte[] value, int consensusID) {
         int n = svc.getCurrentViewN();
 
-        try {
-            Long[] rvcdLatencies = MonitoringDataSynchronizer.bytesToLong(value);
-            m_write[sender] = rvcdLatencies;
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        Measurements li = Measurements.fromBytes(value);
+        m_write[sender] = li.writeLatencies;
+        m_propose[sender] = li.proposeLatencies;
+
         // Debugging and testing:
-        printM(sanitize(m_write), consensusID, n);
+        printM("PROPOSE", m_propose, consensusID, n);
+        printM("WRITE", sanitize(m_write), consensusID, n);
     }
 
 
@@ -144,8 +143,9 @@ public class Monitor {
         return m_ast;
     }
 
-    private static void printM(Long[][] matrix, int consensusID, int n) {
+    private static void printM(String description, Long[][] matrix, int consensusID, int n) {
         String result = "";
+        result += ("--------------- " + description + " ---------------------\n");
         result += ("Sever Latency Matrix for consensus ID " + consensusID + "\n");
         result += ("----------------------------------------------------------\n");
         result += ("       0       1       2        3        4        ....    \n");
