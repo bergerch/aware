@@ -134,6 +134,7 @@ public class FindOptimalWeightConfigTest {
 
         } catch (IOException e) {
             e.printStackTrace();
+            System.out.println("!!!!!!!!!!!!!!! Something went wrong " + e.getStackTrace());
         }
 
 

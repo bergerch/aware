@@ -39,6 +39,7 @@ public class Measurements {
 
             dos.close();
         } catch (IOException e) {
+            System.out.println("!!!!!!!!!!!!!!! Something went wrong " + e.getStackTrace());
         }
 
         return baos.toByteArray();
@@ -64,7 +65,7 @@ public class Measurements {
 
             dis.close();
         } catch (IOException e) {
-
+            System.out.println("!!!!!!!!!!!!!!! Something went wrong " + e.getStackTrace());
         }
 
         return new Measurements(n, writeLatencies, proposeLatencies);

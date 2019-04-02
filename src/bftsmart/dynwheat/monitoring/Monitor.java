@@ -99,11 +99,11 @@ public class Monitor {
     }
 
     public Long[] getFreshestProposeLatencies() {
-        return freshestProposeLatencies;
+        return proposeLatencyMonitor.create_L("PROPOSE");
     }
 
     public Long[] getFreshestWriteLatencies() {
-        return freshestWriteLatencies;
+        return writeLatencyMonitor.create_L("WRITE");
     }
 
     /**

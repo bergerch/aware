@@ -15,10 +15,6 @@ import java.util.TimerTask;
  */
 public class MonitoringDataSynchronizer {
 
-
-    private static final int SYNCHRONISING_DELAY = 30 * 1000;
-    private static final int SYNCHRONISING_PERIOD = 20 * 1000;
-
     private ServiceProxy monitoringDataDisseminationProxy;
 
     /**
@@ -41,7 +37,6 @@ public class MonitoringDataSynchronizer {
                 Long[] writeLatencies = Monitor.getInstance(svc).getFreshestWriteLatencies();
                 Long[] proposeLatencies = Monitor.getInstance(svc).getFreshestProposeLatencies();
 
-
                 Measurements li = new Measurements(svc.getCurrentViewN(), writeLatencies, proposeLatencies);
                 byte[] data = li.toBytes();
 
@@ -50,7 +45,7 @@ public class MonitoringDataSynchronizer {
                 // Testing, remove later:
                 System.out.println("|---> Disseminating monitoring information with total order! ");
             }
-        }, SYNCHRONISING_DELAY, SYNCHRONISING_PERIOD);
+        }, svc.getStaticConf().getSynchronisationDelay(), svc.getStaticConf().getSynchronisationPeriod());
     }
 
     /**
@@ -88,7 +83,6 @@ public class MonitoringDataSynchronizer {
         dis.close();
         return result;
     }
-
 
 
 }

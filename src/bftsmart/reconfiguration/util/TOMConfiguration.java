@@ -80,9 +80,14 @@ public class TOMConfiguration extends Configuration {
 
     // DynWHEAT messages
     private boolean useDummyPropose;
+
+
+
     private boolean useProposeResponse;
     private boolean useWriteResponse;
     private int monitoringWindow;
+    private int synchronisationPeriod;
+    private int synchronisationDelay;
 
 
     /** Creates a new instance of TOMConfiguration */
@@ -414,6 +419,12 @@ public class TOMConfiguration extends Configuration {
             s = (String) configs.remove("system.dw.useWriteResponse");
             useWriteResponse = Boolean.parseBoolean(s);
 
+            s = (String) configs.remove("system.dw.synchronisationPeriod");
+            synchronisationPeriod = s != null ? Integer.parseInt(s) : 20000;
+
+            s = (String) configs.remove("system.dw.synchronisationDelay");
+            synchronisationDelay = s != null ? Integer.parseInt(s) : 30000;
+
 
         } catch (Exception e) {
             logger.error("Could not parse system configuration file",e);
@@ -649,5 +660,21 @@ public class TOMConfiguration extends Configuration {
 
     public void setOptimizationGoal(double optimizationGoal) {
         this.optimizationGoal = optimizationGoal;
+    }
+
+    public int getSynchronisationPeriod() {
+        return synchronisationPeriod;
+    }
+
+    public void setSynchronisationPeriod(int synchronisationPeriod) {
+        this.synchronisationPeriod = synchronisationPeriod;
+    }
+
+    public int getSynchronisationDelay() {
+        return synchronisationDelay;
+    }
+
+    public void setSynchronisationDelay(int synchronisationDelay) {
+        this.synchronisationDelay = synchronisationDelay;
     }
 }
