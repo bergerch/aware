@@ -2,7 +2,7 @@ DynWHEAT 0.1
 ----------
 
 
-This branch contains the sources of DynWHEAT, an automated voting weight tuning and leader positioning scheme that implements the optimizatios and vote assignment schemes of WHEAT [1] and dynamically allows the system to adjust itself to the best configuration.
+This branch contains the sources of DynWHEAT, an automated voting weight tuning and leader positioning scheme that implements the optimizations and vote assignment schemes of WHEAT [1] and dynamically allows the system to adjust itself to the best configuration.
 
 
 Additionally to the steps decribed by WHEAT, you can use the following options to configure your variant of DynWHEAT:
