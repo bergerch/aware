@@ -148,8 +148,23 @@ public class WeightController {
 
         System.out.println("current config is estimated to be " + estimate_current);
 
-        this.best = best;
+        List<DWConfiguration> bestConfigs = new ArrayList<>();
+        for (DWConfiguration dwc: dwConfigurations) {
+            if (dwc.getPredictedLatency() == best.getPredictedLatency()) {
+                bestConfigs.add(dwc);
+            }
+        }
 
+        int currentLeder = this.executionManager.getCurrentLeader();
+
+        best = bestConfigs.get(0);
+        for (DWConfiguration dwc: bestConfigs) {
+            if (dwc.getLeader() == currentLeder) {
+                best = dwc;
+            }
+        }
+
+        this.best = best;
         return best;
     }
 

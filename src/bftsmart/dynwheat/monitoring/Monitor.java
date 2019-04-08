@@ -122,7 +122,7 @@ public class Monitor {
 
         // Debugging and testing:
         printM("PROPOSE", m_propose, consensusID, n);
-        printM("WRITE", sanitize(m_write), consensusID, n);
+        printM("WRITE", m_write, consensusID, n);
     }
 
 
