@@ -6,18 +6,16 @@ This branch contains the sources of DynWHEAT, an automated voting weight tuning 
 
 
 Additionally to the steps decribed by WHEAT, you can use the following options to configure your variant of DynWHEAT:
-```
-############################################
-######       Dynamic Weights          ######
-############################################
 
-#Needs system.useweights for working
+First, configure which optimizations you want to use:
+```
 system.dw.useDynamicWeights = true
 
-#Needs system.useweights for working
 system.dw.useLeaderSelection = true
+```
 
-
+Then you can granulary choose which monitoring messages DynWHEAT employs:
+```
 #server uses a distinct DUMMY_PROPOSE message for monitoring
 system.dw.useDummyPropose = false
 
@@ -28,8 +26,11 @@ system.dw.useProposeResponse = false
 #server uses a distinct WRITE_RESPONSE message for monitoring
 #Must be true in BFT mode
 system.dw.useWriteResponse = true
+```
 
+We also provide further options to modify the monitoring and optimization prodecure:
 
+```
 #Every x consensus, the calculation is triggered
 system.dw.calculationInterval = 1000
 
