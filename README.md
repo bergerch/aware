@@ -1,3 +1,61 @@
+DynWHEAT 0.1
+----------
+
+![](img/dynWHEATLogo.png)
+
+This branch contains the sources of DynWHEAT, an automated voting weight tuning and leader positioning scheme that implements the optimizations and vote assignment schemes of WHEAT [1] and dynamically allows the system to adjust itself to the best configuration.
+
+
+Additionally to the steps decribed by WHEAT, you can use the following options to configure your variant of DynWHEAT:
+
+First, configure which optimizations you want to use:
+```
+system.dw.useDynamicWeights = true
+
+system.dw.useLeaderSelection = true
+```
+
+Then you can granulary choose which monitoring messages DynWHEAT employs:
+```
+#server uses a distinct DUMMY_PROPOSE message for monitoring
+system.dw.useDummyPropose = false
+
+#server uses a distinct PROPOSE_RESPONSE message for monitoring
+#Must be true in BFT mode
+system.dw.useProposeResponse = false
+
+#server uses a distinct WRITE_RESPONSE message for monitoring
+#Must be true in BFT mode
+system.dw.useWriteResponse = true
+```
+
+We also provide further options to modify the monitoring and optimization prodecure:
+
+```
+#Every x consensus, the calculation is triggered
+system.dw.calculationInterval = 1000
+
+#optimization threshold: 1.00 : always switch to the best; else switch if current config latency is higher than optimization
+#goal times the best configs latency
+system.dw.optimizationGoal = 1.00
+
+#Monitoring interval: How many monitoring messages' latencies are being saved (window of last monitoring instances)
+system.dw.monitoringWindow = 1000
+
+#Synchronization Period
+system.dw.synchronisationPeriod = 10000
+
+#Synchronization Delay
+system.dw.synchronisationDelay = 10000
+
+#server bound monitoring overhead by omega (double) in interval [0,1]
+#1 means, monitor every consensus, 0.67 means monitor roughly 2 out of 3 while 0.1 means every 10th consensus instance
+system.dw.monitoringOverhead = 1.0
+```
+
+You can deploy DynWHEAT in any starting configuration. It will automatically monitor and try to self-optimize
+
+
 WHEAT 0.2-alpha
 ----------
 
