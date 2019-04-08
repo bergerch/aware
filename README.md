@@ -52,6 +52,9 @@ system.dw.synchronisationDelay = 10000
 system.dw.monitoringOverhead = 1.0
 ```
 
+You can deploy DynWHEAT in any starting configuration. It will automatically monitor and try to self-optimize
+
+
 WHEAT 0.2-alpha
 ----------
 
