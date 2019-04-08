@@ -2,9 +2,13 @@ package bftsmart.dynwheat.monitoring;
 
 import java.io.*;
 
+/**
+ * Measurements that represent latency vectors Li = <l0, l1, .. ln-1> that replicas will invoke with total order
+ * then use for optimizations...
+ */
 public class Measurements {
 
-    public int n;
+    public int n; // number of replicas
     public Long[] writeLatencies;
     public Long[] proposeLatencies;
 

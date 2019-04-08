@@ -1,6 +1,8 @@
 package bftsmart.dynwheat.monitoring;
 
+import bftsmart.consensus.Epoch;
 import bftsmart.reconfiguration.ServerViewController;
+import bftsmart.tom.core.messages.TOMMessage;
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -106,14 +108,31 @@ public class Monitor {
         return writeLatencyMonitor.create_L("WRITE");
     }
 
+
+    /**
+     * Processes measurements decided in come consensus
+     *
+     * @param epoch contains the decision
+     * @param cid consensus id
+     */
+    public void handleMonitoringMessages(Epoch epoch, int cid) {
+        if (svc.getStaticConf().isUseDynamicWeights()) {
+            for (TOMMessage tm : epoch.getConsensus().getDecision().getDeserializedValue()) {
+                if (tm.getIsMonitoringMessage()) {
+                    System.out.println("Received disseminated monitoring message ");
+                    onReceiveMonitoringInformation(tm.getSender(), tm.getContent(), cid);
+                }
+            }
+        }
+    }
+
     /**
      * Gets called when a consensus completes and the consensus includes monitoring TOMMessages with measurement information
-     *
      * @param sender      a replica reporting its own measurement from its own perspective
      * @param value       a byte array containing the measurements
      * @param consensusID the specified consensus instance
      */
-    public void onReceiveMonitoringInformation(int sender, byte[] value, int consensusID) {
+    private void onReceiveMonitoringInformation(int sender, byte[] value, int consensusID) {
         int n = svc.getCurrentViewN();
 
         Measurements li = Measurements.fromBytes(value);
@@ -121,8 +140,8 @@ public class Monitor {
         m_propose[sender] = li.proposeLatencies;
 
         // Debugging and testing:
-        printM("PROPOSE", m_propose, consensusID, n);
-        printM("WRITE", m_write, consensusID, n);
+        //printM("PROPOSE", m_propose, consensusID, n);
+        if (sender == 0 ) printM("WRITE", m_write, consensusID, n);
     }
 
 
@@ -173,4 +192,6 @@ public class Monitor {
     public Long[][] getM_write() {
         return m_write;
     }
+
+
 }

@@ -491,66 +491,11 @@ public final class Acceptor {
             decide(epoch);
 
             /** DynWHEAT */
-            /*
-             * We inspect of there are monitoring data dissemination messages included in this consensus:
-             *      - if so call Monitor to handled received monitoring messages of other processes
-             */
-            if (controller.getStaticConf().isUseDynamicWeights()) {
-                for (TOMMessage tm : epoch.getConsensus().getDecision().getDeserializedValue()) {
-                    if (tm.getIsMonitoringMessage()) {
-                        System.out.println("Received disseminated monitoring message ");
-                        Monitor.getInstance(controller).onReceiveMonitoringInformation(tm.getSender(), tm.getContent(), cid);
-                    }
-                }
-            }
-
-            // Re-calculate best weight distribution after every x consensus
-            if (controller.getStaticConf().isUseDynamicWeights() && cid % controller.getStaticConf().getCalculationInterval() == 0 & cid > 0) {
-
-                WeightController weightController = WeightController.getInstance(controller, executionManager);
-                DWConfiguration best = weightController.computeBest();
-                DWConfiguration current = weightController.getCurrentDW();
-
-                // What is the best weight config and what is the current one?
-                WeightConfiguration bestWeights = best.getWeightConfiguration();
-                WeightConfiguration currentWeights = current.getWeightConfiguration();
-
-
-                if (controller.getStaticConf().isUseDynamicWeights() && !currentWeights.equals(bestWeights) &&
-                        current.getPredictedLatency() >= best.getPredictedLatency() * controller.getStaticConf().getOptimizationGoal()) {
-                    // The current weight configuration is not the best
-                    // Deterministically change weights (this decision will be the same in all correct replicas)
-                    controller.getCurrentView().setWeights(bestWeights);
-                    WeightController.getInstance(controller, executionManager).setCurrent(bestWeights);
-                    System.out.println("|DynWHEAT|  [X] Optimization: Weight adjustment, now using " + bestWeights);
-                } else {
-                    // Keep the current configuration
-                    System.out.println("|DynWHEAT|  [ ] Optimization: Weight adjustment, no adjustment," +
-                            " current weight config is the best weight config");
-                }
-
-                if (controller.getStaticConf().isUseLeaderSelection() && executionManager.getCurrentLeader() != best.getLeader() &&
-                        current.getPredictedLatency() >= best.getPredictedLatency() * controller.getStaticConf().getOptimizationGoal()) {
-                    // The current leader is not the best
-                    // Deterministically enforce regency of the best leader;
-
-                    // todo this code is for highly experimental testing only, remove later
-                    // todo note this code endangers the correctness of the LC protocol and may result in unpredictable
-                    // todo behaviour such as spinning leaders ?
-
-                    //LCMessage stop = new LCMessage(controller.getStaticConf().getProcessId(), TOMUtil.STOP,
-                    // tomLayer.getSynchronizer().getLCManager().getLastReg() + 1, ..);
-                    //communication.send(this.controller.getCurrentViewOtherAcceptors(), stop);
-
-                    //executionManager.getTOMLayer().getSynchronizer().triggerTimeout(new ArrayList<>());
-
-                    executionManager.setNewLeader(best.getLeader());
-                    System.out.println("|DynWHEAT|  [X] Optimization: leader selection, new leader is " + best.getLeader());
-                } else { // Keep the current configuration
-                    System.out.println("|DynWHEAT|  [ ] Optimization: leader selection: no leader change," +
-                            " current leader is the best leader");
-                }
-            }
+             // We inspect of there are monitoring data dissemination messages included in this consensus:
+             //      - if so call Monitor to handled received monitoring messages of other processes
+            Monitor.getInstance(controller).handleMonitoringMessages(epoch, cid);
+            // Check if an optimization is necessary and if so tune weights (or change leader)
+            WeightController.getInstance(controller, executionManager).optimize(cid);
             /** End DynWHEAT */
         }
     }

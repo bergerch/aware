@@ -1,8 +1,10 @@
 package bftsmart.dynwheat.decisions;
 
+import bftsmart.consensus.Epoch;
 import bftsmart.dynwheat.monitoring.Monitor;
 import bftsmart.reconfiguration.ServerViewController;
 import bftsmart.tom.core.ExecutionManager;
+import bftsmart.tom.core.messages.TOMMessage;
 
 import java.util.*;
 
@@ -56,7 +58,8 @@ public class WeightController {
         timer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
-                System.out.println("%%%%%%%%% WeightController: Currently using weight config " + instance.getCurrent() + " with leader " + executionManager.getCurrentLeader());
+                System.out.println("%%%%%%%%% WeightController: Currently using weight config " + instance.getCurrent()
+                        + " with leader " + executionManager.getCurrentLeader());
             }
         }, 15*1000, 5*1000);
     }
@@ -148,6 +151,7 @@ public class WeightController {
 
         System.out.println("current config is estimated to be " + estimate_current);
 
+
         List<DWConfiguration> bestConfigs = new ArrayList<>();
         for (DWConfiguration dwc: dwConfigurations) {
             if (dwc.getPredictedLatency() == best.getPredictedLatency()) {
@@ -155,11 +159,11 @@ public class WeightController {
             }
         }
 
-        int currentLeder = this.executionManager.getCurrentLeader();
+        int currentLeader = this.executionManager.getCurrentLeader();
 
         best = bestConfigs.get(0);
         for (DWConfiguration dwc: bestConfigs) {
-            if (dwc.getLeader() == currentLeder) {
+            if (dwc.getLeader() == currentLeader) {
                 best = dwc;
             }
         }
@@ -167,6 +171,54 @@ public class WeightController {
         this.best = best;
         return best;
     }
+
+    public void optimize(int cid) {
+
+
+        // Re-calculate best weight distribution after every x consensus
+        if (svc.getStaticConf().isUseDynamicWeights() && cid % svc.getStaticConf().getCalculationInterval() == 0 & cid > 0) {
+
+            WeightController weightController = WeightController.getInstance(svc, executionManager);
+            DWConfiguration best = weightController.computeBest();
+            DWConfiguration current = weightController.getCurrentDW();
+
+            // What is the best weight config and what is the current one?
+            WeightConfiguration bestWeights = best.getWeightConfiguration();
+            WeightConfiguration currentWeights = current.getWeightConfiguration();
+
+
+            if (svc.getStaticConf().isUseDynamicWeights() && !currentWeights.equals(bestWeights) &&
+                    current.getPredictedLatency() >= best.getPredictedLatency() * svc.getStaticConf().getOptimizationGoal()) {
+                // The current weight configuration is not the best
+                // Deterministically change weights (this decision will be the same in all correct replicas)
+                svc.getCurrentView().setWeights(bestWeights);
+                WeightController.getInstance(svc, executionManager).setCurrent(bestWeights);
+                System.out.println("|DynWHEAT|  [X] Optimization: Weight adjustment, now using " + bestWeights);
+            } else {
+                // Keep the current configuration
+                System.out.println("|DynWHEAT|  [ ] Optimization: Weight adjustment, no adjustment," +
+                        " current weight config is the best weight config");
+            }
+
+            if (svc.getStaticConf().isUseLeaderSelection() && executionManager.getCurrentLeader() != best.getLeader() &&
+                    current.getPredictedLatency() >= best.getPredictedLatency() * svc.getStaticConf().getOptimizationGoal()) {
+                // The current leader is not the best
+                //  lets change the leader and see what happens;
+
+                // todo this code is for highly experimental testing only
+
+                executionManager.getTOMLayer().getSynchronizer().getLCManager().setNewLeader(
+                        (best.getLeader()-1+svc.getCurrentViewN()) % svc.getCurrentViewN());
+                executionManager.getTOMLayer().getSynchronizer().triggerTimeout(new ArrayList<>());
+
+                System.out.println("|DynWHEAT|  [X] Optimization: leader selection, new leader is " + best.getLeader());
+            } else { // Keep the current configuration
+                System.out.println("|DynWHEAT|  [ ] Optimization: leader selection: no leader change," +
+                        " current leader is the best leader");
+            }
+        }
+    }
+
 
     /**
      * Getter and Setter
