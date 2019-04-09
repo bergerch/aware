@@ -204,7 +204,7 @@ public class ThroughputLatencyClient {
 
             int req = 0;
             
-            for (int i = 0; i < numberOfOps / 2; i++, req++) {
+            for (int i = 0; i < 20; i++, req++) {
                 if (verbose) System.out.print("Sending req " + req + "...");
 
                 if(readOnly)
@@ -233,25 +233,42 @@ public class ThroughputLatencyClient {
                 }
             }
 
-            Storage st = new Storage(numberOfOps / 2);
+            Storage st = new Storage(numberOfOps);
+            long[] realRvdTime = new long[numberOfOps];
 
-            System.out.println("Executing experiment for " + numberOfOps / 2 + " ops");
+            System.out.println("Executing experiment for " + numberOfOps + " ops");
 
-            for (int i = 0; i < numberOfOps / 2; i++, req++) {
-                try {
-                    Thread.sleep(Math.round(Math.random() * 500));
-                } catch (InterruptedException ex) {
-                }
-                long last_send_instant = System.nanoTime();
+            for (int i = 0; i < numberOfOps; i++, req++) {
+             //   try {
+             //       Thread.sleep(Math.round(Math.random() * 500));
+             //   } catch (InterruptedException ex) {
+             //   }
+
                 if (verbose) System.out.print(this.id + " // Sending req " + req + "...");
 
+                long last_send_instant = System.currentTimeMillis();
                 if(readOnly)
                         proxy.invokeUnordered(request);
                 else
                         proxy.invokeOrdered(request);
                         
                 if (verbose) System.out.println(numberOfOps + " // sent!");
-                st.store(System.nanoTime() - last_send_instant);
+                long rcvd = System.currentTimeMillis();();
+                st.store(rcvd - last_send_instant);
+                realRvdTime[i] = rcvd;
+
+                String line = realRvdTime[i] + ", " + st.getValues()[i] + "\n";
+
+                Writer output;
+                try {
+                    output = new BufferedWriter(new FileWriter("measurement-client" + id, true));
+                    output.append(line);
+                    output.close();
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
 
                 if (interval > 0) {
                     try {
@@ -274,20 +291,27 @@ public class ThroughputLatencyClient {
 
 
 
+            /*
             if(id == initId) {
                 String line = "" + proxy.getViewManager().getStaticConf().getInitialLeader() + "," + proxy.getViewManager().getCurrentView().getViewString() + ",";
-                System.out.println(this.id + " // Average time for " + numberOfOps / 2 + " executions (-10%) = " + st.getAverage(true) / 1000 + " us ");
+                System.out.println(this.id + " // Average time for " + numberOfOps + " executions (-10%) = " + st.getAverage(true) / 1000 + " us ");
                 line += st.getAverage(true) / 1000 + ",";
-                System.out.println(this.id + " // Standard desviation for " + numberOfOps / 2 + " executions (-10%) = " + st.getDP(true) / 1000 + " us ");
+                System.out.println(this.id + " // Standard desviation for " + numberOfOps + " executions (-10%) = " + st.getDP(true) / 1000 + " us ");
                 line += st.getDP(true) / 1000 + ",";
-                System.out.println(this.id + " // Average time for " + numberOfOps / 2 + " executions (all samples) = " + st.getAverage(false) / 1000 + " us ");
-                System.out.println(this.id + " // Standard desviation for " + numberOfOps / 2 + " executions (all samples) = " + st.getDP(false) / 1000 + " us ");
-                System.out.println(this.id + " // Maximum time for " + numberOfOps / 2 + " executions (all samples) = " + st.getMax(false) / 1000 + " us ");
-                System.out.println(this.id + " // 50th percentile latencies " + numberOfOps / 2 + " executions (all samples) = " + st.getPercentile(0.5) / 1000 + " us ");
+                System.out.println(this.id + " // Average time for " + numberOfOps + " executions (all samples) = " + st.getAverage(false) / 1000 + " us ");
+                System.out.println(this.id + " // Standard desviation for " + numberOfOps + " executions (all samples) = " + st.getDP(false) / 1000 + " us ");
+                System.out.println(this.id + " // Maximum time for " + numberOfOps + " executions (all samples) = " + st.getMax(false) / 1000 + " us ");
+                System.out.println(this.id + " // 50th percentile latencies " + numberOfOps + " executions (all samples) = " + st.getPercentile(0.5) / 1000 + " us ");
                 line +=  st.getPercentile(0.5) / 1000 + ",";
-                System.out.println(this.id + " // 90th percentile latencies " + numberOfOps / 2 + " executions (all samples) = " + st.getPercentile(0.9) / 1000 + " us ");
+                System.out.println(this.id + " // 90th percentile latencies " + numberOfOps + " executions (all samples) = " + st.getPercentile(0.9) / 1000 + " us ");
                 line +=  st.getPercentile(0.9) / 1000 + ",";
                 line += "\n";
+
+                line += "Time, Latency \n";
+
+                for (int i = 0; i < numberOfOps; i++) {
+                    line += realRvdTime[i] + ", " + st.getValues()[i] + "\n";
+                }
 
                 Writer output;
                 try {
@@ -299,6 +323,7 @@ public class ThroughputLatencyClient {
                     e.printStackTrace();
                 }
             }
+            */
 
             System.out.println("Fnished! ... but will continue sending requests...");
             for (int i = 0; i < numberOfOps-1 ; i++, req++) {

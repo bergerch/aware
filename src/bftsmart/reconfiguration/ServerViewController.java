@@ -47,7 +47,7 @@ public class ServerViewController extends ViewController {
     private int[] otherProcesses;
     private int[] lastJoinStet;
     private List<TOMMessage> updates = new LinkedList<TOMMessage>();
-    private TOMLayer tomLayer;
+    public TOMLayer tomLayer;
    // protected View initialView;
     
     private int overlayN;
