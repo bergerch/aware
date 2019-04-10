@@ -246,16 +246,17 @@ public class ThroughputLatencyClient {
 
                 if (verbose) System.out.print(this.id + " // Sending req " + req + "...");
 
-                long last_send_instant = System.currentTimeMillis();
+                long last_send_instant = System.nanoTime();
                 if(readOnly)
                         proxy.invokeUnordered(request);
                 else
                         proxy.invokeOrdered(request);
                         
                 if (verbose) System.out.println(numberOfOps + " // sent!");
-                long rcvd = System.currentTimeMillis();();
+                long rcvd = System.nanoTime();
+                long rcvdcurrrentMillis = System.currentTimeMillis();
                 st.store(rcvd - last_send_instant);
-                realRvdTime[i] = rcvd;
+                realRvdTime[i] = rcvdcurrrentMillis;
 
                 String line = realRvdTime[i] + ", " + st.getValues()[i] + "\n";
 

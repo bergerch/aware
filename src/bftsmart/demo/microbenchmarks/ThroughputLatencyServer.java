@@ -235,7 +235,7 @@ public final class ThroughputLatencyServer extends DefaultRecoverable{
         iterations++;
 
         if (msgCtx != null && msgCtx.getFirstInBatch() != null) {
-            
+
 
             readOnly = msgCtx.readOnly;
                     
@@ -245,7 +245,7 @@ public final class ThroughputLatencyServer extends DefaultRecoverable{
 
             if (readOnly == false) {
 
-                decisionTimes[decisionCounter] = msgCtx.getFirstInBatch().decisionTime;
+                decisionTimes[decisionCounter] = System.currentTimeMillis();
                 consensusLatency.store(msgCtx.getFirstInBatch().decisionTime - msgCtx.getFirstInBatch().consensusStartTime);
                 long temp = msgCtx.getFirstInBatch().consensusStartTime - msgCtx.getFirstInBatch().receptionTime;
                 preConsLatency.store(temp > 0 ? temp : 0);
@@ -253,7 +253,28 @@ public final class ThroughputLatencyServer extends DefaultRecoverable{
                 proposeLatency.store(msgCtx.getFirstInBatch().writeSentTime - msgCtx.getFirstInBatch().consensusStartTime);
                 writeLatency.store(msgCtx.getFirstInBatch().acceptSentTime - msgCtx.getFirstInBatch().writeSentTime);
                 acceptLatency.store(msgCtx.getFirstInBatch().decisionTime - msgCtx.getFirstInBatch().acceptSentTime);
-                
+
+                String line = "\n";
+                if (decisionCounter == 0) {
+                    line += "Time, Consensus Latency, Configuration \n";
+                }
+
+                line += System.currentTimeMillis() + ", " + (msgCtx.getFirstInBatch().decisionTime - msgCtx.getFirstInBatch().consensusStartTime) + ", " +
+                        replica.getReplicaContext().getSVController().tomLayer.execManager.getCurrentLeader() + "," +
+                        replica.getReplicaContext().getCurrentView().getViewString() + ",";
+
+
+                Writer output;
+                try {
+                    output = new BufferedWriter(new FileWriter("measurement-server" + replica.getId(), true));
+                    output.append(line);
+                    output.close();
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                decisionCounter++;
 
             } else {
             
@@ -330,28 +351,6 @@ public final class ThroughputLatencyServer extends DefaultRecoverable{
 
 
         } */
-
-        String line = "\n";
-        if (decisionCounter == 0) {
-            line += "Time, Consensus Latency, Configuration \n";
-        }
-
-        line += decisionTimes[decisionCounter] + ", " + (msgCtx.getFirstInBatch().decisionTime - msgCtx.getFirstInBatch().consensusStartTime) + ", " +
-                    replica.getReplicaContext().getSVController().tomLayer.execManager.getCurrentLeader() + "," +
-                    replica.getReplicaContext().getCurrentView().getViewString() + ",";
-
-
-        Writer output;
-        try {
-            output = new BufferedWriter(new FileWriter("measurement-server" + replica.getId(), true));
-            output.append(line);
-            output.close();
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        decisionCounter++;
 
 
         return reply;
