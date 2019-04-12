@@ -165,6 +165,7 @@ public class WeightController {
         for (DWConfiguration dwc: bestConfigs) {
             if (dwc.getLeader() == currentLeader) {
                 best = dwc;
+                break;
             }
         }
 
@@ -207,15 +208,34 @@ public class WeightController {
 
                 // todo this code is for highly experimental testing only
 
-                executionManager.getTOMLayer().getSynchronizer().getLCManager().setNewLeader(
-                        (best.getLeader()-1+svc.getCurrentViewN()) % svc.getCurrentViewN());
-                executionManager.getTOMLayer().getSynchronizer().triggerTimeout(new ArrayList<>());
+
+               // if (executionManager.getCurrentLeader() == svc.getStaticConf().getProcessId()) {
+                //    executionManager.setNewLeader();
+              //  }
+
+
+                 System.out.println("Shortening LC timeout");
+                executionManager.getTOMLayer().requestsTimer.stopTimer();
+                executionManager.getTOMLayer().requestsTimer.setShortTimeout(3000);
+                executionManager.getTOMLayer().requestsTimer.startTimer();
+               executionManager.getTOMLayer().getSynchronizer().getLCManager().setNewLeader(
+                       (best.getLeader()-1+svc.getCurrentViewN()) % svc.getCurrentViewN());
+                executionManager.getTOMLayer().getSynchronizer().triggerTimeout(new LinkedList<>());
+
+
+              //  executionManager.setNewLeader((best.getLeader()-1+svc.getCurrentViewN()) % svc.getCurrentViewN());
+                // executionManager.getTOMLayer().getSynchronizer().triggerTimeout(new LinkedList<>());
+
+
+                //TODO: Reactive it and make it work
+
 
                 System.out.println("|DynWHEAT|  [X] Optimization: leader selection, new leader is " + best.getLeader());
             } else { // Keep the current configuration
                 System.out.println("|DynWHEAT|  [ ] Optimization: leader selection: no leader change," +
                         " current leader is the best leader");
             }
+            Monitor.getInstance(viewControl).init(svc.getCurrentViewN());
         }
     }
 

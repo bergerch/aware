@@ -597,7 +597,7 @@ public final class TOMLayer extends Thread implements RequestReceiver {
     public void forwardRequestToLeader(TOMMessage request) {
         int leaderId = execManager.getCurrentLeader();
         if (this.controller.isCurrentViewMember(leaderId)) {
-            logger.debug("Forwarding " + request + " to " + leaderId);
+            logger.info(">>>>>>>> Forwarding " + request + " to " + leaderId);
             communication.send(new int[]{leaderId},
                     new ForwardedMessage(this.controller.getStaticConf().getProcessId(), request));
         }

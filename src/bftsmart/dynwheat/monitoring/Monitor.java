@@ -53,14 +53,8 @@ public class Monitor {
         // Initialize
         this.writeLatencyMonitor = new MessageLatencyMonitor(svc);
         this.proposeLatencyMonitor = new MessageLatencyMonitor(svc);
-        this.m_propose = new Long[n][n];
-        this.m_write = new Long[n][n];
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < n; j++) {
-                m_write[i][j] = MISSING_VALUE;
-                m_propose[i][j] = MISSING_VALUE;
-            }
-        }
+
+        init(n);
 
         // Periodically compute point-to-pont latencies
         Timer timer = new Timer();
@@ -140,8 +134,8 @@ public class Monitor {
         m_propose[sender] = li.proposeLatencies;
 
         // Debugging and testing:
-        //printM("PROPOSE", m_propose, consensusID, n);
-        if (sender == 0 ) printM("WRITE", m_write, consensusID, n);
+        printM("PROPOSE", m_propose, consensusID, n);
+        printM("WRITE", m_write, consensusID, n);
     }
 
 
@@ -191,6 +185,17 @@ public class Monitor {
 
     public Long[][] getM_write() {
         return m_write;
+    }
+
+    public void init(int n) {
+        this.m_propose = new Long[n][n];
+        this.m_write = new Long[n][n];
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                m_write[i][j] = MISSING_VALUE;
+                m_propose[i][j] = MISSING_VALUE;
+            }
+        }
     }
 
 
