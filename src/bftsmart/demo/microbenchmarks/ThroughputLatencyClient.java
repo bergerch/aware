@@ -203,20 +203,20 @@ public class ThroughputLatencyClient {
             System.out.println("Warm up...");
 
             int req = 0;
-            
-            for (int i = 0; i < 20; i++, req++) {
+
+            for (int i = 0; i < 100; i++, req++) {
                 if (verbose) System.out.print("Sending req " + req + "...");
 
-                if(readOnly)
-                        proxy.invokeUnordered(request);
+                if (readOnly)
+                    proxy.invokeUnordered(request);
                 else
-                        proxy.invokeOrdered(request);
-                        
+                    proxy.invokeOrdered(request);
+
                 if (verbose) System.out.println(" sent!");
 
                 if (verbose && (req % 1000 == 0)) System.out.println(this.id + " // " + req + " operations sent!");
 
-		if (interval > 0) {
+                if (interval > 0) {
                     try {
                         //sleeps interval ms before sending next request
                         Thread.sleep(interval);
@@ -232,6 +232,7 @@ public class ThroughputLatencyClient {
                     }
                 }
             }
+
 
             Storage st = new Storage(numberOfOps);
             long[] realRvdTime = new long[numberOfOps];
@@ -256,6 +257,7 @@ public class ThroughputLatencyClient {
                 long rcvd = System.nanoTime();
                 long rcvdcurrrentMillis = System.currentTimeMillis();
                 st.store(rcvd - last_send_instant);
+               /*
                 realRvdTime[i] = rcvdcurrrentMillis;
 
                 String line = realRvdTime[i] + ", " + st.getValues()[i] + "\n";
@@ -269,7 +271,7 @@ public class ThroughputLatencyClient {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-
+*/
 
                 if (interval > 0) {
                     try {
@@ -291,8 +293,6 @@ public class ThroughputLatencyClient {
             }
 
 
-
-            /*
             if(id == initId) {
                 String line = "" + proxy.getViewManager().getStaticConf().getInitialLeader() + "," + proxy.getViewManager().getCurrentView().getViewString() + ",";
                 System.out.println(this.id + " // Average time for " + numberOfOps + " executions (-10%) = " + st.getAverage(true) / 1000 + " us ");
@@ -308,12 +308,6 @@ public class ThroughputLatencyClient {
                 line +=  st.getPercentile(0.9) / 1000 + ",";
                 line += "\n";
 
-                line += "Time, Latency \n";
-
-                for (int i = 0; i < numberOfOps; i++) {
-                    line += realRvdTime[i] + ", " + st.getValues()[i] + "\n";
-                }
-
                 Writer output;
                 try {
                     output = new BufferedWriter(new FileWriter("measurement-client" + id, true));
@@ -324,7 +318,7 @@ public class ThroughputLatencyClient {
                     e.printStackTrace();
                 }
             }
-            */
+
 
             System.out.println("Fnished! ... but will continue sending requests...");
             for (int i = 0; i < numberOfOps-1 ; i++, req++) {
