@@ -73,7 +73,10 @@ public class MessageHandler {
             ConsensusMessage consMsg = (ConsensusMessage) sm;
 
             /** DynWHEAT: Send back WRITE_RESPONSE **/
-            if (tomLayer.controller.getStaticConf().isUseWriteResponse() && consMsg.getPaxosVerboseType().equals("WRITE")) {
+            if (tomLayer.controller.getStaticConf().isUseWriteResponse() && consMsg.getPaxosVerboseType().equals("WRITE") &&
+               (consMsg.getNumber()-1) * tomLayer.controller.getStaticConf().getMonitoringOverhead() !=
+                Math.floor(consMsg.getNumber() * tomLayer.controller.getStaticConf().getMonitoringOverhead())) {
+
                 logger.debug("I send WRITE-RESPONSE for consensus message " + consMsg.getNumber() + " to process " + consMsg.getSender());
                 int[] destination = new int[1];
                 destination[0] = consMsg.sender;
