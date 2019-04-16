@@ -12,8 +12,7 @@ public class Measurements {
     public Long[] writeLatencies;
     public Long[] proposeLatencies;
 
-    public Measurements() {
-    }
+    public Measurements() { }
 
     public Measurements(int n, Long[] writeLatencies, Long[] proposeLatencies) {
         this.n = n;

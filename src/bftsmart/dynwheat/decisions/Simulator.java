@@ -104,7 +104,6 @@ public class Simulator {
         boolean isBFT =  (viewControl == null) || viewControl.getStaticConf().isBFT();
 
 
-
         while (rounds > 0) { // If r > 1, compute the amortized consensus latency for multiple times r under the
             // assumptions that a new consensus starts immediately after the last instance finishes
 
