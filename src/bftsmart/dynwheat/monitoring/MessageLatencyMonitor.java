@@ -14,7 +14,7 @@ public class MessageLatencyMonitor {
 
     private int window;
     private ServerViewController controller;
-    private ArrayList<TreeMap<Integer, Integer>> sentMsgChallenges;
+    private TreeMap<Integer, Integer> sentMsgChallenges;
 
     private ArrayList<TreeMap<Integer, Long>> sentTimestamps;
     private ArrayList<TreeMap<Integer, Long>> recvdTimestamps;
@@ -34,12 +34,13 @@ public class MessageLatencyMonitor {
         int n = controller.getCurrentViewN();
         this.sentTimestamps = new ArrayList<>();
         this.recvdTimestamps = new ArrayList<>();
-        this.sentMsgChallenges = new ArrayList<>();
+
         for (int i = 0; i < n; i++) {
             sentTimestamps.add(i, new TreeMap<>());
             recvdTimestamps.add(i, new TreeMap<>());
-            sentMsgChallenges.add(i, new TreeMap<>());  // Todo only in BFT
+
         }
+        sentMsgChallenges = new TreeMap<>();  // Todo only in BFT
     }
 
     /**
@@ -68,7 +69,7 @@ public class MessageLatencyMonitor {
         this.addSentTime(replicaID, monitoringInstanceID, timestamp);
 
         // Todo only in BFT:
-        this.sentMsgChallenges.get(replicaID).put(monitoringInstanceID % window, challenge);
+        this.sentMsgChallenges.put(monitoringInstanceID % window, challenge);
     }
 
 
@@ -95,9 +96,10 @@ public class MessageLatencyMonitor {
      */
     public synchronized void addRecvdTime(int replicaID, int monitoringInstanceID, Long timestamp, int challenge) {
         // Only add a response message timestamp if there is a corresponding sent message AND challenge was included in response
-        if (this.sentTimestamps.get(replicaID).get(monitoringInstanceID % window) != null
-                && this.sentMsgChallenges.get(replicaID).get(monitoringInstanceID % window).equals(challenge)) {
-            this.recvdTimestamps.get(replicaID).put(monitoringInstanceID % window, timestamp);
+        if (this.sentMsgChallenges.get(monitoringInstanceID % window).equals(challenge)) {
+            this.addRecvdTime(replicaID, monitoringInstanceID, timestamp);
+        } else {
+            System.out.println(challenge + " does not EQUAL Expected " + this.sentMsgChallenges.get(monitoringInstanceID % window));
         }
     }
 

@@ -35,6 +35,8 @@ public class ConsensusMessage extends SystemMessage {
     // Can be either a MAC vector or a signature
 
     /** DynWHEAT **/
+    protected int challenge; // only necessary for BFT
+
     public long sentTimestamp;
     public long receivedTimestamp;
 
@@ -62,7 +64,6 @@ public class ConsensusMessage extends SystemMessage {
         this.epoch = epoch;
         this.value = value;
         //this.macVector = proof;
-
     }
 
 
@@ -80,6 +81,7 @@ public class ConsensusMessage extends SystemMessage {
 
     }
 
+
     // Implemented method of the Externalizable interface
     @Override
     public void writeExternal(ObjectOutput out) throws IOException {
@@ -92,6 +94,8 @@ public class ConsensusMessage extends SystemMessage {
 
 
         /*** DynWHEAT **/
+        out.writeInt(challenge);
+
         sentTimestamp = System.nanoTime();
         out.writeLong(sentTimestamp);
 
@@ -130,6 +134,7 @@ public class ConsensusMessage extends SystemMessage {
 
 
         /** DynWHEAT **/
+        challenge = in.readInt();
         sentTimestamp = in.readLong();
         receivedTimestamp = System.nanoTime();
 
@@ -209,6 +214,14 @@ public class ConsensusMessage extends SystemMessage {
 
         return paxosType;
 
+    }
+
+    public int getChallenge() {
+        return challenge;
+    }
+
+    public void setChallenge(int challenge) {
+        this.challenge = challenge;
     }
 
     /**

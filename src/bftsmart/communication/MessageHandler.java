@@ -81,7 +81,7 @@ public class MessageHandler {
                 int[] destination = new int[1];
                 destination[0] = consMsg.sender;
                 tomLayer.communication.send(destination, tomLayer.monitoringMsgFactory
-                       .createWriteResponse(consMsg.getNumber(), consMsg.getEpoch(), null));
+                       .createWriteResponse(consMsg.getNumber(), consMsg.getEpoch(), consMsg.getChallenge(), null));
             }
             /** END DynWHEAT **/
 
@@ -92,7 +92,7 @@ public class MessageHandler {
                 int[] destination = new int[1];
                 destination[0] = consMsg.sender;
                 tomLayer.communication.send(destination, tomLayer.monitoringMsgFactory
-                        .createProposeResponse(consMsg.getNumber(), consMsg.getEpoch(), ((ConsensusMessage) sm).getValue()));
+                        .createProposeResponse(consMsg.getNumber(), consMsg.getEpoch(), consMsg.getChallenge(), ((ConsensusMessage) sm).getValue()));
             }
             /** END DynWHEAT **/
 
@@ -219,11 +219,13 @@ public class MessageHandler {
                             break;
                         case "PROPOSE_RESPONSE":
                             tomLayer.communication.proposeLatencyMonitor.addRecvdTime(sm.sender,
-                                    ((MonitoringMessage) sm).getNumber(), ((MonitoringMessage) sm).receivedTimestamp);
+                                    ((MonitoringMessage) sm).getNumber(), ((MonitoringMessage) sm).receivedTimestamp,
+                                    ((MonitoringMessage) sm).getChallenge());
                             break;
                         case "WRITE_RESPONSE":
                             tomLayer.communication.writeLatencyMonitor.addRecvdTime(sm.sender,
-                                    ((MonitoringMessage) sm).getNumber(), ((MonitoringMessage) sm).receivedTimestamp);
+                                    ((MonitoringMessage) sm).getNumber(), ((MonitoringMessage) sm).receivedTimestamp,
+                                    ((MonitoringMessage) sm).getChallenge());
                             break;
                         default:
                             logger.error("Unknown Monitoring message type");

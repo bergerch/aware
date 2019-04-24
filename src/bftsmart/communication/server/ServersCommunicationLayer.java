@@ -203,6 +203,24 @@ public class ServersCommunicationLayer extends Thread {
 
 
     public final void send(int[] targets, SystemMessage sm, boolean useMAC) {
+
+
+        /** DynWHEAT **/ // Generate a challenge for BFT
+        int challenge = -1;
+        if (sm instanceof ConsensusMessage && controller.getStaticConf().isBFT()) {
+            ConsensusMessage csm = ((ConsensusMessage) sm);
+            if (csm.getPaxosVerboseType().equals("WRITE") ||
+                csm.getPaxosVerboseType().equals("PROPOSE") ||
+                csm.getPaxosVerboseType().equals("DUMMY_PROPOSE")) {
+
+
+                challenge = (int) (Math.random() * 1000000000);
+                ((ConsensusMessage) sm).setChallenge(challenge);
+            }
+        }
+        /** End DynWHEAT **/
+
+
         ByteArrayOutputStream bOut = new ByteArrayOutputStream(248);
         try {
             new ObjectOutputStream(bOut).writeObject(sm);
@@ -216,7 +234,9 @@ public class ServersCommunicationLayer extends Thread {
         // the last one receiving the messages, which can result in that replica  to become consistently
         // delayed in relation to the others.
         Integer[] targetsShuffled = Arrays.stream( targets ).boxed().toArray( Integer[]::new );
-        Collections.shuffle(Arrays.asList(targetsShuffled), new Random(System.nanoTime())); 
+        Collections.shuffle(Arrays.asList(targetsShuffled), new Random(System.nanoTime()));
+
+
 
         for (int i : targetsShuffled) {
             try {
@@ -224,14 +244,14 @@ public class ServersCommunicationLayer extends Thread {
                 if (sm instanceof ConsensusMessage && ((ConsensusMessage) sm).getPaxosVerboseType().equals("WRITE") &&
                         writeLatenciesMonitor != null ) {
                     Long timestamp = System.nanoTime();
-                    writeLatenciesMonitor.addSentTime(i, ((ConsensusMessage) sm).getNumber(), timestamp);
+                    writeLatenciesMonitor.addSentTime(i, ((ConsensusMessage) sm).getNumber(), timestamp, challenge);
                 }
                 if (proposeLatenciesMonitor != null && (
                         (sm instanceof ConsensusMessage && ((ConsensusMessage) sm).getPaxosVerboseType().equals("PROPOSE")) ||
                          sm instanceof MonitoringMessage && ((MonitoringMessage) sm).getPaxosVerboseType().equals("DUMMY_PROPOSE")))
                 {
                     Long timestamp = System.nanoTime();
-                    proposeLatenciesMonitor.addSentTime(i, ((ConsensusMessage) sm).getNumber(), timestamp);
+                    proposeLatenciesMonitor.addSentTime(i, ((ConsensusMessage) sm).getNumber(), timestamp, challenge);
                 }
                 /** End DynWHEAT **/
 

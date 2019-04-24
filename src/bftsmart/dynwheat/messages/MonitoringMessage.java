@@ -14,7 +14,6 @@ import java.io.ObjectOutput;
  */
 public class MonitoringMessage extends ConsensusMessage {
 
-
     public MonitoringMessage() {
     }
 
@@ -29,6 +28,21 @@ public class MonitoringMessage extends ConsensusMessage {
      */
     public MonitoringMessage(int paxosType, int id, int epoch, int from, byte[] value) {
         super(paxosType, id, epoch, from, value);
+    }
+
+    /**
+     * Creates a monitoring message. Used by the message factory to create a COLLECT or PROPOSE message
+     *
+     * @param paxosType DUMMY_PROPOSE, PROPOSE_RESPONSE, or WRITE_RESPONSE
+     * @param id        Consensus's ID
+     * @param epoch     Epoch timestamp
+     * @param from      This should be this process ID
+     * @param value     This should be null if its a COLLECT message, or the proposed value if it is a PROPOSE message
+     * @param challenge random number attached to the message for preventing ahead-of-time responses
+     */
+    public MonitoringMessage(int paxosType, int id, int epoch, int from, int challenge, byte[] value) {
+        super(paxosType, id, epoch, from, value);
+        this.challenge = challenge;
     }
 
 
@@ -69,6 +83,7 @@ public class MonitoringMessage extends ConsensusMessage {
     @Override
     public void writeExternal(ObjectOutput out) throws IOException {
 
+        out.writeInt(challenge);
         super.writeExternal(out);
 
 
@@ -78,6 +93,7 @@ public class MonitoringMessage extends ConsensusMessage {
     @Override
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
 
+        challenge = in.readInt();
         super.readExternal(in);
 
     }

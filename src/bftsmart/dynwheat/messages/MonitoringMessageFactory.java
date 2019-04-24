@@ -31,7 +31,6 @@ public class MonitoringMessageFactory {
      * @param id    Consensus's execution ID
      * @param epoch Epoch number
      * @param value Proposed value
-     * @param proof Proofs from other replicas
      * @return A monitoring message of the DUMMY_PROPOSE type, with the specified id, epoch, value, and proof
      */
     public MonitoringMessage createDummyPropose(int id, int epoch, byte[] value) {
@@ -44,11 +43,23 @@ public class MonitoringMessageFactory {
      * @param id    Consensus's execution ID
      * @param epoch Epoch number
      * @param value Proposed value
-     * @param proof Proofs from other replicas
      * @return A monitoring message of the PROPOSE-RESPONSE type
      */
     public MonitoringMessage createProposeResponse(int id, int epoch, byte[] value) {
         return new MonitoringMessage(PROPOSE_RESPONSE, id, epoch, from, value);
+    }
+
+    /**
+     * Creates a PROPOSE_RESPONSE message to be sent by this process
+     *
+     * @param id    Consensus's execution ID
+     * @param epoch Epoch number
+     * @param value Proposed value
+     * @param challenge random number attached to the message for preventing ahead-of-time responses
+     * @return A monitoring message of the PROPOSE-RESPONSE type
+     */
+    public MonitoringMessage createProposeResponse(int id, int epoch, int challenge, byte[] value) {
+        return new MonitoringMessage(PROPOSE_RESPONSE, id, epoch, from, challenge, value);
     }
 
     /**
@@ -61,6 +72,19 @@ public class MonitoringMessageFactory {
      */
     public MonitoringMessage createWriteResponse(int id, int epoch, byte[] value) {
         return new MonitoringMessage(WRITE_RESPONSE, id, epoch, from, value);
+    }
+
+    /**
+     * Creates a WRITE message to be sent by this process
+     *
+     * @param id    Consensus's execution ID
+     * @param epoch Epoch number
+     * @param value Write value
+     * @param challenge random number attached to the message for preventing ahead-of-time responses
+     * @return A monitoring message of the WRITE_RESPONSE type
+     */
+    public MonitoringMessage createWriteResponse(int id, int epoch, int challenge, byte[] value) {
+        return new MonitoringMessage(WRITE_RESPONSE, id, epoch, from, challenge, value);
     }
 
 }
