@@ -673,13 +673,27 @@ public final class TOMLayer extends Thread implements RequestReceiver {
      * DynWHEAT
      */
     private boolean shouldDoDummyPropose() {
-        return this.controller.getStaticConf().isUseDynamicWeights() && // Config says Dummy-Propose is enabled
+
+        int c = getLastExec();
+        double w = this.controller.getStaticConf().getMonitoringOverhead();
+        int id = this.controller.getStaticConf().getProcessId();
+        double n = (double) this.controller.getCurrentViewN();
+
+
+        boolean res = this.controller.getStaticConf().isUseDynamicWeights() && // Config says Dummy-Propose is enabled
                 (execManager.getCurrentLeader() != this.controller.getStaticConf().getProcessId()) && // I'm NOT the leader
                 (clientsManager.havePendingRequests()) && //there are messages to be ordered
                 (getInExec() == -1) && // Not currently in some execution
-                ((getLastExec() + 1) % controller.getCurrentViewN() == controller.getStaticConf().getProcessId()) && // It's// my turn to send a dummy propose
-                (getLastExec()-1) * controller.getStaticConf().getMonitoringOverhead() != // Bounded by monitoring overhead param
-                 Math.floor((getLastExec() * controller.getStaticConf().getMonitoringOverhead()));
+                (int)((c+id)*w/n) != (int)((c-1+id)*w/n); // It's// my turn to send a dummy propose
+                                                        // Bounded by monitoring overhead param
+
+
+        if (res) {
+            System.out.println("Monitoring overhead" + controller.getStaticConf().getMonitoringOverhead());
+            System.out.println("I will DUMMY PROPOSE for " + getLastExec());
+        }
+
+        return res;
     }
 
     /**

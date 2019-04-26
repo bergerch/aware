@@ -73,9 +73,7 @@ public class MessageHandler {
             ConsensusMessage consMsg = (ConsensusMessage) sm;
 
             /** DynWHEAT: Send back WRITE_RESPONSE **/
-            if (tomLayer.controller.getStaticConf().isUseWriteResponse() && consMsg.getPaxosVerboseType().equals("WRITE") &&
-               (consMsg.getNumber()-1) * tomLayer.controller.getStaticConf().getMonitoringOverhead() !=
-                Math.floor(consMsg.getNumber() * tomLayer.controller.getStaticConf().getMonitoringOverhead())) {
+            if (tomLayer.controller.getStaticConf().isUseWriteResponse() && consMsg.getPaxosVerboseType().equals("WRITE")) {
 
                 logger.debug("I send WRITE-RESPONSE for consensus message " + consMsg.getNumber() + " to process " + consMsg.getSender());
                 int[] destination = new int[1];
@@ -85,10 +83,18 @@ public class MessageHandler {
             }
             /** END DynWHEAT **/
 
+            int c =  consMsg.getNumber();
+            double w = tomLayer.controller.getStaticConf().getMonitoringOverhead();
+            int id = tomLayer.controller.getStaticConf().getProcessId();
+            double n = (double) tomLayer.controller.getCurrentViewN();
+
 
             /** DynWHEAT: Send back PROPOSE_RESPONSE **/
-            if (tomLayer.controller.getStaticConf().isUseProposeResponse() && consMsg.getPaxosVerboseType().equals("PROPOSE")) {
+            if (tomLayer.controller.getStaticConf().isUseProposeResponse() && consMsg.getPaxosVerboseType().equals("PROPOSE") &&
+                    (int)((c+id)*w/n) != (int)((c-1+id)*w/n)
+            ) {
                 logger.debug("I send PROPOSE-RESPONSE for consensus message " + consMsg.getNumber() + " to process " + consMsg.getSender());
+                System.out.println("I send back PROPOSE-RESPONSE " + consMsg.getNumber());
                 int[] destination = new int[1];
                 destination[0] = consMsg.sender;
                 tomLayer.communication.send(destination, tomLayer.monitoringMsgFactory

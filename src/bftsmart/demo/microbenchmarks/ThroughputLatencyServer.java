@@ -318,8 +318,9 @@ public final class ThroughputLatencyServer extends DefaultRecoverable{
             
             if (tp > maxTp) maxTp = tp;
             
-            System.out.println("Throughput = " + tp +" operations/sec (Maximum observed: " + maxTp + " ops/sec)");            
-            
+            System.out.println("Throughput = " + tp +" operations/sec (Maximum observed: " + maxTp + " ops/sec)");
+            line += tp + ", ";
+            line += maxTp + ", ";
             System.out.println("Total latency = " + totalLatency.getAverage(false) / 1000 + " (+/- "+ (long)totalLatency.getDP(false) / 1000 +") us ");
             line += totalLatency.getAverage(false) / 1000 + ",";
             line += (long)totalLatency.getDP(false) / 1000 + ",";
@@ -351,18 +352,18 @@ public final class ThroughputLatencyServer extends DefaultRecoverable{
             
             throughputMeasurementStartTime = System.currentTimeMillis();
 
-            if (iterations == interval) {
-                line += "\n";
-                Writer output;
-                try {
-                    output = new BufferedWriter(new FileWriter("measurement-server" + replica.getId(), true));
-                    output.append(line);
-                    output.close();
 
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+            line += "\n";
+            Writer output;
+            try {
+                output = new BufferedWriter(new FileWriter("measurement-server" + replica.getId(), true));
+                output.append(line);
+                output.close();
+
+            } catch (IOException e) {
+                e.printStackTrace();
             }
+
 
 
         }
