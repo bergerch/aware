@@ -171,9 +171,13 @@ public class WeightController {
         return best;
     }
 
+    
+    /**
+     * Optimizes weight distribution and leader selection
+     *
+     * @param cid consensus id
+     */
     public void optimize(int cid) {
-
-
         // Re-calculate best weight distribution after every x consensus
         if (svc.getStaticConf().isUseDynamicWeights() && cid % svc.getStaticConf().getCalculationInterval() == 0 & cid > 0) {
 

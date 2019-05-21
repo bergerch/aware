@@ -135,7 +135,7 @@ public class Simulator {
                 t_proposed[i] = Math.max(offsets[i], m_propose[leader][i]);
                 writesRcvd[i] = new PriorityQueue<>();
                 acceptRcvd[i] = new PriorityQueue<>();
-                if (rounds==1000) System.out.println("Propose received " + i + " " + t_proposed[i]);
+               // if (rounds==1000)  System.out.println("Propose received " + i + " " + t_proposed[i]);
             }
 
             // Compute time at which WRITE of replica j arrives at replica i
@@ -161,7 +161,7 @@ public class Simulator {
                 }
                 readyToExecute.add(t_written);
                 t_write_finished[i] = t_written;
-                if (rounds==1000) System.out.println("Written " + i + " " + t_written);
+               // if (rounds==1000) System.out.println("Written " + i + " " + t_written);
             }
 
             // Compute time at which ACCEPT of replica j arrives at replica i
@@ -182,7 +182,7 @@ public class Simulator {
                         t_decided[i] = vote.arrivalTime;
                     }
                 }
-                if (rounds==1000) System.out.println("Decided " + i + " " + t_decided[i]);
+               // if (rounds==1000) System.out.println("Decided " + i + " " + t_decided[i]);
 
             }
             consensusTimes[rounds - 1] = t_decided[leader];

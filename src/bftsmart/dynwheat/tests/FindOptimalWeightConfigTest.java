@@ -38,6 +38,7 @@ public class FindOptimalWeightConfigTest {
         System.out.println("Traverse all weight configurations and find the optimum");
         System.out.println("----------------------------------------------------------------");
 
+
         long[][] propose = {
                 {0,	67739,	69185,	93000,	40285},
                 {67739,	0,	132581,	92021,	35496},
@@ -54,25 +55,24 @@ public class FindOptimalWeightConfigTest {
                 {93000,	92021,	156703,	0,	70210},
                 {40285,	35496,	99237,	70210,	0}
         };
-
-/*
+  /*
         long[][] propose = {
-                {0, 5077, 9092, 2136, 9558},
-                {5077, 0, 132417, 93243, 37637},
-                {9092, 132417, 0, 158277, 104796},
-                {2136, 93243, 158277, 0, 61356},
-                {9558, 37673, 104796, 61356, 0}
+                {0, 3, 3, 3, 3},
+                {3, 0, 2, 3, 4},
+                {3, 2, 0, 1, 3},
+                {3, 3, 1, 0, 2},
+                {3, 4, 3, 2, 0}
+
         };
 
         long[][] write = {
-                {0, 5077, 9092, 2136, 9558},
-                {5077, 0, 132417, 93243, 37637},
-                {9092, 132417, 0, 158277, 104796},
-                {2136, 93243, 158277, 0, 61356},
-                {9558, 37673, 104796, 61356, 0}
+                {0, 3, 3, 3, 3},
+                {3, 0, 2, 3, 4},
+                {3, 2, 0, 1, 3},
+                {3, 3, 1, 0, 2},
+                {3, 4, 3, 2, 0}
         };
 */
-
         long bestLatency = Long.MAX_VALUE;
         long worstLatency = Long.MIN_VALUE;
 
@@ -124,7 +124,7 @@ public class FindOptimalWeightConfigTest {
         }
         long end = System.nanoTime();
         if (!isSingleRunAlwaysAmortized){
-            System.out.println("Single Run is NOT always the same as amortized");
+        //    System.out.println("Single Run is NOT always the same as amortized");
         }
 
         Writer output;
