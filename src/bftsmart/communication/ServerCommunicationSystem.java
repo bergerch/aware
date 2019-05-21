@@ -23,8 +23,8 @@ import bftsmart.communication.client.CommunicationSystemServerSideFactory;
 import bftsmart.communication.client.RequestReceiver;
 import bftsmart.communication.server.ServersCommunicationLayer;
 import bftsmart.consensus.roles.Acceptor;
-import bftsmart.dynwheat.monitoring.MessageLatencyMonitor;
-import bftsmart.dynwheat.monitoring.Monitor;
+import bftsmart.aware.monitoring.MessageLatencyMonitor;
+import bftsmart.aware.monitoring.Monitor;
 import bftsmart.reconfiguration.ServerViewController;
 import bftsmart.tom.ServiceReplica;
 import bftsmart.tom.core.TOMLayer;
@@ -49,7 +49,7 @@ public class ServerCommunicationSystem extends Thread {
     private CommunicationSystemServerSide clientsConn;
     private ServerViewController controller;
 
-    /** DynWHEAT **/
+    /** AWARE **/
     public MessageLatencyMonitor writeLatencyMonitor = null;
     public MessageLatencyMonitor proposeLatencyMonitor = null;
 
@@ -71,11 +71,11 @@ public class ServerCommunicationSystem extends Thread {
 
         //serversConf.increasePortNumber();
 
-        /** DynWHEAT **/
+        /** AWARE **/
         if (controller.getStaticConf().isUseDynamicWeights())
             writeLatencyMonitor = Monitor.getInstance(controller).getWriteLatencyMonitor();
 
-        /** DynWHEAT **/
+        /** AWARE **/
         if (controller.getStaticConf().isUseDynamicWeights() && controller.getStaticConf().isUseDummyPropose())
             proposeLatencyMonitor = Monitor.getInstance(controller).getProposeLatencyMonitor();
 

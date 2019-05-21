@@ -1,6 +1,6 @@
-package bftsmart.dynwheat.tests;
+package bftsmart.aware.tests;
 
-import bftsmart.dynwheat.decisions.WeightConfiguration;
+import bftsmart.aware.decisions.WeightConfiguration;
 
 import java.util.List;
 

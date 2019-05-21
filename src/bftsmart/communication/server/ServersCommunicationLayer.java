@@ -30,13 +30,11 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import bftsmart.communication.ServerCommunicationSystem;
 import bftsmart.communication.SystemMessage;
-import bftsmart.consensus.Consensus;
 import bftsmart.consensus.messages.ConsensusMessage;
-import bftsmart.dynwheat.messages.MonitoringMessage;
-import bftsmart.dynwheat.monitoring.MessageLatencyMonitor;
-import bftsmart.dynwheat.monitoring.Monitor;
+import bftsmart.aware.messages.MonitoringMessage;
+import bftsmart.aware.monitoring.MessageLatencyMonitor;
+import bftsmart.aware.monitoring.Monitor;
 import bftsmart.reconfiguration.ServerViewController;
 import bftsmart.tom.ServiceReplica;
 import bftsmart.tom.util.TOMUtil;
@@ -76,7 +74,7 @@ public class ServersCommunicationLayer extends Thread {
     private SecretKey selfPwd;
     private static final String PASSWORD = "commsyst";
 
-    // DynWHEAT
+    // AWARE
     public MessageLatencyMonitor writeLatenciesMonitor;
     public MessageLatencyMonitor proposeLatenciesMonitor;
 
@@ -205,7 +203,7 @@ public class ServersCommunicationLayer extends Thread {
     public final void send(int[] targets, SystemMessage sm, boolean useMAC) {
 
 
-        /** DynWHEAT **/ // Generate a challenge for BFT
+        /** AWARE **/ // Generate a challenge for BFT
         int challenge = -1;
         if (sm instanceof ConsensusMessage && controller.getStaticConf().isBFT()) {
             ConsensusMessage csm = ((ConsensusMessage) sm);
@@ -218,7 +216,7 @@ public class ServersCommunicationLayer extends Thread {
                 ((ConsensusMessage) sm).setChallenge(challenge);
             }
         }
-        /** End DynWHEAT **/
+        /** End AWARE **/
 
 
         ByteArrayOutputStream bOut = new ByteArrayOutputStream(248);
@@ -240,7 +238,7 @@ public class ServersCommunicationLayer extends Thread {
 
         for (int i : targetsShuffled) {
             try {
-                /** DynWHEAT **/
+                /** AWARE **/
                 if (sm instanceof ConsensusMessage && ((ConsensusMessage) sm).getPaxosVerboseType().equals("WRITE") &&
                         writeLatenciesMonitor != null ) {
                     Long timestamp = System.nanoTime();
@@ -253,7 +251,7 @@ public class ServersCommunicationLayer extends Thread {
                     Long timestamp = System.nanoTime();
                     proposeLatenciesMonitor.addSentTime(i, ((ConsensusMessage) sm).getNumber(), timestamp, challenge);
                 }
-                /** End DynWHEAT **/
+                /** End AWARE **/
 
                 if (i == me) {
                     sm.authenticated = true;

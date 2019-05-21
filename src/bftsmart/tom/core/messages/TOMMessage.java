@@ -45,7 +45,7 @@ public class TOMMessage extends SystemMessage implements Externalizable, Compara
 	private int operationId; // Sequence number defined by the client
 
 
-	/**DynWHEAT **/
+	/**AWARE **/
 	private boolean isMonitoringMessage = false; // If this message is for disseminating monitoring information
 
 	private byte[] content = null; // Content of the message
@@ -238,9 +238,9 @@ public class TOMMessage extends SystemMessage implements Externalizable, Compara
 		out.writeInt(operationId);
 		out.writeInt(replyServer);
 
-		/** DynWHEAT **/
+		/** AWARE **/
 		out.writeBoolean(isMonitoringMessage);
-		/** End DynWHEAT **/
+		/** End AWARE **/
 		
 		if (content == null) {
 			out.writeInt(-1);
@@ -259,9 +259,9 @@ public class TOMMessage extends SystemMessage implements Externalizable, Compara
 		operationId = in.readInt();
 		replyServer = in.readInt();
 
-		/** DynWHEAT **/
+		/** AWARE **/
 		isMonitoringMessage = in.readBoolean();
-		/** End DynWHEAT **/
+		/** End AWARE **/
 		
 		int toRead = in.readInt();
 		if (toRead != -1) {
@@ -402,7 +402,7 @@ public class TOMMessage extends SystemMessage implements Externalizable, Compara
 	}
 
 
-	/*** DynWHEAT */
+	/*** AWARE */
 
 	public boolean getIsMonitoringMessage() {
 	 	return isMonitoringMessage;
@@ -413,6 +413,6 @@ public class TOMMessage extends SystemMessage implements Externalizable, Compara
 	 	this.isMonitoringMessage = isMonitoringMessage;
 	}
 
-	/** End DynWHEAT */
+	/** End AWARE */
 
 }

@@ -127,7 +127,7 @@ public abstract class TOMSender implements ReplyReceiver, Closeable, AutoCloseab
 	}
 
 	/**
-	 * DynWHEAT
+	 * AWARE
 	 * @param m
 	 * @param reqId
 	 * @param operationId

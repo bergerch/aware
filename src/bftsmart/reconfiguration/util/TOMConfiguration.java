@@ -68,17 +68,17 @@ public class TOMConfiguration extends Configuration {
         private boolean useWeights;
         private boolean tentative;
 
-    // DynWHEAT Leader and weights configs
+    // AWARE Leader and weights configs
     private int initialLeader;
     private boolean useDynamicWeights;
     private boolean useLeaderSelection;
 
-    // DynWHEAT calc & monitoring overhead config
+    // AWARE calc & monitoring overhead config
     private int calculationInterval;
     private double monitoringOverhead;
     private double optimizationGoal;
 
-    // DynWHEAT messages
+    // AWARE messages
     private boolean useDummyPropose;
 
 
@@ -387,7 +387,7 @@ public class TOMConfiguration extends Configuration {
             tentative = (s != null) ? Boolean.parseBoolean(s) : false;
 
 
-            /** DynWHEAT **/
+            /** AWARE **/
 
             s = (String) configs.remove("system.initial.leader");
             initialLeader = s != null ? Integer.parseInt(s) : 0;

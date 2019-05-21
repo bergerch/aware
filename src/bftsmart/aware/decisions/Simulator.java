@@ -1,4 +1,4 @@
-package bftsmart.dynwheat.decisions;
+package bftsmart.aware.decisions;
 
 import bftsmart.reconfiguration.ServerViewController;
 import org.slf4j.Logger;

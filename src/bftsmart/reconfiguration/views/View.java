@@ -15,7 +15,7 @@
  */
 package bftsmart.reconfiguration.views;
 
-import bftsmart.dynwheat.decisions.WeightConfiguration;
+import bftsmart.aware.decisions.WeightConfiguration;
 
 import java.io.Serializable;
 import java.util.Arrays;

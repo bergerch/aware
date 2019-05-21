@@ -15,7 +15,6 @@ limitations under the License.
 */
 package bftsmart.tom.leaderchange;
 
-import bftsmart.communication.server.ServerConnection;
 import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.SignedObject;
@@ -27,7 +26,6 @@ import java.util.Set;
 
 import bftsmart.consensus.TimestampValuePair;
 import bftsmart.consensus.messages.ConsensusMessage;
-import bftsmart.dynwheat.decisions.WeightController;
 import bftsmart.reconfiguration.ServerViewController;
 import bftsmart.tom.core.TOMLayer;
 import bftsmart.tom.core.messages.TOMMessage;
@@ -875,7 +873,7 @@ public class LCManager {
                     alreadyCounted.add(consMsg.getSender());
                     countValid++;
                  } else {
-                     /** DynWheat testing (work in progress) */
+                     /** AWARE testing (work in progress) */
                      // todo this code is for highly experimental testing only, remove later
                      // todo note this code endangers the correctness of the LC protocol and may result in unpredictable
                      // todo behaviour such as spinning leaders ?
@@ -886,7 +884,7 @@ public class LCManager {
                      } else {
                          logger.error("Invalid signature in message from " + consMsg.getSender());
                      }
-                     /** End DynWHEAT */
+                     /** End AWARE */
                 }
    
             } else {

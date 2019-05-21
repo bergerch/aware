@@ -1,37 +1,37 @@
-package bftsmart.dynwheat.decisions;
+package bftsmart.aware.decisions;
 
-import bftsmart.dynwheat.monitoring.Monitor;
+import bftsmart.aware.monitoring.Monitor;
 
 import java.util.Objects;
 
 /**
- * DynWHEAT Configuration includes a weight configuration and a leader selection
+ * AWARE Configuration includes a weight configuration and a leader selection
  *
  * @author cb
  */
-public class DWConfiguration implements Comparable {
+public class AwareConfiguration implements Comparable {
 
-    // A DynWHEAT config consists of a weight distribution and leader selection
+    // A AWARE config consists of a weight distribution and leader selection
     private WeightConfiguration weightConfiguration;
     private int leader;
 
     // predicted latency for this configuration
     private long predictedLatency = Monitor.MISSING_VALUE;
 
-    public DWConfiguration(WeightConfiguration weightConfiguration, int leader, long predictedLatency) {
+    public AwareConfiguration(WeightConfiguration weightConfiguration, int leader, long predictedLatency) {
         this.weightConfiguration = weightConfiguration;
         this.leader = leader;
         this.predictedLatency = predictedLatency;
     }
 
-    public DWConfiguration(WeightConfiguration weightConfiguration, int leader) {
+    public AwareConfiguration(WeightConfiguration weightConfiguration, int leader) {
         this.weightConfiguration = weightConfiguration;
         this.leader = leader;
     }
 
     @Override
     public int compareTo(Object o) {
-        return Long.compare(this.predictedLatency, ((DWConfiguration) o).predictedLatency);
+        return Long.compare(this.predictedLatency, ((AwareConfiguration) o).predictedLatency);
     }
 
     public WeightConfiguration getWeightConfiguration() {
@@ -71,7 +71,7 @@ public class DWConfiguration implements Comparable {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        DWConfiguration that = (DWConfiguration) o;
+        AwareConfiguration that = (AwareConfiguration) o;
         return leader == that.leader &&
                 weightConfiguration.equals(that.weightConfiguration);
     }

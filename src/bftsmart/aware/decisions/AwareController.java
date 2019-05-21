@@ -1,28 +1,30 @@
-package bftsmart.dynwheat.decisions;
+package bftsmart.aware.decisions;
 
-import bftsmart.dynwheat.monitoring.Monitor;
+import bftsmart.aware.monitoring.Monitor;
 import bftsmart.reconfiguration.ServerViewController;
 import bftsmart.tom.core.ExecutionManager;
 
 import java.util.*;
 
 /**
- * Computes the best DynWHEAT configuration used for a reconfiguration
+ * Implements adaptive wide-area replication
+ *
+ * Computes the best AWARE configuration used for a reconfiguration
  *
  * @author cb
  */
-public class WeightController {
+public class AwareController {
 
-    private static WeightController instance;
+    private static AwareController instance;
 
-    private DWConfiguration currentDW;
+    private AwareConfiguration currentDW;
 
     private WeightConfiguration current;
 
     // We will compute the worst, median and best weight configurations
     private WeightConfiguration worst; // for evaluations
     private WeightConfiguration median; // for evaluations
-    private DWConfiguration best;
+    private AwareConfiguration best;
 
     private ServerViewController viewControl;
     private ExecutionManager executionManager;
@@ -32,9 +34,9 @@ public class WeightController {
     public ServerViewController svc;
 
 
-    public static WeightController getInstance(ServerViewController svc, ExecutionManager executionManager) {
+    public static AwareController getInstance(ServerViewController svc, ExecutionManager executionManager) {
         if (instance == null) {
-            instance = new WeightController(svc, executionManager);
+            instance = new AwareController(svc, executionManager);
             WeightConfiguration current = new WeightConfiguration(svc.getStaticConf().isBFT(), svc);
             instance.setCurrent(current);
             instance.svc = svc;
@@ -42,13 +44,10 @@ public class WeightController {
         return instance;
     }
 
-
-    private WeightController(ServerViewController viewControl, ExecutionManager executionManager) {
-
+    private AwareController(ServerViewController viewControl, ExecutionManager executionManager) {
         this.viewControl = viewControl;
         this.executionManager = executionManager;
         this.simulator = new Simulator(viewControl);
-
 
         // Debug
         // Periodically outputs current configuration
@@ -56,7 +55,7 @@ public class WeightController {
         timer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
-                System.out.println("%%%%%%%%% WeightController: Currently using weight config " + instance.getCurrent()
+                System.out.println("%%%%%%%%% AwareController: Currently using weight config " + instance.getCurrent()
                         + " with leader " + executionManager.getCurrentLeader());
             }
         }, 15*1000, 5*1000);
@@ -69,7 +68,7 @@ public class WeightController {
      * leader variants. Note, that this way, we traverse the entire search space. Since we compute combinations,
      * the search space is factorial in N and needs to be handled with a cut & branch heuristic in larger systems
      */
-    public DWConfiguration computeBest() {
+    public AwareConfiguration computeBest() {
         Simulator simulator = new Simulator(viewControl);
         int[] replicaSet = viewControl.getCurrentViewProcesses();
         Monitor monitor = Monitor.getInstance(viewControl);
@@ -97,7 +96,7 @@ public class WeightController {
         //      Computes all possible combinates of R_max and R_min distributions
         List<WeightConfiguration> weightConfigs = WeightConfiguration.allPossibleWeightConfigurations(u, replicaSet);
 
-        List<DWConfiguration> dwConfigurations = new ArrayList<>();
+        List<AwareConfiguration> awareConfigurations = new ArrayList<>();
         int leader = executionManager.getCurrentLeader();
 
         // Generate the search space
@@ -105,12 +104,12 @@ public class WeightController {
         for (WeightConfiguration w : weightConfigs) {
             if (viewControl.getStaticConf().isUseLeaderSelection()) {
                 for (int primary : w.getR_max()) { // todo Only replicas in R_max will be considered to become leader ?
-                    DWConfiguration dwConfig = new DWConfiguration(w, primary);
-                    dwConfigurations.add(dwConfig);
+                    AwareConfiguration dwConfig = new AwareConfiguration(w, primary);
+                    awareConfigurations.add(dwConfig);
                 }
             } else {
-                DWConfiguration dwConfig = new DWConfiguration(w, leader);
-                dwConfigurations.add(dwConfig);
+                AwareConfiguration dwConfig = new AwareConfiguration(w, leader);
+                awareConfigurations.add(dwConfig);
             }
         }
 
@@ -119,7 +118,7 @@ public class WeightController {
         }
 
         // Compute the predictet latencies of all possible configurations using the simulator
-        for (DWConfiguration dwc : dwConfigurations) {
+        for (AwareConfiguration dwc : awareConfigurations) {
             Long predictedLatency = simulator.predictLatency(replicaSet, dwc.getLeader(), dwc.getWeightConfiguration(),
                     propose, write, n, f, delta, 100);
             dwc.setPredictedLatency(predictedLatency);
@@ -128,11 +127,11 @@ public class WeightController {
         }
 
         // Sort configurations for ascending predicted latency
-        dwConfigurations.sort(Comparator.naturalOrder());
+        awareConfigurations.sort(Comparator.naturalOrder());
         // We compare worst, median and best:
-        DWConfiguration best = dwConfigurations.get(0);
-        DWConfiguration median = dwConfigurations.get(dwConfigurations.size() / 2); // for evaluation
-        DWConfiguration worst = dwConfigurations.get(dwConfigurations.size() - 1); // for evaluation
+        AwareConfiguration best = awareConfigurations.get(0);
+        AwareConfiguration median = awareConfigurations.get(awareConfigurations.size() / 2); // for evaluation
+        AwareConfiguration worst = awareConfigurations.get(awareConfigurations.size() - 1); // for evaluation
 
         // For testing, remove later
         System.out.println("the best config is " + best);
@@ -141,7 +140,7 @@ public class WeightController {
 
         System.out.println();
 
-        currentDW = new DWConfiguration(current, executionManager.getCurrentLeader());
+        currentDW = new AwareConfiguration(current, executionManager.getCurrentLeader());
 
         Long estimate_current = simulator.predictLatency(replicaSet, currentDW.getLeader(), currentDW.getWeightConfiguration(),
                 propose, write, n, f, delta, 100);
@@ -150,8 +149,8 @@ public class WeightController {
         System.out.println("current config is estimated to be " + estimate_current);
 
 
-        List<DWConfiguration> bestConfigs = new ArrayList<>();
-        for (DWConfiguration dwc: dwConfigurations) {
+        List<AwareConfiguration> bestConfigs = new ArrayList<>();
+        for (AwareConfiguration dwc: awareConfigurations) {
             if (dwc.getPredictedLatency() == best.getPredictedLatency()) {
                 bestConfigs.add(dwc);
             }
@@ -160,7 +159,7 @@ public class WeightController {
         int currentLeader = this.executionManager.getCurrentLeader();
 
         best = bestConfigs.get(0);
-        for (DWConfiguration dwc: bestConfigs) {
+        for (AwareConfiguration dwc: bestConfigs) {
             if (dwc.getLeader() == currentLeader) {
                 best = dwc;
                 break;
@@ -181,9 +180,9 @@ public class WeightController {
         // Re-calculate best weight distribution after every x consensus
         if (svc.getStaticConf().isUseDynamicWeights() && cid % svc.getStaticConf().getCalculationInterval() == 0 & cid > 0) {
 
-            WeightController weightController = WeightController.getInstance(svc, executionManager);
-            DWConfiguration best = weightController.computeBest();
-            DWConfiguration current = weightController.getCurrentDW();
+            AwareController awareController = AwareController.getInstance(svc, executionManager);
+            AwareConfiguration best = awareController.computeBest();
+            AwareConfiguration current = awareController.getCurrentDW();
 
             // What is the best weight config and what is the current one?
             WeightConfiguration bestWeights = best.getWeightConfiguration();
@@ -195,11 +194,11 @@ public class WeightController {
                 // The current weight configuration is not the best
                 // Deterministically change weights (this decision will be the same in all correct replicas)
                 svc.getCurrentView().setWeights(bestWeights);
-                WeightController.getInstance(svc, executionManager).setCurrent(bestWeights);
-                System.out.println("|DynWHEAT|  [X] Optimization: Weight adjustment, now using " + bestWeights);
+                AwareController.getInstance(svc, executionManager).setCurrent(bestWeights);
+                System.out.println("|AWARE|  [X] Optimization: Weight adjustment, now using " + bestWeights);
             } else {
                 // Keep the current configuration
-                System.out.println("|DynWHEAT|  [ ] Optimization: Weight adjustment, no adjustment," +
+                System.out.println("|AWARE|  [ ] Optimization: Weight adjustment, no adjustment," +
                         " current weight config is the best weight config");
             }
 
@@ -215,9 +214,9 @@ public class WeightController {
                        (best.getLeader()-1+svc.getCurrentViewN()) % svc.getCurrentViewN());
                 // Run leader change protocol:
                 executionManager.getTOMLayer().getSynchronizer().triggerTimeout(new LinkedList<>());
-                System.out.println("|DynWHEAT|  [X] Optimization: leader selection, new leader is " + best.getLeader());
+                System.out.println("|AWARE|  [X] Optimization: leader selection, new leader is " + best.getLeader());
             } else { // Keep the current configuration
-                System.out.println("|DynWHEAT|  [ ] Optimization: leader selection: no leader change," +
+                System.out.println("|AWARE|  [ ] Optimization: leader selection: no leader change," +
                         " current leader is the best leader");
             }
             Monitor.getInstance(viewControl).init(svc.getCurrentViewN());
@@ -253,7 +252,7 @@ public class WeightController {
         this.median = median;
     }
 
-    public DWConfiguration getBest() {
+    public AwareConfiguration getBest() {
         return best;
     }
 
@@ -273,11 +272,11 @@ public class WeightController {
         this.simulator = simulator;
     }
 
-    public DWConfiguration getCurrentDW() {
+    public AwareConfiguration getCurrentDW() {
         return currentDW;
     }
 
-    public void setCurrentDW(DWConfiguration currentDW) {
+    public void setCurrentDW(AwareConfiguration currentDW) {
         this.currentDW = currentDW;
     }
 }

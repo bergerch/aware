@@ -1,8 +1,7 @@
-package bftsmart.dynwheat.monitoring;
+package bftsmart.aware.monitoring;
 
 import bftsmart.reconfiguration.ServerViewController;
 import bftsmart.tom.ServiceProxy;
-import ch.qos.logback.core.encoder.EchoEncoder;
 
 import java.io.*;
 import java.util.Timer;

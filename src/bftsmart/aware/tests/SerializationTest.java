@@ -1,7 +1,7 @@
-package bftsmart.dynwheat.tests;
+package bftsmart.aware.tests;
 
-import static bftsmart.dynwheat.monitoring.MonitoringDataSynchronizer.bytesToLong;
-import static bftsmart.dynwheat.monitoring.MonitoringDataSynchronizer.longToBytes;
+import static bftsmart.aware.monitoring.MonitoringDataSynchronizer.bytesToLong;
+import static bftsmart.aware.monitoring.MonitoringDataSynchronizer.longToBytes;
 
 
 public class SerializationTest {

@@ -1,7 +1,7 @@
-package bftsmart.dynwheat.tests;
+package bftsmart.aware.tests;
 
-import bftsmart.dynwheat.decisions.Simulator;
-import bftsmart.dynwheat.decisions.WeightConfiguration;
+import bftsmart.aware.decisions.Simulator;
+import bftsmart.aware.decisions.WeightConfiguration;
 
 /**
  * Tests if the simulation works

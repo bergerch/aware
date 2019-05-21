@@ -18,15 +18,12 @@ package bftsmart.consensus.roles;
 
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
 import java.util.Arrays;
 
+import bftsmart.aware.decisions.AwareController;
 import bftsmart.communication.ServerCommunicationSystem;
 import bftsmart.consensus.Consensus;
-import bftsmart.dynwheat.decisions.DWConfiguration;
-import bftsmart.dynwheat.decisions.WeightConfiguration;
-import bftsmart.dynwheat.decisions.WeightController;
-import bftsmart.dynwheat.monitoring.Monitor;
+import bftsmart.aware.monitoring.Monitor;
 import bftsmart.tom.core.ExecutionManager;
 import bftsmart.consensus.Epoch;
 import bftsmart.consensus.messages.MessageFactory;
@@ -35,7 +32,6 @@ import bftsmart.reconfiguration.ServerViewController;
 import bftsmart.tom.core.TOMLayer;
 import bftsmart.tom.core.messages.TOMMessage;
 import bftsmart.tom.core.messages.TOMMessageType;
-import bftsmart.tom.leaderchange.LCMessage;
 import bftsmart.tom.util.TOMUtil;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -45,7 +41,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.stream.Collectors;
 import javax.crypto.Mac;
 import javax.crypto.SecretKey;
 
@@ -490,13 +485,13 @@ public final class Acceptor {
             logger.debug("Deciding consensus " + cid);
             decide(epoch);
 
-            /** DynWHEAT */
+            /** AWARE */
              // We inspect of there are monitoring data dissemination messages included in this consensus:
              //      - if so call Monitor to handled received monitoring messages of other processes
             Monitor.getInstance(controller).handleMonitoringMessages(epoch, cid);
             // Check if an optimization is necessary and if so tune weights (or change leader)
-            WeightController.getInstance(controller, executionManager).optimize(cid);
-            /** End DynWHEAT */
+            AwareController.getInstance(controller, executionManager).optimize(cid);
+            /** End AWARE */
         }
     }
 

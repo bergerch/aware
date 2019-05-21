@@ -152,10 +152,10 @@ public class NettyClientServerCommunicationSystemServerSide extends SimpleChanne
                         
                         mainChannel = f.channel();
 
-           /** DynWHEAT **/
+           /** AWARE **/
            if (controller.getStaticConf().isUseWeights()) {
                logger.info("Using WHEAT Extensions: ");
-               logger.info("Use dynamic weight adjustments (DynWHEAT): " + controller.getStaticConf().isUseDynamicWeights());
+               logger.info("Use dynamic weight adjustments (AWARE): " + controller.getStaticConf().isUseDynamicWeights());
                logger.info("Use Leader selection optimization: " + controller.getStaticConf().isUseLeaderSelection());
                logger.info("Use WRITE-RESPONSE: " + controller.getStaticConf().isUseWriteResponse());
                logger.info("Use DUMMY-PROPOSE: " + controller.getStaticConf().isUseDummyPropose());

@@ -32,7 +32,7 @@ import bftsmart.consensus.Decision;
 import bftsmart.consensus.Consensus;
 import bftsmart.consensus.Epoch;
 import bftsmart.consensus.roles.Acceptor;
-import bftsmart.dynwheat.messages.MonitoringMessageFactory;
+import bftsmart.aware.messages.MonitoringMessageFactory;
 import bftsmart.reconfiguration.ServerViewController;
 import bftsmart.statemanagement.StateManager;
 import bftsmart.tom.ServiceReplica;
@@ -118,7 +118,7 @@ public final class TOMLayer extends Thread implements RequestReceiver {
     private Synchronizer syncher;
 
 
-    /** DynWHEAT **/
+    /** AWARE **/
     public MonitoringMessageFactory monitoringMsgFactory;
     //private ReentrantLock dummyProposeLock = new ReentrantLock();
     //private Condition canDummyPropose = dummyProposeLock.newCondition();
@@ -206,7 +206,7 @@ public final class TOMLayer extends Thread implements RequestReceiver {
             }, 0, controller.getStaticConf().getBatchTimeout());
         }
 
-        // DynWHEAT
+        // AWARE
         monitoringMsgFactory = new MonitoringMessageFactory(this.controller.getStaticConf().getProcessId());
     }
 
@@ -456,13 +456,13 @@ public final class TOMLayer extends Thread implements RequestReceiver {
 
             logger.debug("I can try to propose.");
 
-            /** DynWHEAT TODO **/
+            /** AWARE TODO **/
             if (shouldDoDummyPropose()) {
                 logger.debug("I am going to DUMMY propose");
                 dummyPropose();
                 continue;
             }
-            /** End DynWHEAT **/
+            /** End AWARE **/
 
             if ((execManager.getCurrentLeader() == this.controller.getStaticConf().getProcessId()) && //I'm the leader
                     (clientsManager.havePendingRequests()) && //there are messages to be ordered
@@ -670,7 +670,7 @@ public final class TOMLayer extends Thread implements RequestReceiver {
     }
 
     /**
-     * DynWHEAT
+     * AWARE
      */
     private boolean shouldDoDummyPropose() {
 
@@ -697,7 +697,7 @@ public final class TOMLayer extends Thread implements RequestReceiver {
     }
 
     /**
-     * DynWHEAT
+     * AWARE
      */
     private void dummyPropose() {
             // Sets the current consensus

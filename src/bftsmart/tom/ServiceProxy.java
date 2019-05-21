@@ -181,7 +181,7 @@ public class ServiceProxy extends TOMSender {
 	}
 
 	/**
-	 * DynWHEAT
+	 * AWARE
 	 * @param monitoringInformation
 	 * @return
 	 */
@@ -246,7 +246,7 @@ public class ServiceProxy extends TOMSender {
 		replyServer = -1;
 		hashResponseController = null;
 
-		boolean isMonitoringMessage = reqType == TOMMessageType.MONITORING; // DynWHEAT
+		boolean isMonitoringMessage = reqType == TOMMessageType.MONITORING; // AWARE
 
 		if(requestType == TOMMessageType.UNORDERED_HASHED_REQUEST){
 

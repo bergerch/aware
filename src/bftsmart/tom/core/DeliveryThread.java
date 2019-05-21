@@ -23,7 +23,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import bftsmart.consensus.Decision;
-import bftsmart.dynwheat.monitoring.Monitor;
+import bftsmart.aware.monitoring.Monitor;
 import bftsmart.reconfiguration.ServerViewController;
 import bftsmart.statemanagement.ApplicationState;
 import bftsmart.tom.MessageContext;
@@ -188,10 +188,10 @@ public final class DeliveryThread extends Thread {
                 //if (tomLayer.getLastExec() == -1)
                 if (init) {
                     logger.info("Ready to process operations");
-                    /** DynWHEAT **/
+                    /** AWARE **/
                     if (controller.getStaticConf().isUseDynamicWeights())
                         Monitor.getInstance(controller).startSync();
-                    /** End DynWHEAT **/
+                    /** End AWARE **/
                     init = false;
                 }
             }

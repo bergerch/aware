@@ -34,7 +34,7 @@ public class ConsensusMessage extends SystemMessage {
     private Object proof; // Proof used when message type is COLLECT
     // Can be either a MAC vector or a signature
 
-    /** DynWHEAT **/
+    /** AWARE **/
     protected int challenge; // only necessary for BFT
 
     public long sentTimestamp;
@@ -93,7 +93,7 @@ public class ConsensusMessage extends SystemMessage {
         out.writeInt(paxosType);
 
 
-        /*** DynWHEAT **/
+        /*** AWARE **/
         out.writeInt(challenge);
 
         sentTimestamp = System.nanoTime();
@@ -133,7 +133,7 @@ public class ConsensusMessage extends SystemMessage {
         paxosType = in.readInt();
 
 
-        /** DynWHEAT **/
+        /** AWARE **/
         challenge = in.readInt();
         sentTimestamp = in.readLong();
         receivedTimestamp = System.nanoTime();

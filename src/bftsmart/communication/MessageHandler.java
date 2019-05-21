@@ -18,7 +18,7 @@ package bftsmart.communication;
 import bftsmart.consensus.messages.MessageFactory;
 import bftsmart.consensus.messages.ConsensusMessage;
 import bftsmart.consensus.roles.Acceptor;
-import bftsmart.dynwheat.messages.MonitoringMessage;
+import bftsmart.aware.messages.MonitoringMessage;
 import bftsmart.statemanagement.SMMessage;
 import bftsmart.tom.core.TOMLayer;
 import bftsmart.tom.core.messages.TOMMessage;
@@ -72,7 +72,7 @@ public class MessageHandler {
             
             ConsensusMessage consMsg = (ConsensusMessage) sm;
 
-            /** DynWHEAT: Send back WRITE_RESPONSE **/
+            /** AWARE: Send back WRITE_RESPONSE **/
             if (tomLayer.controller.getStaticConf().isUseWriteResponse() && consMsg.getPaxosVerboseType().equals("WRITE")) {
 
                 logger.debug("I send WRITE-RESPONSE for consensus message " + consMsg.getNumber() + " to process " + consMsg.getSender());
@@ -81,7 +81,7 @@ public class MessageHandler {
                 tomLayer.communication.send(destination, tomLayer.monitoringMsgFactory
                        .createWriteResponse(consMsg.getNumber(), consMsg.getEpoch(), consMsg.getChallenge(), null));
             }
-            /** END DynWHEAT **/
+            /** END AWARE **/
 
             int c =  consMsg.getNumber();
             double w = tomLayer.controller.getStaticConf().getMonitoringOverhead();
@@ -89,7 +89,7 @@ public class MessageHandler {
             double n = (double) tomLayer.controller.getCurrentViewN();
 
 
-            /** DynWHEAT: Send back PROPOSE_RESPONSE **/
+            /** AWARE: Send back PROPOSE_RESPONSE **/
             if (tomLayer.controller.getStaticConf().isUseProposeResponse() && consMsg.getPaxosVerboseType().equals("PROPOSE") &&
                     (int)((c+id)*w/n) != (int)((c-1+id)*w/n)
             ) {
@@ -100,7 +100,7 @@ public class MessageHandler {
                 tomLayer.communication.send(destination, tomLayer.monitoringMsgFactory
                         .createProposeResponse(consMsg.getNumber(), consMsg.getEpoch(), consMsg.getChallenge(), ((ConsensusMessage) sm).getValue()));
             }
-            /** END DynWHEAT **/
+            /** END AWARE **/
 
             if (tomLayer.controller.getStaticConf().getUseMACs() == 0 || consMsg.authenticated || consMsg.getSender() == myId) acceptor.deliver(consMsg);
             else if (consMsg.getType() == MessageFactory.ACCEPT && consMsg.getProof() != null) {
@@ -204,7 +204,7 @@ public class MessageHandler {
 		                    tomLayer.getStateManager().stateTimeout();
 	                        break;
 	                }
-                /**************       DynWHEAT     **********************************/
+                /**************       AWARE     **********************************/
 	            } else if(sm instanceof MonitoringMessage) {
 
                     logger.debug(" <--| MM | Monitoring message received " + ((MonitoringMessage) sm).getPaxosVerboseType()
