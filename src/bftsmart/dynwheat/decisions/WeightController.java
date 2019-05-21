@@ -171,7 +171,7 @@ public class WeightController {
         return best;
     }
 
-    
+
     /**
      * Optimizes weight distribution and leader selection
      *

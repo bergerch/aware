@@ -1,12 +1,14 @@
-DynWHEAT 0.1
+AWARE 0.1
 ----------
+
+Adaptive Wide-Area REplication
 
 ![](img/dynWHEATLogo.png)
 
-This branch contains the sources of DynWHEAT, an automated voting weight tuning and leader positioning scheme that implements the optimizations and vote assignment schemes of WHEAT [1] and dynamically allows the system to adjust itself to the best configuration.
+This branch contains the sources of AWARE, an automated voting weight tuning and leader positioning scheme that implements the optimizations and vote assignment schemes of WHEAT [1] and dynamically allows the system to adjust itself to the best configuration.
 
 
-Additionally to the steps decribed by WHEAT, you can use the following options to configure your variant of DynWHEAT:
+Additionally to the steps decribed by WHEAT, you can use the following options to configure your variant of AWARE:
 
 First, configure which optimizations you want to use:
 ```
@@ -15,7 +17,7 @@ system.dw.useDynamicWeights = true
 system.dw.useLeaderSelection = true
 ```
 
-Then you can granulary choose which monitoring messages DynWHEAT employs:
+Then you can granulary choose which monitoring messages AWARE employs:
 ```
 #server uses a distinct DUMMY_PROPOSE message for monitoring
 system.dw.useDummyPropose = false
@@ -53,7 +55,7 @@ system.dw.synchronisationDelay = 10000
 system.dw.monitoringOverhead = 1.0
 ```
 
-You can deploy DynWHEAT in any starting configuration. It will automatically monitor and try to self-optimize
+You can deploy AWARE in any starting configuration. It will automatically monitor and try to self-optimize
 
 
 WHEAT 0.2-alpha
