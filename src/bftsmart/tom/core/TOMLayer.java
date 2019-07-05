@@ -679,7 +679,6 @@ public final class TOMLayer extends Thread implements RequestReceiver {
         int id = this.controller.getStaticConf().getProcessId();
         double n = (double) this.controller.getCurrentViewN();
 
-
         boolean res = this.controller.getStaticConf().isUseDynamicWeights() && // Config says Dummy-Propose is enabled
                 (execManager.getCurrentLeader() != this.controller.getStaticConf().getProcessId()) && // I'm NOT the leader
                 (clientsManager.havePendingRequests()) && //there are messages to be ordered
@@ -687,11 +686,11 @@ public final class TOMLayer extends Thread implements RequestReceiver {
                 (int)((c+id)*w/n) != (int)((c-1+id)*w/n); // It's// my turn to send a dummy propose
                                                         // Bounded by monitoring overhead param
 
+       // if (res) {
+       //     System.out.println("Monitoring overhead" + controller.getStaticConf().getMonitoringOverhead());
+       //     System.out.println("I will DUMMY PROPOSE for " + getLastExec());
+       // }
 
-        if (res) {
-            System.out.println("Monitoring overhead" + controller.getStaticConf().getMonitoringOverhead());
-            System.out.println("I will DUMMY PROPOSE for " + getLastExec());
-        }
 
         return res;
     }

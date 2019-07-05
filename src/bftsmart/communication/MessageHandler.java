@@ -94,7 +94,7 @@ public class MessageHandler {
                     (int)((c+id)*w/n) != (int)((c-1+id)*w/n)
             ) {
                 logger.debug("I send PROPOSE-RESPONSE for consensus message " + consMsg.getNumber() + " to process " + consMsg.getSender());
-                System.out.println("I send back PROPOSE-RESPONSE " + consMsg.getNumber());
+                // System.out.println("I send back PROPOSE-RESPONSE " + consMsg.getNumber());
                 int[] destination = new int[1];
                 destination[0] = consMsg.sender;
                 tomLayer.communication.send(destination, tomLayer.monitoringMsgFactory
@@ -218,9 +218,11 @@ public class MessageHandler {
                                         ((MonitoringMessage) sm).getNumber() + " to process " + sm.getSender());
                                 int[] destination = new int[1];
                                 destination[0] = ((MonitoringMessage) sm).sender;
-                                tomLayer.communication.send(destination, tomLayer.monitoringMsgFactory
-                                        .createProposeResponse(((MonitoringMessage) sm).getNumber(), ((MonitoringMessage) sm).getEpoch(),
-                                                ((MonitoringMessage) sm).getValue()));
+                                MonitoringMessage proposeResponse = tomLayer.monitoringMsgFactory.createProposeResponse(
+                                        ((MonitoringMessage) sm).getNumber(), ((MonitoringMessage) sm).getEpoch(),
+                                                ((MonitoringMessage) sm).getValue());
+                                proposeResponse.setChallenge(( ((MonitoringMessage) sm).getChallenge()));
+                                tomLayer.communication.send(destination, proposeResponse);
                             }
                             break;
                         case "PROPOSE_RESPONSE":

@@ -66,7 +66,7 @@ public class AwareController {
      * This is where we start our search for the best weight configuration and protocol leader. We will generate
      * all possible weight configs first, then compute the predicted latency for all of them and for all possible
      * leader variants. Note, that this way, we traverse the entire search space. Since we compute combinations,
-     * the search space is factorial in N and needs to be handled with a cut & branch heuristic in larger systems
+     * the search space is factorial in N and needs to be handled with some heuristics in larger systems
      */
     public AwareConfiguration computeBest() {
         Simulator simulator = new Simulator(viewControl);
