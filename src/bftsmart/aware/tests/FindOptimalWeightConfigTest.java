@@ -39,6 +39,7 @@ public class FindOptimalWeightConfigTest {
         System.out.println("----------------------------------------------------------------");
 
 
+        /*
         long[][] propose = {
                 {0,	67739,	69185,	93000,	40285},
                 {67739,	0,	132581,	92021,	35496},
@@ -46,8 +47,21 @@ public class FindOptimalWeightConfigTest {
                 {93000,	92021,	156703,	0,	70210},
                 {40285,	35496,	99237,	70210,	0}
 
+        };*/
+
+        // Sydney, Stockholm, California, Tokio, Sao Paulo
+        long[][] propose = {
+                {0,	318840,	148980,	113120,	316410},
+                {318840,	0,	173160,	262680,	233120},
+                {148980,	173160,	0,	115960,	195920},
+                {113120,	262280,	115960,	0,	288740},
+                {316410,	233120,	195920,	288740,	0}
+
         };
 
+
+        long[][] write = propose;
+        /*
         long[][] write = {
                 {0,	67739,	69185,	93000,	40285},
                 {67739,	0,	132581,	92021,	35496},
@@ -143,9 +157,9 @@ public class FindOptimalWeightConfigTest {
         System.out.println("-----------------------------------------------------" +
                 "---------------------------------------------------------------");
         System.out.println("The best weight configuration is " + best + " with leader " + bestLeader +
-                " it achieves consensus in " + bestLatency);
+                " it achieves consensus in " + bestLatency/2);
         System.out.println("The worst weight configuration is " + worst + " with leader " + worstLeader +
-                " it achieves consensus in " + worstLatency);
+                " it achieves consensus in " + worstLatency/2);
 
         System.out.println("Computed combinations in " + ((double) (middle - start)) / 1000000.00 + " ms");
         System.out.println("Computed prediction model (amortized 100) " + ((double) (end - middle)) / 1000000.00 + " ms");
