@@ -218,4 +218,14 @@ public class WeightConfiguration {
         return Objects.hash(R_max, R_min);
     }
 
+
+    public WeightConfiguration deepCopy() {
+
+
+        TreeSet<Integer> r_max = (TreeSet<Integer>) (((TreeSet<Integer>) this.getR_max()).clone());
+        TreeSet<Integer> r_min = (TreeSet<Integer>) (((TreeSet<Integer>) this.getR_min()).clone());
+
+
+        return new WeightConfiguration(r_max, r_min);
+    }
 }

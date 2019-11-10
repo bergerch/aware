@@ -1,5 +1,6 @@
 package bftsmart.aware.tests;
 
+import bftsmart.aware.decisions.AwareConfiguration;
 import bftsmart.aware.decisions.Simulator;
 import bftsmart.aware.decisions.WeightConfiguration;
 
@@ -8,6 +9,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.List;
+import java.util.Random;
+import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * Tests finding the best weight configuration and the best leader
@@ -28,15 +32,21 @@ public class FindOptimalWeightConfigTest {
 
         Simulator simulator = new Simulator(null);
 
-        int[] replicaSet = {0, 1, 2, 3, 4};
 
-        int n = 5;
-        int f = 1;
-        int u = 2;
-        int delta = 1;
+        int n = 13;
+        int f = 3;
+        int delta = 3;
+
+
+        int u = 2 * f;
+        int[] replicaSet = new int[n];
+        for (int i = 0; i < n; i++) {
+            replicaSet[i] = i;
+        }
 
         System.out.println("Traverse all weight configurations and find the optimum");
         System.out.println("----------------------------------------------------------------");
+
 
 
         /*
@@ -50,14 +60,15 @@ public class FindOptimalWeightConfigTest {
         };*/
 
         // Sydney, Stockholm, California, Tokio, Sao Paulo
-        long[][] propose = {
+        long[][] propose = generateTestM(n);
+                /*{
                 {0,	318840,	148980,	113120,	316410},
                 {318840,	0,	173160,	262680,	233120},
                 {148980,	173160,	0,	115960,	195920},
                 {113120,	262280,	115960,	0,	288740},
                 {316410,	233120,	195920,	288740,	0}
 
-        };
+        };*/
 
 
         long[][] write = propose;
@@ -105,19 +116,28 @@ public class FindOptimalWeightConfigTest {
         List<WeightConfiguration> weightConfigs = WeightConfiguration.allPossibleWeightConfigurations(u, replicaSet);
 
         String lines = "";
-
         long middle = System.nanoTime();
+        System.out.println("Computed combinations in " + ((double) (middle - start)) / 1000000.00 + " ms");
+
+
+        long t2 = System.nanoTime();
+        simulatedAnnealing(n, f, delta, u, replicaSet, propose, write);
+        long t3 = System.nanoTime();
+        System.out.println("Simulated Annealing in " + ((double) (t3 - t2)) / 1000000.00 + " ms");
+
+
+        middle = System.nanoTime();
         boolean isSingleRunAlwaysAmortized = true;
         for (WeightConfiguration w : weightConfigs) {
             for (int primary : w.getR_max()) { // Only replicas in R_max will be considered to become leader ?
 
                 Long prediction = simulator.predictLatency(replicaSet, primary, w, propose, write, n, f, delta);
-                Long predictAmortized10 = simulator.predictLatency(replicaSet, primary, w, propose, write, n, f, delta, 1000);
+                Long predictAmortized10 = simulator.predictLatency(replicaSet, primary, w, propose, write, n, f, delta, 10);
 
-                System.out.println("WeightConfig " + w + "with leader " + primary + " has predicted latency of " + prediction + " (single run)");
+                //  System.out.println("WeightConfig " + w + "with leader " + primary + " has predicted latency of " + prediction + " (single run)");
                 if (!prediction.equals(predictAmortized10)) {
                     isSingleRunAlwaysAmortized = false;
-                    System.out.println("WeightConfig " + w + "with leader " + primary + " has predicted latency of " + predictAmortized10 + " (predictAmortized10)");
+                    //  System.out.println("WeightConfig " + w + "with leader " + primary + " has predicted latency of " + predictAmortized10 + " (predictAmortized10)");
                     prediction = predictAmortized10;
                 }
 
@@ -137,13 +157,13 @@ public class FindOptimalWeightConfigTest {
             }
         }
         long end = System.nanoTime();
-        if (!isSingleRunAlwaysAmortized){
-        //    System.out.println("Single Run is NOT always the same as amortized");
+        if (!isSingleRunAlwaysAmortized) {
+            //    System.out.println("Single Run is NOT always the same as amortized");
         }
 
         Writer output;
         try {
-            output = new BufferedWriter(new FileWriter("model-predictions" , false));
+            output = new BufferedWriter(new FileWriter("model-predictions", false));
             output.append(lines);
             output.close();
 
@@ -153,16 +173,122 @@ public class FindOptimalWeightConfigTest {
         }
 
 
-
         System.out.println("-----------------------------------------------------" +
                 "---------------------------------------------------------------");
         System.out.println("The best weight configuration is " + best + " with leader " + bestLeader +
-                " it achieves consensus in " + bestLatency/2);
+                " it achieves consensus in " + bestLatency);
         System.out.println("The worst weight configuration is " + worst + " with leader " + worstLeader +
-                " it achieves consensus in " + worstLatency/2);
+                " it achieves consensus in " + worstLatency);
 
         System.out.println("Computed combinations in " + ((double) (middle - start)) / 1000000.00 + " ms");
         System.out.println("Computed prediction model (amortized 100) " + ((double) (end - middle)) / 1000000.00 + " ms");
+        System.out.println("Number of configs " + weightConfigs.size() * u);
 
+
+    }
+
+    private static void simulatedAnnealing(int n, int f, int delta, int u, int[] replicaSet, long[][] propose, long[][] write) {
+
+        Simulator simulator = new Simulator(null);
+
+        // Initialize
+        WeightConfiguration w = new WeightConfiguration(u, replicaSet);
+        AwareConfiguration x = new AwareConfiguration(w, 0);
+        AwareConfiguration best = x;
+        long prediction = simulator.predictLatency(replicaSet, x.getLeader(), x.getWeightConfiguration(), propose,
+                write, n, f, delta, 100);
+        best.setPredictedLatency(prediction);
+        x.setPredictedLatency(prediction);
+
+        // Simulated Annealing parameters
+        double temp = 120;
+        double coolingRate = 0.0055;
+        Random random = new Random();
+
+
+        int counter = 0;
+        int counter2 = 0;
+        int betterFound = 0;
+        while (temp > 0.2) {
+
+            counter++;
+            AwareConfiguration y = new AwareConfiguration(x.getWeightConfiguration().deepCopy(), x.getLeader());
+
+            // Create a random variation of configuration x
+            int randomReplicaFrom = random.nextInt(u);
+            int randomReplicaTo = random.nextInt(n - u);
+
+            TreeSet<Integer> R_max = (TreeSet<Integer>) y.getWeightConfiguration().getR_max();
+            TreeSet<Integer> R_min = (TreeSet<Integer>) y.getWeightConfiguration().getR_min();
+
+            Integer max = (Integer) R_max.toArray()[randomReplicaFrom];
+            Integer min = (Integer) R_min.toArray()[randomReplicaTo];
+
+            // Get energy of solutions
+            Long predictX = x.getPredictedLatency();
+            // Swap min and max replica
+            if (max.equals(y.getLeader()))
+                y.setLeader(min);
+
+            R_max.remove(max);
+            R_max.add(min);
+
+            R_min.remove(min);
+            R_min.add(max);
+
+
+            Long predictY = simulator.predictLatency(replicaSet, y.getLeader(), y.getWeightConfiguration(), propose,
+                    write, n, f, delta, 10);
+
+
+            // If the new solution is better, it is accepted
+            if (predictY < predictX) {
+                x = y;
+                x.setPredictedLatency(predictY);
+              //  System.out.println("New solution is better");
+                betterFound++;
+
+            } else {
+                // If the new solution is worse, calculate an acceptance probability
+                double rand = Math.random();
+              //  System.out.println("predictX, predictY, temp, " + predictX + " " + predictY + " " + temp + " " + " " + (predictX - predictY) / temp + " " + Math.exp((predictX - predictY) / temp) + " " + rand);
+                if (Math.exp(-((predictY - predictX) / (temp))) > rand) {
+                //    System.out.println("Do it anyways");
+                    counter2++;
+                    x = y;
+                    x.setPredictedLatency(predictY);
+                }
+            }
+
+            // Record best solution found
+            if (predictY < best.getPredictedLatency()) {
+                best = y;
+                best.setPredictedLatency(predictY);
+            }
+
+            // Cool system down
+            temp *= 1 - coolingRate;
+        }
+
+        System.out.println("Configurations examined: " + counter);
+        System.out.println("Better found: " + betterFound);
+        System.out.println("Jumps: " + counter2);
+        System.out.println("Final solution latency: " + best.getPredictedLatency());
+        System.out.println("Best Configuratuon: L" + best.getLeader() + " " + best.getWeightConfiguration());
+
+    }
+
+    private static long[][] generateTestM(int n) {
+
+        long[][] M = new long[n][n];
+
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                long random = (long) (Math.random() * 100);
+                M[i][j] = i == j ? 0 : random;
+                M[j][i] = i == j ? 0 : random;
+            }
+        }
+        return M;
     }
 }
