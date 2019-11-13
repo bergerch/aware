@@ -2,7 +2,10 @@ package bftsmart.aware.decisions;
 
 import bftsmart.aware.monitoring.Monitor;
 
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Objects;
+import java.util.TreeSet;
 
 /**
  * AWARE Configuration includes a weight configuration and a leader selection
@@ -79,5 +82,38 @@ public class AwareConfiguration implements Comparable {
     @Override
     public int hashCode() {
         return Objects.hash(weightConfiguration, leader);
+    }
+
+
+    public List<AwareConfiguration> getNeighborhood(int randomReplicaTo) {
+
+        List<AwareConfiguration> neighbors = new LinkedList<>();
+
+        for (Integer max: this.getWeightConfiguration().getR_max()) {
+
+
+                AwareConfiguration y = new AwareConfiguration(this.getWeightConfiguration().deepCopy(), this.getLeader());
+
+                TreeSet<Integer> R_max = (TreeSet<Integer>) y.getWeightConfiguration().getR_max();
+                TreeSet<Integer> R_min = (TreeSet<Integer>) y.getWeightConfiguration().getR_min();
+
+                Integer min = (Integer) R_min.toArray()[randomReplicaTo];
+
+                // Swap min and max replica
+                if (max.equals(y.getLeader()))
+                    y.setLeader(min);
+
+                R_max.remove(max);
+                R_max.add(min);
+
+                R_min.remove(min);
+                R_min.add(max);
+
+                neighbors.add(y);
+
+        }
+
+        return  neighbors;
+
     }
 }
