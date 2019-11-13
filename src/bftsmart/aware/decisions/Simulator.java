@@ -306,7 +306,7 @@ public class Simulator {
 
             } else {
                 // If the new solution is worse, calculate an acceptance probability
-                double rand = Math.random();
+                double rand = random.nextDouble();
                 if (Math.exp(-((predictY - predictX) / (temp))) > rand) {
                     jumps++;
                     x = y;
