@@ -253,9 +253,9 @@ public class Simulator {
         Random random = new Random(seed);
 
         // Simulated Annealing parameters
-        double temp = 120;
+        double temp = 480;
         double coolingRate = 0.0055;
-        double threshold = 0.2;
+        double threshold = 0.8;
 
 
         // Debug Info

@@ -14,7 +14,7 @@ import java.io.Writer;
 public class FindOptimalWeightConfigTest {
 
     /**
-     * Tests if simulator works. For the given params, the result should be 220 ms
+     * Tests if simulator works.
      *
      * @param args the command line arguments
      * @author cb
@@ -24,7 +24,6 @@ public class FindOptimalWeightConfigTest {
         long start = System.nanoTime();
 
         Simulator simulator = new Simulator(null);
-
 
         int n = 17;
         int f = 4;
@@ -39,7 +38,14 @@ public class FindOptimalWeightConfigTest {
 
         String lines = "";
 
-        for (int i = 0; i < 1000; i++) {
+        int runs = 100;
+        Simulator.SimulationRun [] resultsPick = new Simulator.SimulationRun[runs];
+        Simulator.SimulationRun [] resultstabu = new Simulator.SimulationRun[runs];
+        Simulator.SimulationRun [] resultsAnnealing = new Simulator.SimulationRun[runs];
+        Simulator.SimulationRun [] resultsExhaustive = new Simulator.SimulationRun[runs];
+
+
+        for (int i = 0; i < runs; i++) {
             System.out.println("Find the optimum... " + i + " of 1000");
 
 
@@ -67,16 +73,20 @@ public class FindOptimalWeightConfigTest {
 
             long[][] write = propose;
 
-
             // Start the calculations
 
             Simulator.SimulationRun pickSample = Simulator.pickSampleConfigs(n, f, delta, u, replicaSet, propose, write, 1160);
+            resultsPick[i] = pickSample;
 
             Simulator.SimulationRun tabuSearch = Simulator.tabuSearch(n, f, delta, u, replicaSet, propose, write, 1160, 500);
+            resultstabu[i] = tabuSearch;
 
             Simulator.SimulationRun simulatedAnnealing = Simulator.simulatedAnnealing(n, f, delta, u, replicaSet, propose, write, 500);
+            resultsAnnealing[i] = simulatedAnnealing;
 
             Simulator.SimulationRun exhaustiveSearch = Simulator.exhaustiveSearch(n, f, delta, u, replicaSet, propose, write);
+            resultsExhaustive[i] = exhaustiveSearch;
+
 
             lines += pickSample.getSolutionLatency() + ", " + tabuSearch.getSolutionLatency() + ", " +
                     simulatedAnnealing.getSolutionLatency() + ", " + exhaustiveSearch.getSolutionLatency() + ", " + exhaustiveSearch.getWorstLatency() + ", ";
@@ -86,10 +96,52 @@ public class FindOptimalWeightConfigTest {
 
         }
 
+        System.out.println("Calculate Results...");
+        double[] errorsAnnealing = new double[runs];
+        double[] errorsPick = new double[runs];
+
+        double sumAnnealing = 0.0;
+        double sumPick = 0.0;
+
+        double timeAnnealing = 0.0;
+        double timeExhaustive = 0.0;
+        double timePick = 0.0;
+
+        for (int i = 0; i < runs; i++) {
+            errorsAnnealing[i] = (double) resultsAnnealing[i].getSolutionLatency() / (double) resultsExhaustive[i].getSolutionLatency();
+            errorsPick[i] = (double) resultsPick[i].getSolutionLatency() / (double) resultsExhaustive[i].getSolutionLatency();
+
+            sumAnnealing += errorsAnnealing[i];
+            sumPick += errorsPick[i];
+
+            timeAnnealing += resultsAnnealing[i].getTimeNeeded();
+            timeExhaustive += resultsExhaustive[i].getTimeNeeded();
+            timePick += resultsPick[i].getTimeNeeded();
+        }
+        double avgErrorAnnealing = sumAnnealing / (double) runs;
+        double avgErrorPick = sumPick / (double) runs;
+
+        double avgTimeAnnealing = timeAnnealing / (double) runs;
+        double avgTimeExhaustive = timeExhaustive / (double) runs;
+        double avgTimePick = timePick / (double) runs;
+
+        String results = "avg Error (Annealing), avg Time (Annealing), avg Error (PickSample), avg Time (PickSample), avg Time (Exhaustive) \n";
+        results = results + avgErrorAnnealing + ", " + avgTimeAnnealing + ", " + avgErrorPick + ", " + avgTimePick + ", " + avgTimeExhaustive;
+
         Writer output;
         try {
             output = new BufferedWriter(new FileWriter("simulations", false));
             output.append(lines);
+            output.close();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.out.println("!!!!!!!!!!!!!!! Something went wrong " + e.getStackTrace());
+        }
+
+        try {
+            output = new BufferedWriter(new FileWriter("results", false));
+            output.append(results);
             output.close();
 
         } catch (IOException e) {
