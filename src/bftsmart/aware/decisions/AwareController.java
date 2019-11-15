@@ -92,6 +92,14 @@ public class AwareController {
             }
         }
 
+        int cid = executionManager.getTOMLayer().getLastExec();
+
+        // For larger systems, use heuristic, e.g, Simulated Annealing
+        if (n > 10) {
+            return Simulator.simulatedAnnealing(n, f, delta, u, replicaSet, propose, write, cid).best;
+        }
+
+
         // Generate the search space:
         //      Computes all possible combinates of R_max and R_min distributions
         List<WeightConfiguration> weightConfigs = WeightConfiguration.allPossibleWeightConfigurations(u, replicaSet);

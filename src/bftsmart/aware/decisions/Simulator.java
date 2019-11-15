@@ -334,8 +334,6 @@ public class Simulator {
         Simulator.printStrategyInfo("Simulated Annealing", examined, best, time, additionalParameters);
 
         return simulator.new SimulationRun(time, best.getPredictedLatency(), best);
-
-
     }
 
 
