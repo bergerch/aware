@@ -1,5 +1,7 @@
 package bftsmart.aware.tests;
+
 import bftsmart.aware.decisions.Simulator;
+
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -21,32 +23,40 @@ public class FindOptimalWeightConfigTest {
      */
     public static void main(String[] args) throws Exception {
 
-        long start = System.nanoTime();
 
-        Simulator simulator = new Simulator(null);
-
-        int n = 17;
-        int f = 4;
-        int delta = 4;
+        int[][] f_Delta = {
+                {2, 1}, {2, 2}, {2, 3}, {3, 1}, {3, 2}, {3, 3}, {4, 1}, {4, 2}, {4, 3}, {4, 4}
+        };
+        int runs = 1000;
 
 
-        int u = 2 * f;
-        int[] replicaSet = new int[n];
-        for (int i = 0; i < n; i++) {
-            replicaSet[i] = i;
-        }
 
-        String lines = "";
+        for (int k = 0; k < f_Delta.length; k++) {
 
-        int runs = 100;
-        Simulator.SimulationRun [] resultsPick = new Simulator.SimulationRun[runs];
-        Simulator.SimulationRun [] resultstabu = new Simulator.SimulationRun[runs];
-        Simulator.SimulationRun [] resultsAnnealing = new Simulator.SimulationRun[runs];
-        Simulator.SimulationRun [] resultsExhaustive = new Simulator.SimulationRun[runs];
+            Simulator simulator = new Simulator(null);
 
 
-        for (int i = 0; i < runs; i++) {
-            System.out.println("Find the optimum... " + i + " of 1000");
+            int f = f_Delta[k][0];
+            int delta = f_Delta[k][1];
+
+            int n = 3*f+1+delta;
+
+            int u = 2 * f;
+            int[] replicaSet = new int[n];
+            for (int i = 0; i < n; i++) {
+                replicaSet[i] = i;
+            }
+
+            String lines = "";
+
+            Simulator.SimulationRun[] resultsPick = new Simulator.SimulationRun[runs];
+            Simulator.SimulationRun[] resultstabu = new Simulator.SimulationRun[runs];
+            Simulator.SimulationRun[] resultsAnnealing = new Simulator.SimulationRun[runs];
+            Simulator.SimulationRun[] resultsExhaustive = new Simulator.SimulationRun[runs];
+
+
+            for (int i = 0; i < runs; i++) {
+                System.out.println("Find the optimum... " + i + " of 1000");
 
 
         /*
@@ -59,8 +69,8 @@ public class FindOptimalWeightConfigTest {
 
         };*/
 
-            // Sydney, Stockholm, California, Tokio, Sao Paulo
-            long[][] propose = generateTestM(n);
+                // Sydney, Stockholm, California, Tokio, Sao Paulo
+                long[][] propose = generateTestM(n);
                 /*{
                 {0,	318840,	148980,	113120,	316410},
                 {318840,	0,	173160,	262680,	233120},
@@ -71,84 +81,98 @@ public class FindOptimalWeightConfigTest {
         };*/
 
 
-            long[][] write = propose;
+                long[][] write = propose;
 
-            // Start the calculations
+                // Start the calculations
 
-            Simulator.SimulationRun pickSample = Simulator.pickSampleConfigs(n, f, delta, u, replicaSet, propose, write, 1160);
-            resultsPick[i] = pickSample;
+                Simulator.SimulationRun pickSample = Simulator.pickSampleConfigs(n, f, delta, u, replicaSet, propose, write, 1160);
+                resultsPick[i] = pickSample;
 
-            Simulator.SimulationRun tabuSearch = Simulator.tabuSearch(n, f, delta, u, replicaSet, propose, write, 1160, 500);
-            resultstabu[i] = tabuSearch;
+                Simulator.SimulationRun tabuSearch = Simulator.tabuSearch(n, f, delta, u, replicaSet, propose, write, 1160, 500);
+                resultstabu[i] = tabuSearch;
 
-            Simulator.SimulationRun simulatedAnnealing = Simulator.simulatedAnnealing(n, f, delta, u, replicaSet, propose, write, 500);
-            resultsAnnealing[i] = simulatedAnnealing;
+                Simulator.SimulationRun simulatedAnnealing = Simulator.simulatedAnnealing(n, f, delta, u, replicaSet, propose, write, 500);
+                resultsAnnealing[i] = simulatedAnnealing;
 
-            Simulator.SimulationRun exhaustiveSearch = Simulator.exhaustiveSearch(n, f, delta, u, replicaSet, propose, write);
-            resultsExhaustive[i] = exhaustiveSearch;
+                Simulator.SimulationRun exhaustiveSearch = Simulator.exhaustiveSearch(n, f, delta, u, replicaSet, propose, write);
+                resultsExhaustive[i] = exhaustiveSearch;
 
 
-            lines += pickSample.getSolutionLatency() + ", " + tabuSearch.getSolutionLatency() + ", " +
-                    simulatedAnnealing.getSolutionLatency() + ", " + exhaustiveSearch.getSolutionLatency() + ", " + exhaustiveSearch.getWorstLatency() + ", ";
+                lines += pickSample.getSolutionLatency() + ", " + tabuSearch.getSolutionLatency() + ", " +
+                        simulatedAnnealing.getSolutionLatency() + ", " + exhaustiveSearch.getSolutionLatency() + ", " + exhaustiveSearch.getWorstLatency() + ", ";
 
-            lines += pickSample.getTimeNeeded() + ", " + tabuSearch.getTimeNeeded() + ", " +
-                    simulatedAnnealing.getTimeNeeded() + ", " + exhaustiveSearch.getTimeNeeded() + "\n";
+                lines += pickSample.getTimeNeeded() + ", " + tabuSearch.getTimeNeeded() + ", " +
+                        simulatedAnnealing.getTimeNeeded() + ", " + exhaustiveSearch.getTimeNeeded() + "\n";
+
+            }
+
+            System.out.println("Calculate Results...");
+            double[] errorsAnnealing = new double[runs];
+            double[] errorsPick = new double[runs];
+
+            double sumAnnealing = 0.0;
+            double sumPick = 0.0;
+
+            int exactSolutionsAnnealing = 0;
+            int exactSolutionsPick = 0;
+
+            double timeAnnealing = 0.0;
+            double timeExhaustive = 0.0;
+            double timePick = 0.0;
+
+            for (int i = 0; i < runs; i++) {
+                errorsAnnealing[i] = (double) resultsAnnealing[i].getSolutionLatency() / (double) resultsExhaustive[i].getSolutionLatency();
+                errorsPick[i] = (double) resultsPick[i].getSolutionLatency() / (double) resultsExhaustive[i].getSolutionLatency();
+
+
+                if (resultsAnnealing[i].getSolutionLatency() == resultsExhaustive[i].getSolutionLatency())
+                    exactSolutionsAnnealing++;
+
+                if (resultsPick[i].getSolutionLatency() == resultsExhaustive[i].getSolutionLatency())
+                    exactSolutionsPick++;
+
+                sumAnnealing += errorsAnnealing[i];
+                sumPick += errorsPick[i];
+
+                timeAnnealing += resultsAnnealing[i].getTimeNeeded();
+                timeExhaustive += resultsExhaustive[i].getTimeNeeded();
+                timePick += resultsPick[i].getTimeNeeded();
+            }
+            double avgErrorAnnealing = sumAnnealing / (double) runs;
+            double avgErrorPick = sumPick / (double) runs;
+
+            double exactSolutionsPercentAnnealing = (double) exactSolutionsAnnealing / (double) runs;
+            double exactSolutionsPercentPick = (double) exactSolutionsPick / (double) runs;
+
+            double avgTimeAnnealing = timeAnnealing / (double) runs;
+            double avgTimeExhaustive = timeExhaustive / (double) runs;
+            double avgTimePick = timePick / (double) runs;
+
+            String results = ""+ n + ", " + f + ", " + delta + ", "; //"avg Error (Annealing), Exact Solutions Annealing (%), avg Time (Annealing), avg Error (PickSample), Exact Solutions Pick (%), avg Time (PickSample), avg Time (Exhaustive) \n";
+            results = results + avgErrorAnnealing + ", " + exactSolutionsPercentAnnealing + ", " + avgTimeAnnealing + ", " + avgErrorPick + ", " + exactSolutionsPercentPick + ", " + avgTimePick + ", " + avgTimeExhaustive + "\n";
+
+            Writer output;
+            try {
+                output = new BufferedWriter(new FileWriter("simulation " + f_Delta[k][0] + "_" + f_Delta[k][1], false));
+                output.append(lines);
+                output.close();
+
+            } catch (IOException e) {
+                e.printStackTrace();
+                System.out.println("!!!!!!!!!!!!!!! Something went wrong " + e.getStackTrace());
+            }
+
+            try {
+                output = new BufferedWriter(new FileWriter("results", true));
+                output.append(results);
+                output.close();
+
+            } catch (IOException e) {
+                e.printStackTrace();
+                System.out.println("!!!!!!!!!!!!!!! Something went wrong " + e.getStackTrace());
+            }
 
         }
-
-        System.out.println("Calculate Results...");
-        double[] errorsAnnealing = new double[runs];
-        double[] errorsPick = new double[runs];
-
-        double sumAnnealing = 0.0;
-        double sumPick = 0.0;
-
-        double timeAnnealing = 0.0;
-        double timeExhaustive = 0.0;
-        double timePick = 0.0;
-
-        for (int i = 0; i < runs; i++) {
-            errorsAnnealing[i] = (double) resultsAnnealing[i].getSolutionLatency() / (double) resultsExhaustive[i].getSolutionLatency();
-            errorsPick[i] = (double) resultsPick[i].getSolutionLatency() / (double) resultsExhaustive[i].getSolutionLatency();
-
-            sumAnnealing += errorsAnnealing[i];
-            sumPick += errorsPick[i];
-
-            timeAnnealing += resultsAnnealing[i].getTimeNeeded();
-            timeExhaustive += resultsExhaustive[i].getTimeNeeded();
-            timePick += resultsPick[i].getTimeNeeded();
-        }
-        double avgErrorAnnealing = sumAnnealing / (double) runs;
-        double avgErrorPick = sumPick / (double) runs;
-
-        double avgTimeAnnealing = timeAnnealing / (double) runs;
-        double avgTimeExhaustive = timeExhaustive / (double) runs;
-        double avgTimePick = timePick / (double) runs;
-
-        String results = "avg Error (Annealing), avg Time (Annealing), avg Error (PickSample), avg Time (PickSample), avg Time (Exhaustive) \n";
-        results = results + avgErrorAnnealing + ", " + avgTimeAnnealing + ", " + avgErrorPick + ", " + avgTimePick + ", " + avgTimeExhaustive;
-
-        Writer output;
-        try {
-            output = new BufferedWriter(new FileWriter("simulations", false));
-            output.append(lines);
-            output.close();
-
-        } catch (IOException e) {
-            e.printStackTrace();
-            System.out.println("!!!!!!!!!!!!!!! Something went wrong " + e.getStackTrace());
-        }
-
-        try {
-            output = new BufferedWriter(new FileWriter("results", false));
-            output.append(results);
-            output.close();
-
-        } catch (IOException e) {
-            e.printStackTrace();
-            System.out.println("!!!!!!!!!!!!!!! Something went wrong " + e.getStackTrace());
-        }
-
     }
 
 

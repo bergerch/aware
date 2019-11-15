@@ -253,9 +253,9 @@ public class Simulator {
         Random random = new Random(seed);
 
         // Simulated Annealing parameters
-        double temp = 480;
+        double temp = 120;
         double coolingRate = 0.0055;
-        double threshold = 0.8;
+        double threshold = 0.2;
 
 
         // Debug Info
@@ -412,6 +412,7 @@ public class Simulator {
         int count = 0;
         int examined = 0;
         for (WeightConfiguration w : weightConfigs) {
+            count++;
             if (sample == -1 || count % skip == 0) {
                 for (int primary : w.getR_max()) { // Only replicas in R_max will be considered to become leader ?
                     examined++;
@@ -428,7 +429,7 @@ public class Simulator {
                     }
                 }
             }
-            count++;
+
         }
         long t2 = System.nanoTime();
         double time = ((double) (t2 - t1)) / 1000000.00; // in ms
