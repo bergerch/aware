@@ -130,8 +130,8 @@ public class AwareController {
             Long predictedLatency = simulator.predictLatency(replicaSet, dwc.getLeader(), dwc.getWeightConfiguration(),
                     propose, write, n, f, delta, 100);
             dwc.setPredictedLatency(predictedLatency);
-            System.out.println("WeightConfig " + dwc.getWeightConfiguration() + "with leader " + dwc.getLeader() +
-                    " has predicted latency of " + ((double) Math.round(predictedLatency) / 1000) / 1000.00 + " ms");
+            //System.out.println("WeightConfig " + dwc.getWeightConfiguration() + "with leader " + dwc.getLeader() +
+            //        " has predicted latency of " + ((double) Math.round(predictedLatency) / 1000) / 1000.00 + " ms");
         }
 
         // Sort configurations for ascending predicted latency
@@ -212,17 +212,18 @@ public class AwareController {
 
             if (svc.getStaticConf().isUseLeaderSelection() && executionManager.getCurrentLeader() != best.getLeader() &&
                     current.getPredictedLatency() >= best.getPredictedLatency() * svc.getStaticConf().getOptimizationGoal()) {
-                // The current leader is not the best
-                //  lets change the leader and see what happens;
-                executionManager.getTOMLayer().requestsTimer.stopTimer();
-                executionManager.getTOMLayer().requestsTimer.setShortTimeout(3000);
-                executionManager.getTOMLayer().requestsTimer.startTimer();
-                // To get a specific leader as "next" leader
-                executionManager.getTOMLayer().getSynchronizer().getLCManager().setNewLeader(
-                       (best.getLeader()-1+svc.getCurrentViewN()) % svc.getCurrentViewN());
-                // Run leader change protocol:
-                executionManager.getTOMLayer().getSynchronizer().triggerTimeout(new LinkedList<>());
-                System.out.println("|AWARE|  [X] Optimization: leader selection, new leader is " + best.getLeader());
+
+                // The current leader is not the best, change it to the best
+                int newLeader =  (best.getLeader()+svc.getCurrentViewN()) % svc.getCurrentViewN();
+                executionManager.setNewLeader(newLeader);
+
+                System.out.println("-----_> NEW LEADER SET TO " + newLeader);
+                if (svc.getStaticConf().getProcessId() == newLeader) {
+                    executionManager.getTOMLayer().imAmTheLeader();
+                    System.out.println("-----_> I AM THE LEADER " + newLeader);
+                }
+
+                System.out.println("|AWARE|  [X] Optimization: leader selection, new leader is? " + best.getLeader());
             } else { // Keep the current configuration
                 System.out.println("|AWARE|  [ ] Optimization: leader selection: no leader change," +
                         " current leader is the best leader");

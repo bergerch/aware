@@ -82,6 +82,8 @@ public class Simulator {
     /**
      * Predics the latency of the SMR system for a given weight configuration and leader selection
      *
+     * The runtime complexity is O(n²log(n)) for n number of replicas considering a constant number of rounds
+     *
      * @param replicaSet   all replicas
      * @param leader       selected leader for protocol simulation
      * @param weightConfig weight configuration to be simulated
@@ -294,9 +296,7 @@ public class Simulator {
             R_min.remove(min);
             R_min.add(max);
 
-
             Long predictY = simulator.predictLatency(replicaSet, y.getLeader(), y.getWeightConfiguration(), propose, write, n, f, delta, 10);
-
 
             // If the new solution is better, it is accepted
             if (predictY < predictX) {

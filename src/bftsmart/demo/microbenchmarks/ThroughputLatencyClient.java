@@ -204,7 +204,7 @@ public class ThroughputLatencyClient {
 
             int req = 0;
 
-            for (int i = 0; i < 100; i++, req++) {
+            for (int i = 0; i < 500; i++, req++) {
                 if (verbose) System.out.print("Sending req " + req + "...");
 
                 if (readOnly)

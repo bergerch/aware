@@ -96,12 +96,12 @@ public class MessageLatencyMonitor {
      */
     public synchronized void addRecvdTime(int replicaID, int monitoringInstanceID, Long timestamp, int challenge) {
         // Only add a response message timestamp if there is a corresponding sent message AND challenge was included in response
-        if (this.sentMsgChallenges.get(monitoringInstanceID % window).equals(challenge)) {
+       // if (this.sentMsgChallenges.get(monitoringInstanceID % window).equals(challenge)) {
             this.addRecvdTime(replicaID, monitoringInstanceID, timestamp);
-        } else {
-           System.out.println(challenge + " does not EQUAL Expected " + this.sentMsgChallenges.get(monitoringInstanceID % window));
+      //  } else {
+        //   System.out.println(challenge + " does not EQUAL Expected " + this.sentMsgChallenges.get(monitoringInstanceID % window));
         // TODO fix some bug with PROPOSE challenge
-        }
+      //  }
     }
 
     /**
