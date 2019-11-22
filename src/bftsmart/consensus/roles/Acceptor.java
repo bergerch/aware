@@ -56,6 +56,8 @@ import org.slf4j.LoggerFactory;
  */
 public final class Acceptor {
 
+    private static final double THRESHOLD = -0.0000000001;
+
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private int me; // This replica ID
@@ -67,6 +69,8 @@ public final class Acceptor {
 
     //thread pool used to paralelise creation of consensus proofs
     private ExecutorService proofExecutor = null;
+
+
 
     /**
      * Creates a new instance of Acceptor.
@@ -270,7 +274,7 @@ public final class Acceptor {
      */
     private void computeWrite(int cid, Epoch epoch, byte[] value) {
         //int writeAccepted = round.countWrite(value);
-        int writeWeigths = epoch.countWriteWeigths(value);
+        double writeWeigths = epoch.countWriteWeigths(value);
 
         //Logger.println("(Acceptor.computeWrite) I have " + writeAccepted +
         //        " WRITEs for " + eid + "," + round.getNumber());
@@ -282,7 +286,7 @@ public final class Acceptor {
         //if (writeAccepted > controller.getQuorum() && Arrays.equals(value, epoch.propValueHash)) {
         
         //code for vote schemes
-        if (writeWeigths > controller.getOverlayQuorum() && Arrays.equals(value, epoch.propValueHash)) {
+        if (writeWeigths - ((double) controller.getOverlayQuorum()) > THRESHOLD && Arrays.equals(value, epoch.propValueHash)) {
 
             if (controller.getStaticConf().getTentative()) { //code for tentative execution
 
@@ -473,7 +477,7 @@ public final class Acceptor {
         //Logger.println("(Acceptor.computeAccept) I have " + round.countAccept(value) +
         //        " ACCEPTs for " + eid + "," + round.getNumber());
 
-        long acceptWeights = epoch.countAcceptWeigths(value);
+        double acceptWeights = epoch.countAcceptWeigths(value);
         logger.debug("I have " + acceptWeights +
                 " ACCEPT weigths and " + epoch.countAccept(value) + " ACCEPT messages for " + cid + "," + epoch.getTimestamp());
 
@@ -481,7 +485,9 @@ public final class Acceptor {
         //if (round.countAccept(value) > controller.getQuorum() && !round.getExecution().isDecided()) {
 
         //code for vote scheme
-        if (acceptWeights > controller.getOverlayQuorum() && !epoch.getConsensus().isDecided()) {
+        if (acceptWeights - ((double) controller.getOverlayQuorum()) > THRESHOLD && !epoch.getConsensus().isDecided()) {
+
+            //System.out.println("Decice " + cid + " weights: " + acceptWeights + "    Qv: " + controller.getOverlayQuorum());
             logger.debug("Deciding consensus " + cid);
             decide(epoch);
 

@@ -94,6 +94,11 @@ public class AwareController {
 
         int cid = executionManager.getTOMLayer().getLastExec();
 
+        currentDW = new AwareConfiguration(current, executionManager.getCurrentLeader());
+        Long estimate_current = simulator.predictLatency(replicaSet, currentDW.getLeader(), currentDW.getWeightConfiguration(),
+                propose, write, n, f, delta, 10);
+        currentDW.setPredictedLatency(estimate_current);
+
         // For larger systems, use heuristic, e.g, Simulated Annealing
         if (n > 10) {
             return Simulator.simulatedAnnealing(n, f, delta, u, replicaSet, propose, write, cid).best;
@@ -147,13 +152,6 @@ public class AwareController {
         System.out.println("the worst config is " + worst);
 
         System.out.println();
-
-        currentDW = new AwareConfiguration(current, executionManager.getCurrentLeader());
-
-        Long estimate_current = simulator.predictLatency(replicaSet, currentDW.getLeader(), currentDW.getWeightConfiguration(),
-                propose, write, n, f, delta, 100);
-        currentDW.setPredictedLatency(estimate_current);
-
         System.out.println("current config is estimated to be " + estimate_current);
 
 
