@@ -134,8 +134,8 @@ public class Monitor {
         m_propose[sender] = li.proposeLatencies;
 
         // Debugging and testing:
-        printM("PROPOSE", m_propose, consensusID, n);
-        printM("WRITE", m_write, consensusID, n);
+       // printM("PROPOSE", m_propose, consensusID, n);
+        //printM("WRITE", m_write, consensusID, n);
     }
 
 

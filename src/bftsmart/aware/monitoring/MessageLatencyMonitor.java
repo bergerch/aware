@@ -142,7 +142,7 @@ public class MessageLatencyMonitor {
         }
         // Assume self-latency is zero
         latency_vector[myself] = 0L;
-        printLatencyVector(latenciesToMillis(latency_vector));
+        // printLatencyVector(latenciesToMillis(latency_vector));
 
         long end = System.nanoTime();
         System.out.println("Computed median latencies for " + description + "  in " + (double) (end - start) / 1000000.00 + " ms");

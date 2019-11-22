@@ -70,6 +70,9 @@ public final class Acceptor {
     //thread pool used to paralelise creation of consensus proofs
     private ExecutorService proofExecutor = null;
 
+    /**BEGIN AWARE */
+    public ConsensusMessage[] proposeRecvd;
+    /**END AWARE */
 
 
     /**
@@ -89,6 +92,12 @@ public final class Acceptor {
         int nWorkers = this.controller.getStaticConf().getNumNettyWorkers();
         nWorkers = nWorkers > 0 ? nWorkers : Runtime.getRuntime().availableProcessors();
         this.proofExecutor = Executors.newWorkStealingPool(nWorkers);
+
+
+        /**BEGIN AWARE */
+        proposeRecvd = new ConsensusMessage[controller.getCurrentViewN()];
+        /**END AWARE */
+
     }
 
     public MessageFactory getFactory() {
@@ -168,6 +177,14 @@ public final class Acceptor {
                 && epoch.getTimestamp() == 0 && ts == ets && ets == 0) { // Is all this in epoch 0?
     		executePropose(epoch, msg.getValue());
     	} else {
+    	    /**BEGIN AWARE */
+    	    if (epoch.getConsensus().getId() > 1 && epoch.getConsensus().getId() % this.controller.getStaticConf().getCalculationInterval() == 1) {
+                System.out.println("!!!!!!!!!!! Remember Propose of " + msg.getSender() + " " + epoch.getConsensus().getId());
+                proposeRecvd[msg.getSender()] = msg; // Remember a non-leader proposal during a potential leader change
+            } else {
+             System.out.println("!!!!!!!!!!! Propose received is not from the expected leader " + msg.getSender() + " " + epoch.getConsensus().getId());
+            }
+    	    /**END AWARE **/
     		logger.debug("Propose received is not from the expected leader");
     	}
     }

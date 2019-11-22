@@ -1,6 +1,7 @@
 package bftsmart.aware.decisions;
 
 import bftsmart.aware.monitoring.Monitor;
+import bftsmart.consensus.roles.Acceptor;
 import bftsmart.reconfiguration.ServerViewController;
 import bftsmart.tom.core.ExecutionManager;
 
@@ -219,6 +220,20 @@ public class AwareController {
                 if (svc.getStaticConf().getProcessId() == newLeader) {
                     executionManager.getTOMLayer().imAmTheLeader();
                     System.out.println("-----_> I AM THE LEADER " + newLeader);
+                } else {
+                    Acceptor acceptor = executionManager.getAcceptor();
+
+                   // int cidNew = cid+1;
+                    //System.out.println("" + acceptor.proposeRecvd[newLeader]  + " " + cidNew );
+                    //if(acceptor.proposeRecvd[newLeader] != null)
+                       // System.out.println("!!!! NUMBER" + acceptor.proposeRecvd[newLeader].getNumber());
+
+
+                    if(acceptor.proposeRecvd[newLeader] != null && acceptor.proposeRecvd[newLeader].getNumber() == cid + 1) {
+                        //System.out.println("!!!!!!!!" + acceptor.proposeRecvd[newLeader] + " " + acceptor.proposeRecvd[newLeader].getNumber() + " " + cidNew );
+                        //System.out.println("!!!!!!!! Receiving propose of new leader");
+                        acceptor.processMessage(acceptor.proposeRecvd[newLeader]);
+                    }
                 }
 
                 System.out.println("|AWARE|  [X] Optimization: leader selection, new leader is? " + best.getLeader());
