@@ -310,7 +310,9 @@ public final class ThroughputLatencyServer extends DefaultRecoverable{
         if(iterations % interval == 0) {
             if (context) System.out.println("--- (Context)  iterations: "+ iterations + " // regency: " + msgCtx.getRegency() + " // consensus: " + msgCtx.getConsensusId() + " ---");
 
-            String line = "" + replica.getReplicaContext().getSVController().tomLayer.execManager.getCurrentLeader() + "," +
+            String line = "" + replica.getReplicaContext().getCurrentView().getN() + ", " +
+                    replica.getReplicaContext().getCurrentView().getF() + ", " +
+                    replica.getReplicaContext().getSVController().tomLayer.execManager.getCurrentLeader() + "," +
                     replica.getReplicaContext().getCurrentView().getViewString() + ",";
             System.out.println("--- Measurements after "+ iterations+" ops ("+interval+" samples) ---");
             

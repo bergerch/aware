@@ -294,7 +294,8 @@ public class ThroughputLatencyClient {
 
 
             if(id == initId) {
-                String line = "" + proxy.getViewManager().getStaticConf().getInitialLeader() + "," + proxy.getViewManager().getCurrentView().getViewString() + ",";
+                String line = "" +  proxy.getViewManager().getStaticConf().getN() + ", " + proxy.getViewManager().getStaticConf().getF() + ", " +
+                        proxy.getViewManager().getStaticConf().getInitialLeader()  + ",";
                 System.out.println(this.id + " // Average time for " + numberOfOps + " executions (-10%) = " + st.getAverage(true) / 1000 + " us ");
                 line += st.getAverage(true) / 1000 + ",";
                 System.out.println(this.id + " // Standard desviation for " + numberOfOps + " executions (-10%) = " + st.getDP(true) / 1000 + " us ");

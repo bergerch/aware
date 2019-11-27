@@ -195,6 +195,9 @@ public class AwareController {
             WeightConfiguration bestWeights = best.getWeightConfiguration();
             WeightConfiguration currentWeights = current.getWeightConfiguration();
 
+            System.out.println();
+            System.out.println("!!! Best: " + best);
+            System.out.println();
 
             if (svc.getStaticConf().isUseDynamicWeights() && !currentWeights.equals(bestWeights) &&
                     current.getPredictedLatency() >= best.getPredictedLatency() * svc.getStaticConf().getOptimizationGoal()) {
