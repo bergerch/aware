@@ -1,0 +1,1764 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ArtifactsWorkspaceSettings">
+    <artifacts-to-build>
+      <artifact name="LatencyServer" />
+    </artifacts-to-build>
+  </component>
+  <component name="BookmarkManager">
+    <bookmark url="file://$PROJECT_DIR$/config/system.config" description="#Replicas ID for the initial view, separated by a ..." line="147" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="a41389e8-d7a0-4064-845f-2924fbb9b960" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/bft_libs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/bft_libs.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bin/BFT-SMaRt.jar" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/config/system.config" beforeDir="false" afterPath="$PROJECT_DIR$/config/system.config" afterDir="false" />
+    </list>
+    <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="CoverageDataManager">
+    <SUITE FILE_PATH="coverage/bft_smart$SimulatorTest.ic" NAME="SimulatorTest Coverage Results" MODIFIED="1551964934834" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false">
+      <FILTER>bftsmart.dynwheat.decisions.*</FILTER>
+    </SUITE>
+  </component>
+  <component name="DatabaseView">
+    <option name="SHOW_INTERMEDIATE" value="true" />
+    <option name="GROUP_DATA_SOURCES" value="true" />
+    <option name="GROUP_SCHEMA" value="true" />
+    <option name="GROUP_CONTENTS" value="false" />
+    <option name="SORT_POSITIONED" value="false" />
+    <option name="SHOW_EMPTY_GROUPS" value="false" />
+    <option name="AUTO_SCROLL_FROM_SOURCE" value="false" />
+    <option name="HIDDEN_KINDS">
+      <set />
+    </option>
+    <expand />
+    <select />
+  </component>
+  <component name="FavoritesManager">
+    <favorites_list name="bft-smart" />
+  </component>
+  <component name="FileEditorManager">
+    <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/library/src/bftsmart/tom/util/Storage.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state>
+              <folding>
+                <element signature="n#!!doc" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/library/src/bftsmart/demo/microbenchmarks/AsyncLatencyClient.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state>
+              <folding>
+                <element signature="n#!!doc" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/bftsmart/aware/monitoring/Monitor.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="210">
+              <caret line="19" column="36" selection-start-line="19" selection-start-column="36" selection-end-line="19" selection-end-column="36" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/bftsmart/aware/monitoring/MessageLatencyMonitor.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="2640">
+              <caret line="178" column="38" selection-start-line="178" selection-start-column="38" selection-end-line="178" selection-end-column="38" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/bftsmart/aware/decisions/AwareController.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="510">
+              <caret line="39" column="27" selection-start-line="39" selection-start-column="27" selection-end-line="39" selection-end-column="27" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/bftsmart/demo/microbenchmarks/ThroughputLatencyClient.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="460">
+              <caret line="292" column="13" selection-start-line="292" selection-start-column="13" selection-end-line="292" selection-end-column="13" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/src/bftsmart/aware/decisions/Simulator.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="468">
+              <caret line="307" column="49" lean-forward="true" selection-start-line="307" selection-start-column="49" selection-end-line="307" selection-end-column="84" />
+              <folding>
+                <element signature="imports" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/bftsmart/aware/monitoring/MonitoringDataSynchronizer.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="165">
+              <caret line="16" column="25" selection-start-line="16" selection-start-column="25" selection-end-line="16" selection-end-column="25" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/bftsmart/aware/decisions/WeightConfiguration.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="375">
+              <caret line="30" column="11" selection-start-line="30" selection-start-column="11" selection-end-line="30" selection-end-column="11" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/bftsmart/consensus/roles/Acceptor.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="6990">
+              <caret line="515" column="75" selection-start-line="515" selection-start-column="75" selection-end-line="515" selection-end-column="75" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+    </leaf>
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="JUnit4 Test Class" />
+        <option value="Class" />
+      </list>
+    </option>
+  </component>
+  <component name="FindInProjectRecents">
+    <findStrings>
+      <find>simulated</find>
+      <find>clear</find>
+      <find>simulatedA</find>
+      <find>counter2</find>
+      <find>counter</find>
+      <find>readyToExecute</find>
+      <find>count</find>
+      <find>does not EQUAL Expected</find>
+      <find>setTim</find>
+      <find>AWARE</find>
+      <find>setShort</find>
+      <find>has predicted latency o</find>
+      <find>current</find>
+      <find>ov</find>
+      <find>overlayQ_BFT</find>
+      <find>eights</find>
+      <find>write</find>
+      <find>computeWrite</find>
+      <find>Weights</find>
+      <find>Weigths</find>
+      <find>propose</find>
+      <find>LCManager</find>
+      <find>i am the leader</find>
+      <find>Propose re</find>
+      <find>Final sol</find>
+      <find>the best config is</find>
+      <find>current config is estimated to be</find>
+      <find>server</find>
+      <find>String</find>
+      <find>Storage</find>
+    </findStrings>
+    <replaceStrings>
+      <replace>logger.debug</replace>
+      <replace>MonitoringMessage</replace>
+      <replace>consensusID</replace>
+      <replace>long</replace>
+      <replace>challenge</replace>
+      <replace>System.currentTimeMillis();</replace>
+      <replace>AWARE</replace>
+      <replace>jumps</replace>
+      <replace>examined</replace>
+    </replaceStrings>
+    <dirStrings>
+      <dir>$PROJECT_DIR$/.idea</dir>
+      <dir>$PROJECT_DIR$/src/bftsmart/communication</dir>
+      <dir>$PROJECT_DIR$/</dir>
+      <dir>$PROJECT_DIR$/src/bftsmart/consensus</dir>
+      <dir>$PROJECT_DIR$/src/bftsmart/dynwheat</dir>
+      <dir>$PROJECT_DIR$/config</dir>
+      <dir>$PROJECT_DIR$</dir>
+      <dir>$PROJECT_DIR$/src/bftsmart</dir>
+      <dir>$PROJECT_DIR$/src</dir>
+    </dirStrings>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="IdeDocumentHistory">
+    <option name="CHANGED_PATHS">
+      <list>
+        <option value="$PROJECT_DIR$/src/bftsmart/consensus/Decision.java" />
+        <option value="$PROJECT_DIR$/src/bftsmart/communication/client/netty/NettyClientServerCommunicationSystemServerSide.java" />
+        <option value="$PROJECT_DIR$/src/bftsmart/tom/core/ExecutionManager.java" />
+        <option value="$PROJECT_DIR$/src/bftsmart/tom/leaderchange/CollectData.java" />
+        <option value="$PROJECT_DIR$/src/bftsmart/tom/ServiceProxy.java" />
+        <option value="$PROJECT_DIR$/src/bftsmart/tom/core/Synchronizer.java" />
+        <option value="$PROJECT_DIR$/src/bftsmart/tom/leaderchange/LCManager.java" />
+        <option value="$PROJECT_DIR$/src/bftsmart/reconfiguration/views/View.java" />
+        <option value="$PROJECT_DIR$/src/bftsmart/tom/util/Storage.java" />
+        <option value="$PROJECT_DIR$/src/bftsmart/dynwheat/tests/SimulatorTest.java" />
+        <option value="$PROJECT_DIR$/src/bftsmart/communication/ServerCommunicationSystem.java" />
+        <option value="$PROJECT_DIR$/config/logback.xml" />
+        <option value="$PROJECT_DIR$/src/bftsmart/dynwheat/monitoring/MonitoringDataSynchronizer.java" />
+        <option value="$PROJECT_DIR$/src/bftsmart/demo/microbenchmarks/AsyncLatencyClient.java" />
+        <option value="$PROJECT_DIR$/measurement-client111" />
+        <option value="$PROJECT_DIR$/src/bftsmart/tom/leaderchange/RequestsTimer.java" />
+        <option value="$PROJECT_DIR$/src/bftsmart/dynwheat/monitoring/Monitor.java" />
+        <option value="$PROJECT_DIR$/src/bftsmart/dynwheat/monitoring/Measurements.java" />
+        <option value="$PROJECT_DIR$/src/bftsmart/dynwheat/messages/MonitoringMessage.java" />
+        <option value="$PROJECT_DIR$/src/bftsmart/consensus/messages/ConsensusMessage.java" />
+        <option value="$PROJECT_DIR$/src/bftsmart/dynwheat/messages/MonitoringMessageFactory.java" />
+        <option value="$PROJECT_DIR$/src/bftsmart/dynwheat/monitoring/MessageLatencyMonitor.java" />
+        <option value="$PROJECT_DIR$/measurement-server0" />
+        <option value="$PROJECT_DIR$/src/bftsmart/dynwheat/decisions/Simulator.java" />
+        <option value="$PROJECT_DIR$/src/bftsmart/dynwheat/tests/FindOptimalWeightConfigTest.java" />
+        <option value="$PROJECT_DIR$/src/bftsmart/dynwheat/decisions/WeightController.java" />
+        <option value="$PROJECT_DIR$/src/bftsmart/aware/decisions/WeightController.java" />
+        <option value="$PROJECT_DIR$/src/bftsmart/communication/server/ServersCommunicationLayer.java" />
+        <option value="$PROJECT_DIR$/src/bftsmart/tom/core/TOMLayer.java" />
+        <option value="$PROJECT_DIR$/src/bftsmart/reconfiguration/util/TOMConfiguration.java" />
+        <option value="$PROJECT_DIR$/src/bftsmart/reconfiguration/util/Configuration.java" />
+        <option value="$PROJECT_DIR$/src/bftsmart/tom/core/DeliveryThread.java" />
+        <option value="$PROJECT_DIR$/src/bftsmart/tom/ServiceReplica.java" />
+        <option value="$PROJECT_DIR$/src/bftsmart/aware/decisions/WeightConfiguration.java" />
+        <option value="$PROJECT_DIR$/src/bftsmart/aware/tests/SimulatorTest.java" />
+        <option value="$PROJECT_DIR$/src/bftsmart/aware/decisions/AwareConfiguration.java" />
+        <option value="$PROJECT_DIR$/results" />
+        <option value="$PROJECT_DIR$/src/bftsmart/aware/tests/FindOptimalWeightConfigTest.java" />
+        <option value="$PROJECT_DIR$/src/bftsmart/aware/decisions/Simulator.java" />
+        <option value="$PROJECT_DIR$/src/bftsmart/consensus/Epoch.java" />
+        <option value="$PROJECT_DIR$/src/bftsmart/reconfiguration/ServerViewController.java" />
+        <option value="$PROJECT_DIR$/src/bftsmart/aware/monitoring/MessageLatencyMonitor.java" />
+        <option value="$PROJECT_DIR$/src/bftsmart/aware/monitoring/Monitor.java" />
+        <option value="$PROJECT_DIR$/src/bftsmart/consensus/roles/Acceptor.java" />
+        <option value="$PROJECT_DIR$/config/hosts.config" />
+        <option value="$PROJECT_DIR$/src/bftsmart/communication/MessageHandler.java" />
+        <option value="$PROJECT_DIR$/src/bftsmart/demo/microbenchmarks/ThroughputLatencyClient.java" />
+        <option value="$PROJECT_DIR$/src/bftsmart/demo/microbenchmarks/ThroughputLatencyServer.java" />
+        <option value="$PROJECT_DIR$/config/system.config" />
+        <option value="$PROJECT_DIR$/config/currentView" />
+        <option value="$PROJECT_DIR$/src/bftsmart/aware/decisions/AwareController.java" />
+      </list>
+    </option>
+  </component>
+  <component name="MavenProjectNavigator">
+    <treeState>
+      <expand />
+      <select />
+    </treeState>
+  </component>
+  <component name="ProjectFrameBounds" extendedState="6">
+    <option name="x" value="597" />
+    <option name="y" value="1252" />
+    <option name="width" value="1060" />
+    <option name="height" value="812" />
+  </component>
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectView">
+    <navigator proportions="" version="1">
+      <foldersAlwaysOnTop value="true" />
+    </navigator>
+    <panes>
+      <pane id="Scope" />
+      <pane id="PackagesPane" />
+      <pane id="ProjectPane">
+        <subPane>
+          <expand>
+            <path>
+              <item name="bft-smart" type="b2602c69:ProjectViewProjectNode" />
+              <item name="bft-smart" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="bft-smart" type="b2602c69:ProjectViewProjectNode" />
+              <item name="bft-smart" type="462c0819:PsiDirectoryNode" />
+              <item name="config" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="bft-smart" type="b2602c69:ProjectViewProjectNode" />
+              <item name="bft-smart" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="bft-smart" type="b2602c69:ProjectViewProjectNode" />
+              <item name="bft-smart" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="bftsmart" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="bft-smart" type="b2602c69:ProjectViewProjectNode" />
+              <item name="bft-smart" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="bftsmart" type="462c0819:PsiDirectoryNode" />
+              <item name="aware" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="bft-smart" type="b2602c69:ProjectViewProjectNode" />
+              <item name="bft-smart" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="bftsmart" type="462c0819:PsiDirectoryNode" />
+              <item name="aware" type="462c0819:PsiDirectoryNode" />
+              <item name="decisions" type="462c0819:PsiDirectoryNode" />
+            </path>
+          </expand>
+          <select />
+        </subPane>
+      </pane>
+    </panes>
+  </component>
+  <component name="PropertiesComponent">
+    <property name="GenerateAntBuildDialog.backupFiles" value="true" />
+    <property name="GenerateAntBuildDialog.enableUiFormCompile" value="true" />
+    <property name="GenerateAntBuildDialog.forceTargetJdk" value="true" />
+    <property name="GenerateAntBuildDialog.outputFileNameProperty" value="bft-smart" />
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="aspect.path.notification.shown" value="true" />
+    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1574848959060" />
+    <property name="com.intellij.testIntegration.createTest.CreateTestDialog.defaultLibrary" value="JUnit4" />
+    <property name="com.intellij.testIntegration.createTest.CreateTestDialog.defaultLibrarySuperClass.JUnit4" value="" />
+    <property name="create.test.in.the.same.root" value="true" />
+    <property name="last_directory_selection" value="$PROJECT_DIR$/src/bftsmart/dynwheat/decisions" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
+    <property name="nodejs_npm_path_reset_for_default_project" value="true" />
+    <property name="nodejs_package_manager_path" value="npm" />
+    <property name="project.structure.last.edited" value="Artifacts" />
+    <property name="project.structure.proportion" value="0.15" />
+    <property name="project.structure.side.proportion" value="0.2" />
+    <property name="settings.editor.selected.configurable" value="Errors" />
+  </component>
+  <component name="RecentsManager">
+    <key name="CreateTestDialog.RecentsKey">
+      <recent name="bftsmart.dynwheat.decisions" />
+    </key>
+    <key name="CopyClassDialog.RECENTS_KEY">
+      <recent name="bftsmart.dynwheat.tests" />
+    </key>
+    <key name="CreateTestDialog.Recents.Supers">
+      <recent name="" />
+    </key>
+  </component>
+  <component name="RunDashboard">
+    <option name="configurationTypes">
+      <set>
+        <option value="Application" />
+      </set>
+    </option>
+    <option name="ruleStates">
+      <list>
+        <RuleState>
+          <option name="name" value="ConfigurationTypeDashboardGroupingRule" />
+        </RuleState>
+        <RuleState>
+          <option name="name" value="StatusDashboardGroupingRule" />
+        </RuleState>
+      </list>
+    </option>
+    <option name="contentProportion" value="0.29354838" />
+  </component>
+  <component name="RunManager" selected="Compound.LatencyClientsSync">
+    <configuration default="true" type="Applet">
+      <option name="POLICY_FILE" value="$APPLICATION_HOME_DIR$/bin/appletviewer.policy" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="AsyncLatencyClient" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="bftsmart.demo.microbenchmarks.AsyncLatencyClient" />
+      <module name="bft-smart" />
+      <option name="PROGRAM_PARAMETERS" value="1000 5 100000 1000 10 false false nosig" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="bftsmart.demo.microbenchmarks.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="AsyncLatencyClient0-25" type="Application" factoryName="Application">
+      <option name="MAIN_CLASS_NAME" value="bftsmart.demo.microbenchmarks.AsyncLatencyClient" />
+      <module name="bft-smart" />
+      <option name="PROGRAM_PARAMETERS" value="1000 30 100000 1000 10 false false nosig" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="bftsmart.demo.microbenchmarks.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="AsyncLatencyClient10" type="Application" factoryName="Application">
+      <option name="MAIN_CLASS_NAME" value="bftsmart.demo.microbenchmarks.AsyncLatencyClient" />
+      <module name="bft-smart" />
+      <option name="PROGRAM_PARAMETERS" value="1010 5 100000 1000 10 false false nosig" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="bftsmart.demo.microbenchmarks.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="AsyncLatencyClient15" type="Application" factoryName="Application">
+      <option name="MAIN_CLASS_NAME" value="bftsmart.demo.microbenchmarks.AsyncLatencyClient" />
+      <module name="bft-smart" />
+      <option name="PROGRAM_PARAMETERS" value="1015 5 100000 1000 10 false false nosig" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="bftsmart.demo.microbenchmarks.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="AsyncLatencyClient20" type="Application" factoryName="Application">
+      <option name="MAIN_CLASS_NAME" value="bftsmart.demo.microbenchmarks.AsyncLatencyClient" />
+      <module name="bft-smart" />
+      <option name="PROGRAM_PARAMETERS" value="1020 5 100000 1000 10 false false nosig" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="bftsmart.demo.microbenchmarks.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="AsyncLatencyClient25" type="Application" factoryName="Application">
+      <option name="MAIN_CLASS_NAME" value="bftsmart.demo.microbenchmarks.AsyncLatencyClient" />
+      <module name="bft-smart" />
+      <option name="PROGRAM_PARAMETERS" value="1025 5 100000 1000 10 false false nosig" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="bftsmart.demo.microbenchmarks.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="AsyncLatencyClient30" type="Application" factoryName="Application">
+      <option name="MAIN_CLASS_NAME" value="bftsmart.demo.microbenchmarks.AsyncLatencyClient" />
+      <module name="bft-smart" />
+      <option name="PROGRAM_PARAMETERS" value="1030 5 100000 1000 10 false false nosig" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="bftsmart.demo.microbenchmarks.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="AsyncLatencyClient35" type="Application" factoryName="Application">
+      <option name="MAIN_CLASS_NAME" value="bftsmart.demo.microbenchmarks.AsyncLatencyClient" />
+      <module name="bft-smart" />
+      <option name="PROGRAM_PARAMETERS" value="1035 5 100000 1000 10 false false nosig" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="bftsmart.demo.microbenchmarks.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="AsyncLatencyClient5" type="Application" factoryName="Application">
+      <option name="MAIN_CLASS_NAME" value="bftsmart.demo.microbenchmarks.AsyncLatencyClient" />
+      <module name="bft-smart" />
+      <option name="PROGRAM_PARAMETERS" value="1005 5 100000 1000 10 false false nosig" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="bftsmart.demo.microbenchmarks.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="Counter Client" type="Application" factoryName="Application">
+      <option name="MAIN_CLASS_NAME" value="bftsmart.demo.counter.CounterClient" />
+      <module name="bft-smart" />
+      <option name="PROGRAM_PARAMETERS" value="11111 1 100000" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="Counter Server 0" type="Application" factoryName="Application">
+      <option name="MAIN_CLASS_NAME" value="bftsmart.demo.counter.CounterServer" />
+      <module name="bft-smart" />
+      <option name="PROGRAM_PARAMETERS" value="0" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="Counter Server 1" type="Application" factoryName="Application">
+      <option name="MAIN_CLASS_NAME" value="bftsmart.demo.counter.CounterServer" />
+      <module name="bft-smart" />
+      <option name="PROGRAM_PARAMETERS" value="1" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="Counter Server 2" type="Application" factoryName="Application">
+      <option name="MAIN_CLASS_NAME" value="bftsmart.demo.counter.CounterServer" />
+      <module name="bft-smart" />
+      <option name="PROGRAM_PARAMETERS" value="2" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="Counter Server 3" type="Application" factoryName="Application">
+      <option name="MAIN_CLASS_NAME" value="bftsmart.demo.counter.CounterServer" />
+      <module name="bft-smart" />
+      <option name="PROGRAM_PARAMETERS" value="3" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="Counter Server 4" type="Application" factoryName="Application">
+      <option name="MAIN_CLASS_NAME" value="bftsmart.demo.counter.CounterServer" />
+      <module name="bft-smart" />
+      <option name="PROGRAM_PARAMETERS" value="4" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="FindOptimalWeightConfigTest" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="bftsmart.aware.tests.FindOptimalWeightConfigTest" />
+      <module name="bft-smart" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="bftsmart.aware.tests.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="SerializationTest" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="bftsmart.aware.tests.SerializationTest" />
+      <module name="bft-smart" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="bftsmart.aware.tests.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="TestSerialization" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="bftsmart.communication.server.TestSerialization" />
+      <module name="bft-smart" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="bftsmart.communication.server.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="ThroughputLatencyClient" type="Application" factoryName="Application" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="bftsmart.demo.microbenchmarks.ThroughputLatencyClient" />
+      <module name="bft-smart" />
+      <option name="PROGRAM_PARAMETERS" value="111 1 50000 0 0 false true nosig" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="bftsmart.demo.microbenchmarks.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="ThroughputLatencyClient1" type="Application" factoryName="Application">
+      <option name="MAIN_CLASS_NAME" value="bftsmart.demo.microbenchmarks.ThroughputLatencyClient" />
+      <module name="bft-smart" />
+      <option name="PROGRAM_PARAMETERS" value="112 1 50000 0 -5 false true nosig" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="bftsmart.demo.microbenchmarks.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="ThroughputLatencyClient2" type="Application" factoryName="Application">
+      <option name="MAIN_CLASS_NAME" value="bftsmart.demo.microbenchmarks.ThroughputLatencyClient" />
+      <module name="bft-smart" />
+      <option name="PROGRAM_PARAMETERS" value="113 1 50000 0 -10 false true nosig" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="bftsmart.demo.microbenchmarks.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="ThroughputLatencyClient3" type="Application" factoryName="Application">
+      <option name="MAIN_CLASS_NAME" value="bftsmart.demo.microbenchmarks.ThroughputLatencyClient" />
+      <module name="bft-smart" />
+      <option name="PROGRAM_PARAMETERS" value="114 1 50000 0 -20 false true nosig" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="bftsmart.demo.microbenchmarks.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="ThroughputLatencyClient4" type="Application" factoryName="Application">
+      <option name="MAIN_CLASS_NAME" value="bftsmart.demo.microbenchmarks.ThroughputLatencyClient" />
+      <module name="bft-smart" />
+      <option name="PROGRAM_PARAMETERS" value="115 1 50000 0 0 false true nosig" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="bftsmart.demo.microbenchmarks.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="ThroughputLatencyServer" type="Application" factoryName="Application" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="bftsmart.demo.microbenchmarks.ThroughputLatencyServer" />
+      <module name="bft-smart" />
+      <option name="PROGRAM_PARAMETERS" value="0 10000 1000 0 true nosig rw" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="bftsmart.demo.microbenchmarks.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="ThroughputLatencyServer1" type="Application" factoryName="Application">
+      <option name="MAIN_CLASS_NAME" value="bftsmart.demo.microbenchmarks.ThroughputLatencyServer" />
+      <module name="bft-smart" />
+      <option name="PROGRAM_PARAMETERS" value="1 10000 1000 0 true nosig rw" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="bftsmart.demo.microbenchmarks.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="ThroughputLatencyServer10" type="Application" factoryName="Application">
+      <option name="MAIN_CLASS_NAME" value="bftsmart.demo.microbenchmarks.ThroughputLatencyServer" />
+      <module name="bft-smart" />
+      <option name="PROGRAM_PARAMETERS" value="10 10000 1000 0 true nosig rw" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="bftsmart.demo.microbenchmarks.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="ThroughputLatencyServer2" type="Application" factoryName="Application">
+      <option name="MAIN_CLASS_NAME" value="bftsmart.demo.microbenchmarks.ThroughputLatencyServer" />
+      <module name="bft-smart" />
+      <option name="PROGRAM_PARAMETERS" value="2 10000 1000 0 true nosig rw" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="bftsmart.demo.microbenchmarks.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="ThroughputLatencyServer3" type="Application" factoryName="Application">
+      <option name="MAIN_CLASS_NAME" value="bftsmart.demo.microbenchmarks.ThroughputLatencyServer" />
+      <module name="bft-smart" />
+      <option name="PROGRAM_PARAMETERS" value="3 10000 1000 0 true nosig rw" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="bftsmart.demo.microbenchmarks.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="ThroughputLatencyServer4" type="Application" factoryName="Application">
+      <option name="MAIN_CLASS_NAME" value="bftsmart.demo.microbenchmarks.ThroughputLatencyServer" />
+      <module name="bft-smart" />
+      <option name="PROGRAM_PARAMETERS" value="4 10000 1000 0 true nosig rw" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="bftsmart.demo.microbenchmarks.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="ThroughputLatencyServer5" type="Application" factoryName="Application">
+      <option name="MAIN_CLASS_NAME" value="bftsmart.demo.microbenchmarks.ThroughputLatencyServer" />
+      <module name="bft-smart" />
+      <option name="PROGRAM_PARAMETERS" value="5 10000 1000 0 true nosig rw" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="bftsmart.demo.microbenchmarks.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="ThroughputLatencyServer6" type="Application" factoryName="Application">
+      <option name="MAIN_CLASS_NAME" value="bftsmart.demo.microbenchmarks.ThroughputLatencyServer" />
+      <module name="bft-smart" />
+      <option name="PROGRAM_PARAMETERS" value="6 10000 1000 0 true nosig rw" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="bftsmart.demo.microbenchmarks.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="ThroughputLatencyServer7" type="Application" factoryName="Application">
+      <option name="MAIN_CLASS_NAME" value="bftsmart.demo.microbenchmarks.ThroughputLatencyServer" />
+      <module name="bft-smart" />
+      <option name="PROGRAM_PARAMETERS" value="7 10000 1000 0 true nosig rw" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="bftsmart.demo.microbenchmarks.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="ThroughputLatencyServer8" type="Application" factoryName="Application">
+      <option name="MAIN_CLASS_NAME" value="bftsmart.demo.microbenchmarks.ThroughputLatencyServer" />
+      <module name="bft-smart" />
+      <option name="PROGRAM_PARAMETERS" value="8 10000 1000 0 true nosig rw" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="bftsmart.demo.microbenchmarks.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="ThroughputLatencyServer9" type="Application" factoryName="Application">
+      <option name="MAIN_CLASS_NAME" value="bftsmart.demo.microbenchmarks.ThroughputLatencyServer" />
+      <module name="bft-smart" />
+      <option name="PROGRAM_PARAMETERS" value="9 10000 1000 0 true nosig rw" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="bftsmart.demo.microbenchmarks.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration default="true" type="Application" factoryName="Application">
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="LatencyClientsSync" type="CompoundRunConfigurationType">
+      <toRun name="ThroughputLatencyClient1" type="Application" />
+      <toRun name="ThroughputLatencyClient" type="Application" />
+      <toRun name="ThroughputLatencyClient2" type="Application" />
+      <toRun name="ThroughputLatencyClient3" type="Application" />
+      <toRun name="ThroughputLatencyClient4" type="Application" />
+      <method v="2" />
+    </configuration>
+    <configuration name="LatencyReplicaSet" type="CompoundRunConfigurationType">
+      <toRun name="ThroughputLatencyServer7" type="Application" />
+      <toRun name="ThroughputLatencyServer9" type="Application" />
+      <toRun name="ThroughputLatencyServer5" type="Application" />
+      <toRun name="ThroughputLatencyServer3" type="Application" />
+      <toRun name="ThroughputLatencyServer6" type="Application" />
+      <toRun name="ThroughputLatencyServer8" type="Application" />
+      <toRun name="ThroughputLatencyServer4" type="Application" />
+      <toRun name="ThroughputLatencyServer" type="Application" />
+      <toRun name="ThroughputLatencyServer1" type="Application" />
+      <toRun name="ThroughputLatencyServer2" type="Application" />
+      <method v="2" />
+    </configuration>
+    <configuration name="Replica Set" type="CompoundRunConfigurationType">
+      <toRun name="Counter Server 4" type="Application" />
+      <toRun name="Counter Server 3" type="Application" />
+      <toRun name="Counter Server 0" type="Application" />
+      <toRun name="Counter Server 1" type="Application" />
+      <toRun name="Counter Server 2" type="Application" />
+      <method v="2" />
+    </configuration>
+    <configuration default="true" type="CompoundRunConfigurationType">
+      <toRun name="ThroughputLatencyClient2" type="Application" />
+      <toRun name="ThroughputLatencyClient1" type="Application" />
+      <toRun name="ThroughputLatencyClient" type="Application" />
+      <toRun name="ThroughputLatencyClient3" type="Application" />
+      <toRun name="ThroughputLatencyClient4" type="Application" />
+      <method v="2" />
+    </configuration>
+    <configuration default="true" type="JUnit" factoryName="JUnit">
+      <option name="TEST_OBJECT" value="class" />
+      <option name="WORKING_DIRECTORY" value="$MODULE_DIR$" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration default="true" type="TestNG">
+      <option name="WORKING_DIRECTORY" value="$MODULE_DIR$" />
+      <properties />
+      <listeners />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration default="true" type="#org.jetbrains.idea.devkit.run.PluginConfigurationType">
+      <module name="" />
+      <option name="VM_PARAMETERS" value="-Xmx512m -Xms256m -XX:MaxPermSize=250m -ea" />
+      <option name="PROGRAM_PARAMETERS" />
+      <predefined_log_file enabled="true" id="idea.log" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <list>
+      <item itemvalue="Application.Counter Client" />
+      <item itemvalue="Application.ThroughputLatencyServer" />
+      <item itemvalue="Application.ThroughputLatencyServer1" />
+      <item itemvalue="Application.ThroughputLatencyServer2" />
+      <item itemvalue="Application.ThroughputLatencyServer3" />
+      <item itemvalue="Application.ThroughputLatencyServer4" />
+      <item itemvalue="Application.ThroughputLatencyServer5" />
+      <item itemvalue="Application.ThroughputLatencyServer6" />
+      <item itemvalue="Application.ThroughputLatencyServer7" />
+      <item itemvalue="Application.ThroughputLatencyServer8" />
+      <item itemvalue="Application.ThroughputLatencyServer9" />
+      <item itemvalue="Application.ThroughputLatencyServer10" />
+      <item itemvalue="Application.Counter Server 0" />
+      <item itemvalue="Application.Counter Server 1" />
+      <item itemvalue="Application.Counter Server 2" />
+      <item itemvalue="Application.Counter Server 3" />
+      <item itemvalue="Application.Counter Server 4" />
+      <item itemvalue="Application.AsyncLatencyClient5" />
+      <item itemvalue="Application.AsyncLatencyClient10" />
+      <item itemvalue="Application.AsyncLatencyClient15" />
+      <item itemvalue="Application.AsyncLatencyClient20" />
+      <item itemvalue="Application.AsyncLatencyClient25" />
+      <item itemvalue="Application.AsyncLatencyClient30" />
+      <item itemvalue="Application.AsyncLatencyClient0-25" />
+      <item itemvalue="Application.AsyncLatencyClient35" />
+      <item itemvalue="Application.ThroughputLatencyClient" />
+      <item itemvalue="Application.ThroughputLatencyClient1" />
+      <item itemvalue="Application.ThroughputLatencyClient2" />
+      <item itemvalue="Application.ThroughputLatencyClient3" />
+      <item itemvalue="Application.ThroughputLatencyClient4" />
+      <item itemvalue="Application.TestSerialization" />
+      <item itemvalue="Application.FindOptimalWeightConfigTest" />
+      <item itemvalue="Application.SerializationTest" />
+      <item itemvalue="Application.AsyncLatencyClient" />
+      <item itemvalue="Compound.LatencyClientsSync" />
+      <item itemvalue="Compound.LatencyReplicaSet" />
+      <item itemvalue="Compound.Replica Set" />
+    </list>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Application.FindOptimalWeightConfigTest" />
+        <item itemvalue="Application.AsyncLatencyClient" />
+        <item itemvalue="Application.SerializationTest" />
+        <item itemvalue="Application.TestSerialization" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="a41389e8-d7a0-4064-845f-2924fbb9b960" name="Default Changelist" comment="" />
+      <created>1551102266471</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1551102266471</updated>
+      <workItem from="1551102267767" duration="7082000" />
+      <workItem from="1551170405613" duration="3593000" />
+      <workItem from="1551343507865" duration="8162000" />
+      <workItem from="1551362069113" duration="6780000" />
+      <workItem from="1551428509966" duration="21002000" />
+      <workItem from="1551460205069" duration="628000" />
+      <workItem from="1551524937827" duration="3556000" />
+      <workItem from="1551686648638" duration="22089000" />
+      <workItem from="1551772673772" duration="9110000" />
+      <workItem from="1551800873897" duration="14000" />
+      <workItem from="1551859675466" duration="19818000" />
+      <workItem from="1551886501629" duration="2147000" />
+      <workItem from="1551916135581" duration="596000" />
+      <workItem from="1551948553101" duration="21818000" />
+      <workItem from="1551977460922" duration="22000" />
+      <workItem from="1552034235001" duration="20479000" />
+      <workItem from="1552079416551" duration="329000" />
+      <workItem from="1552127653199" duration="20000" />
+      <workItem from="1552149386742" duration="599000" />
+      <workItem from="1552168552916" duration="412000" />
+      <workItem from="1552291610002" duration="3757000" />
+      <workItem from="1552295801952" duration="20807000" />
+      <workItem from="1552339457453" duration="599000" />
+      <workItem from="1552380757482" duration="6289000" />
+      <workItem from="1552428158116" duration="609000" />
+      <workItem from="1552465921306" duration="24345000" />
+      <workItem from="1552502526781" duration="3061000" />
+      <workItem from="1552552525870" duration="27473000" />
+      <workItem from="1552741787972" duration="83000" />
+      <workItem from="1552820569265" duration="2259000" />
+      <workItem from="1552902674677" duration="2733000" />
+      <workItem from="1552984913333" duration="7908000" />
+      <workItem from="1553004173862" duration="6710000" />
+      <workItem from="1553071115258" duration="9692000" />
+      <workItem from="1553157279237" duration="11942000" />
+      <workItem from="1553245458179" duration="629000" />
+      <workItem from="1553506919686" duration="1896000" />
+      <workItem from="1553594079525" duration="601000" />
+      <workItem from="1553673966594" duration="1779000" />
+      <workItem from="1553979174620" duration="7971000" />
+      <workItem from="1554024679541" duration="3471000" />
+      <workItem from="1554103764664" duration="1032000" />
+      <workItem from="1554120285080" duration="1821000" />
+      <workItem from="1554191425156" duration="15939000" />
+      <workItem from="1554241950502" duration="463000" />
+      <workItem from="1554276144103" duration="5751000" />
+      <workItem from="1554631255924" duration="52000" />
+      <workItem from="1554708655986" duration="12129000" />
+      <workItem from="1554793255888" duration="2855000" />
+      <workItem from="1554801325210" duration="6945000" />
+      <workItem from="1554829979310" duration="2626000" />
+      <workItem from="1554881373236" duration="9009000" />
+      <workItem from="1554968227759" duration="10872000" />
+      <workItem from="1555051644424" duration="4073000" />
+      <workItem from="1555100449791" duration="875000" />
+      <workItem from="1555142942324" duration="1199000" />
+      <workItem from="1555313525937" duration="600000" />
+      <workItem from="1555416362222" duration="4044000" />
+      <workItem from="1555511215222" duration="5000" />
+      <workItem from="1556026764512" duration="174000" />
+      <workItem from="1556095034710" duration="8466000" />
+      <workItem from="1556270793640" duration="2329000" />
+      <workItem from="1556273736718" duration="1341000" />
+      <workItem from="1556277514976" duration="10066000" />
+      <workItem from="1556306977769" duration="3461000" />
+      <workItem from="1556354340254" duration="303000" />
+      <workItem from="1556523644956" duration="3093000" />
+      <workItem from="1556610345726" duration="600000" />
+      <workItem from="1556783321031" duration="3000" />
+      <workItem from="1557216620655" duration="2055000" />
+      <workItem from="1557310264940" duration="7000" />
+      <workItem from="1557737344427" duration="316000" />
+      <workItem from="1558014750076" duration="616000" />
+      <workItem from="1558097854559" duration="587000" />
+      <workItem from="1558445660581" duration="622000" />
+      <workItem from="1558446977810" duration="806000" />
+      <workItem from="1558624681889" duration="599000" />
+      <workItem from="1560240292157" duration="1741000" />
+      <workItem from="1560266243676" duration="94000" />
+      <workItem from="1560515070116" duration="701000" />
+      <workItem from="1560951955275" duration="66000" />
+      <workItem from="1562325548193" duration="796000" />
+      <workItem from="1562326542688" duration="2156000" />
+      <workItem from="1562331128038" duration="433000" />
+      <workItem from="1562331711621" duration="75000" />
+      <workItem from="1562331817865" duration="10000" />
+      <workItem from="1562332408936" duration="122000" />
+      <workItem from="1562571584401" duration="10000" />
+      <workItem from="1562571610724" duration="3000" />
+      <workItem from="1562573502914" duration="769000" />
+      <workItem from="1562574957840" duration="374000" />
+      <workItem from="1564474066986" duration="724000" />
+      <workItem from="1564475468757" duration="744000" />
+      <workItem from="1565267691748" duration="2254000" />
+      <workItem from="1567081681840" duration="3084000" />
+      <workItem from="1568016893836" duration="1390000" />
+      <workItem from="1568622846557" duration="955000" />
+      <workItem from="1568624331161" duration="1289000" />
+      <workItem from="1570793734816" duration="694000" />
+      <workItem from="1571840997825" duration="599000" />
+      <workItem from="1571922971743" duration="41000" />
+      <workItem from="1572254598093" duration="1717000" />
+      <workItem from="1572353540807" duration="841000" />
+      <workItem from="1572354442112" duration="730000" />
+      <workItem from="1572355180960" duration="5400000" />
+      <workItem from="1572426667903" duration="2184000" />
+      <workItem from="1572700751704" duration="3733000" />
+      <workItem from="1572866394694" duration="4376000" />
+      <workItem from="1573030735681" duration="599000" />
+      <workItem from="1573222648887" duration="1846000" />
+      <workItem from="1573383153493" duration="17691000" />
+      <workItem from="1573416728005" duration="3341000" />
+      <workItem from="1573549337068" duration="240000" />
+      <workItem from="1573556870984" duration="3475000" />
+      <workItem from="1573635574520" duration="20370000" />
+      <workItem from="1573721105160" duration="8125000" />
+      <workItem from="1573807143872" duration="10281000" />
+      <workItem from="1573939947387" duration="415000" />
+      <workItem from="1573997728130" duration="695000" />
+      <workItem from="1574089033773" duration="3456000" />
+      <workItem from="1574154422164" duration="10792000" />
+      <workItem from="1574344043682" duration="8528000" />
+      <workItem from="1574414754789" duration="18249000" />
+      <workItem from="1574697771166" duration="716000" />
+      <workItem from="1574699753927" duration="265000" />
+      <workItem from="1574700043977" duration="40000" />
+      <workItem from="1574770380647" duration="368000" />
+      <workItem from="1574770790363" duration="6631000" />
+      <workItem from="1574848479225" duration="515000" />
+      <workItem from="1574849010216" duration="623000" />
+      <workItem from="1575030389224" duration="832000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TestHistory">
+    <history-entry file="SimulatorTest - 2019.03.07 at 14h 21m 53s.xml">
+      <configuration name="SimulatorTest" configurationId="JUnit" />
+    </history-entry>
+    <history-entry file="SimulatorTest - 2019.03.07 at 14h 22m 15s.xml">
+      <configuration name="SimulatorTest" configurationId="JUnit" />
+    </history-entry>
+  </component>
+  <component name="TimeTrackingManager">
+    <option name="totallyTimeSpent" value="564802000" />
+  </component>
+  <component name="TodoView">
+    <todo-panel id="selected-file">
+      <is-autoscroll-to-source value="true" />
+    </todo-panel>
+    <todo-panel id="all">
+      <are-packages-shown value="true" />
+      <is-autoscroll-to-source value="true" />
+    </todo-panel>
+  </component>
+  <component name="ToolWindowManager">
+    <frame x="0" y="1168" width="1920" height="1052" extended-state="6" />
+    <layout>
+      <window_info active="true" content_ui="combo" id="Project" order="0" sideWeight="0.83506125" visible="true" weight="0.3053476" />
+      <window_info id="Structure" order="1" sideWeight="0.16493873" side_tool="true" weight="0.22994652" />
+      <window_info id="Designer" order="2" />
+      <window_info id="Image Layers" order="3" />
+      <window_info id="Capture Tool" order="4" />
+      <window_info id="UI Designer" order="5" />
+      <window_info id="Favorites" order="6" sideWeight="0.12962963" side_tool="true" weight="0.21925133" />
+      <window_info anchor="bottom" id="Message" order="0" />
+      <window_info anchor="bottom" id="Find" order="1" weight="0.32799247" />
+      <window_info anchor="bottom" id="Run" order="2" weight="0.22786178" />
+      <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
+      <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
+      <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
+      <window_info anchor="bottom" id="TODO" order="6" weight="0.32897604" />
+      <window_info anchor="bottom" id="Terminal" order="7" weight="0.32881173" />
+      <window_info anchor="bottom" id="Docker" order="8" show_stripe_button="false" />
+      <window_info anchor="bottom" id="Event Log" order="9" side_tool="true" />
+      <window_info anchor="bottom" id="Messages" order="10" weight="0.16776626" />
+      <window_info anchor="bottom" id="Database Changes" order="11" />
+      <window_info anchor="bottom" id="Version Control" order="12" weight="0.43638077" />
+      <window_info anchor="bottom" x="1920" y="200" width="1080" height="1405" id="Run Dashboard" order="13" type="FLOATING" weight="0.3315335" />
+      <window_info anchor="right" id="Palette" order="0" />
+      <window_info anchor="right" id="Capture Analysis" order="1" />
+      <window_info anchor="right" id="Database" order="2" weight="0.32994652" />
+      <window_info anchor="right" id="Palette&#9;" order="3" />
+      <window_info anchor="right" id="Theme Preview" order="4" />
+      <window_info anchor="right" id="Commander" order="5" weight="0.4" />
+      <window_info anchor="right" content_ui="combo" id="Hierarchy" order="6" weight="0.25" />
+      <window_info anchor="right" id="Ant Build" order="7" weight="0.24973261" />
+      <window_info anchor="right" id="Coverage" order="8" side_tool="true" weight="0.32977587" />
+      <window_info anchor="right" id="Maven" order="9" weight="0.32941177" />
+    </layout>
+    <layout-to-restore>
+      <window_info active="true" content_ui="combo" id="Project" order="0" sideWeight="0.83506125" visible="true" weight="0.22994652" />
+      <window_info id="Structure" order="1" sideWeight="0.16493873" side_tool="true" visible="true" weight="0.22994652" />
+      <window_info id="Designer" order="2" />
+      <window_info id="Image Layers" order="3" />
+      <window_info id="Capture Tool" order="4" />
+      <window_info id="UI Designer" order="5" />
+      <window_info id="Favorites" order="6" sideWeight="0.12962963" side_tool="true" weight="0.21925133" />
+      <window_info anchor="bottom" id="Message" order="0" />
+      <window_info anchor="bottom" id="Find" order="1" weight="0.32799247" />
+      <window_info anchor="bottom" id="Run" order="2" weight="0.22786178" />
+      <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
+      <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
+      <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
+      <window_info anchor="bottom" id="TODO" order="6" weight="0.32897604" />
+      <window_info anchor="bottom" id="Terminal" order="7" weight="0.32881173" />
+      <window_info anchor="bottom" id="Docker" order="8" show_stripe_button="false" />
+      <window_info anchor="bottom" id="Event Log" order="9" side_tool="true" />
+      <window_info anchor="bottom" id="Messages" order="10" weight="0.16776626" />
+      <window_info anchor="bottom" id="Database Changes" order="11" />
+      <window_info anchor="bottom" id="Version Control" order="12" weight="0.43638077" />
+      <window_info anchor="bottom" x="3233" y="328" width="1114" height="643" id="Run Dashboard" order="13" type="FLOATING" weight="0.3315335" />
+      <window_info anchor="right" id="Palette" order="0" />
+      <window_info anchor="right" id="Capture Analysis" order="1" />
+      <window_info anchor="right" id="Database" order="2" weight="0.32994652" />
+      <window_info anchor="right" id="Palette&#9;" order="3" />
+      <window_info anchor="right" id="Theme Preview" order="4" />
+      <window_info anchor="right" id="Commander" order="5" weight="0.4" />
+      <window_info anchor="right" content_ui="combo" id="Hierarchy" order="6" weight="0.25" />
+      <window_info anchor="right" id="Ant Build" order="7" weight="0.24973261" />
+      <window_info anchor="right" id="Coverage" order="8" side_tool="true" weight="0.32977587" />
+      <window_info anchor="right" id="Maven" order="9" weight="0.32941177" />
+    </layout-to-restore>
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="1" />
+  </component>
+  <component name="UnknownFeatures">
+    <option featureType="com.intellij.fileTypeFactory" implementationName="*.config" />
+  </component>
+  <component name="Vcs.Log.History.Properties">
+    <option name="COLUMN_ORDER">
+      <list>
+        <option value="0" />
+        <option value="2" />
+        <option value="3" />
+        <option value="1" />
+      </list>
+    </option>
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/bftsmart/aware/monitoring/MessageLatencyMonitor.java</url>
+          <line>132</line>
+          <properties />
+          <option name="timeStamp" value="2" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/bftsmart/aware/decisions/WeightConfiguration.java</url>
+          <line>137</line>
+          <properties />
+          <option name="timeStamp" value="4" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/bftsmart/aware/decisions/AwareController.java</url>
+          <line>132</line>
+          <properties />
+          <option name="timeStamp" value="5" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/bftsmart/aware/decisions/AwareController.java</url>
+          <line>170</line>
+          <properties />
+          <option name="timeStamp" value="6" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+  </component>
+  <component name="antWorkspaceConfiguration">
+    <option name="IS_AUTOSCROLL_TO_SOURCE" value="false" />
+    <option name="FILTER_TARGETS" value="false" />
+  </component>
+  <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/src/bftsmart/reconfiguration/util/Configuration.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="754">
+          <caret line="53" column="31" selection-start-line="53" selection-start-column="31" selection-end-line="53" selection-end-column="31" />
+          <folding>
+            <element signature="n#!!doc" expanded="true" />
+            <element signature="imports" expanded="true" />
+            <element signature="e#8298#8299#0" expanded="true" />
+            <element signature="e#8331#8332#0" expanded="true" />
+            <element signature="e#8374#8375#0" expanded="true" />
+            <element signature="e#8408#8409#0" expanded="true" />
+            <element signature="e#8621#8622#0" expanded="true" />
+            <element signature="e#8665#8666#0" expanded="true" />
+            <element signature="e#8714#8715#0" expanded="true" />
+            <element signature="e#8758#8759#0" expanded="true" />
+            <element signature="e#8801#8802#0" expanded="true" />
+            <element signature="e#8828#8829#0" expanded="true" />
+            <element signature="e#8867#8868#0" expanded="true" />
+            <element signature="e#8894#8895#0" expanded="true" />
+            <element signature="e#8944#8945#0" expanded="true" />
+            <element signature="e#8980#8981#0" expanded="true" />
+            <element signature="e#9031#9032#0" expanded="true" />
+            <element signature="e#9072#9073#0" expanded="true" />
+            <element signature="e#9127#9128#0" expanded="true" />
+            <element signature="e#9168#9169#0" expanded="true" />
+            <element signature="e#9218#9219#0" expanded="true" />
+            <element signature="e#9254#9255#0" expanded="true" />
+            <element signature="e#9308#9309#0" expanded="true" />
+            <element signature="e#9352#9353#0" expanded="true" />
+            <element signature="e#9411#9412#0" expanded="true" />
+            <element signature="e#9460#9461#0" expanded="true" />
+            <element signature="e#9523#9524#0" expanded="true" />
+            <element signature="e#9572#9573#0" expanded="true" />
+            <element signature="e#9630#9631#0" expanded="true" />
+            <element signature="e#9674#9675#0" expanded="true" />
+            <element signature="e#9720#9721#0" expanded="true" />
+            <element signature="e#9752#9753#0" expanded="true" />
+            <element signature="e#9996#9997#0" expanded="true" />
+            <element signature="e#10026#10027#0" expanded="true" />
+            <element signature="e#10092#10093#0" expanded="true" />
+            <element signature="e#10141#10142#0" expanded="true" />
+            <element signature="e#10351#10352#0" expanded="true" />
+            <element signature="e#10399#10400#0" expanded="true" />
+            <element signature="e#10445#10446#0" expanded="true" />
+            <element signature="e#10485#10486#0" expanded="true" />
+            <element signature="e#10528#10529#0" expanded="true" />
+            <element signature="e#10568#10569#0" expanded="true" />
+            <element signature="e#10626#10627#0" expanded="true" />
+            <element signature="e#10680#10681#0" expanded="true" />
+            <element signature="e#10727#10728#0" expanded="true" />
+            <element signature="e#10759#10760#0" expanded="true" />
+            <element signature="e#10811#10812#0" expanded="true" />
+            <element signature="e#10853#10854#0" expanded="true" />
+            <element signature="e#10927#10928#0" expanded="true" />
+            <element signature="e#10971#10972#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/bftsmart/tom/util/TOMUtil.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="5336">
+          <caret line="221" column="53" selection-start-line="221" selection-start-column="53" selection-end-line="221" selection-end-column="53" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/build.xml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1276">
+          <caret line="44" column="10" selection-start-line="44" selection-start-column="10" selection-end-line="44" selection-end-column="10" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/bftsmart/tom/ServiceReplica.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="3465">
+          <caret line="280" column="25" selection-start-line="280" selection-start-column="25" selection-end-line="280" selection-end-column="25" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$USER_HOME$/jdk1.8.0_121/src.zip!/java/util/TreeSet.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="6075">
+          <caret line="472" column="18" selection-start-line="472" selection-start-column="18" selection-end-line="472" selection-end-column="18" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$USER_HOME$/jdk1.8.0_121/src.zip!/java/lang/Math.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="10725">
+          <caret line="771" column="25" selection-start-line="771" selection-start-column="25" selection-end-line="771" selection-end-column="25" />
+          <folding>
+            <element signature="e#32010#32011#0" expanded="true" />
+            <element signature="e#32095#32096#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/bftsmart/reconfiguration/ViewController.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="165">
+          <caret line="32" column="15" selection-start-line="32" selection-start-column="15" selection-end-line="32" selection-end-column="15" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/simulations0" />
+    <entry file="file://$PROJECT_DIR$/src/bftsmart/aware/tests/WeightConfigurationTest.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="75">
+          <caret line="7" column="13" selection-start-line="7" selection-start-column="13" selection-end-line="7" selection-end-column="13" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/bftsmart/aware/tests/SerializationTest.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="75">
+          <caret line="6" column="13" selection-start-line="6" selection-start-column="13" selection-end-line="6" selection-end-column="13" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/bftsmart/aware/tests/SimulatorTest.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="615">
+          <caret line="42" column="5" selection-start-line="42" selection-start-column="5" selection-end-line="42" selection-end-column="5" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$USER_HOME$/jdk1.8.0_121/src.zip!/java/util/Random.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="7305">
+          <caret line="530" column="18" selection-start-line="530" selection-start-column="18" selection-end-line="530" selection-end-column="18" />
+          <folding>
+            <element signature="e#3504#3505#0" expanded="true" />
+            <element signature="e#3562#3563#0" expanded="true" />
+            <element signature="e#21068#21069#0" expanded="true" />
+            <element signature="e#21142#21143#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/results1" />
+    <entry file="file://$PROJECT_DIR$/results0" />
+    <entry file="file://$PROJECT_DIR$/results" />
+    <entry file="file://$PROJECT_DIR$/src/META-INF/MANIFEST.MF">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="jar://$USER_HOME$/jdk1.8.0_121/src.zip!/java/util/PriorityQueue.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="8160">
+          <caret line="585" column="13" selection-start-line="585" selection-start-column="13" selection-end-line="585" selection-end-column="13" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$USER_HOME$/jdk1.8.0_121/src.zip!/java/util/Stack.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="375">
+          <caret line="48" column="6" selection-start-line="48" selection-start-column="6" selection-end-line="48" selection-end-column="6" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/bftsmart/aware/tests/FindOptimalWeightConfigTest.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="645">
+          <caret line="48" selection-start-line="48" selection-end-line="48" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/manifests/throughputclient/META-INF/MANIFEST.MF">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="45">
+          <caret line="3" lean-forward="true" selection-start-line="3" selection-end-line="3" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/bftsmart/tom/core/DeliveryThread.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="3225">
+          <caret line="255" column="28" selection-start-line="255" selection-start-column="28" selection-end-line="255" selection-end-column="28" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/bftsmart/reconfiguration/views/View.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="495">
+          <caret line="68" column="5" selection-start-line="68" selection-start-column="5" selection-end-line="68" selection-end-column="5" />
+          <folding>
+            <element signature="e#4322#4323#0" expanded="true" />
+            <element signature="e#4353#4354#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/bftsmart/consensus/Consensus.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="865">
+          <caret line="317" column="40" selection-start-line="317" selection-start-column="40" selection-end-line="317" selection-end-column="40" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/bftsmart/consensus/Epoch.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="2232">
+          <caret line="516" column="34" selection-start-line="516" selection-start-column="34" selection-end-line="516" selection-end-column="34" />
+          <folding>
+            <element signature="e#6372#6373#0" expanded="true" />
+            <element signature="e#6404#6405#0" expanded="true" />
+            <element signature="e#6537#6538#0" expanded="true" />
+            <element signature="e#6569#6570#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/bftsmart/reconfiguration/ServerViewController.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1301">
+          <caret line="326" column="12" selection-start-line="326" selection-start-column="12" selection-end-line="326" selection-end-column="87" />
+          <folding>
+            <element signature="e#12540#12541#0" expanded="true" />
+            <element signature="e#12616#12617#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/bftsmart/consensus/Decision.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="180">
+          <caret line="27" column="13" selection-start-line="27" selection-start-column="13" selection-end-line="27" selection-end-column="13" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/bftsmart/tom/leaderchange/LCManager.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-905">
+          <caret line="52" column="13" selection-start-line="52" selection-start-column="13" selection-end-line="52" selection-end-column="13" />
+          <folding>
+            <element signature="e#4310#4311#0" expanded="true" />
+            <element signature="e#4348#4349#0" expanded="true" />
+            <element signature="e#6566#6567#0" expanded="true" />
+            <element signature="e#6596#6597#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/bftsmart/tom/core/Synchronizer.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="333">
+          <caret line="62" column="24" selection-start-line="62" selection-start-column="24" selection-end-line="62" selection-end-column="24" />
+          <folding>
+            <element signature="imports" expanded="true" />
+            <element signature="e#3633#3634#0" expanded="true" />
+            <element signature="e#3665#3666#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/bftsmart/communication/MessageHandler.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="870">
+          <caret line="96" column="31" selection-start-line="96" selection-start-column="31" selection-end-line="96" selection-end-column="31" />
+          <folding>
+            <element signature="e#12487#12488#0" expanded="true" />
+            <element signature="e#12533#12534#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/config/logback.xml">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/bftsmart/tom/core/ExecutionManager.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="4980">
+          <caret line="384" column="21" selection-start-line="384" selection-start-column="21" selection-end-line="384" selection-end-column="21" />
+          <folding>
+            <element signature="e#5637#5638#0" expanded="true" />
+            <element signature="e#5677#5678#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/bftsmart/tom/core/TOMLayer.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="8625">
+          <caret line="633" column="69" selection-start-line="633" selection-start-column="69" selection-end-line="633" selection-end-column="69" />
+          <folding>
+            <element signature="imports" expanded="true" />
+            <element signature="e#10215#10216#0" expanded="true" />
+            <element signature="e#10255#10256#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/bftsmart/consensus/messages/ConsensusMessage.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="2760">
+          <caret line="202" column="15" selection-start-line="202" selection-start-column="15" selection-end-line="202" selection-end-column="15" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/config/hosts.config">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="405">
+          <caret line="27" column="17" selection-start-line="27" selection-start-column="17" selection-end-line="27" selection-end-column="17" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/config/system.config">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="400">
+          <caret line="85" column="31" selection-start-line="85" selection-start-column="31" selection-end-line="85" selection-end-column="31" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/config/currentView">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/measurement-client111">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/bftsmart/demo/microbenchmarks/ThroughputLatencyServer.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="4065">
+          <caret line="315" column="83" selection-start-line="315" selection-start-column="83" selection-end-line="315" selection-end-column="83" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/bftsmart/aware/decisions/AwareConfiguration.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="180">
+          <caret line="17" column="32" selection-start-line="17" selection-start-column="32" selection-end-line="17" selection-end-column="32" />
+          <folding>
+            <element signature="imports" expanded="true" />
+            <element signature="e#1244#1245#0" expanded="true" />
+            <element signature="e#1286#1287#0" expanded="true" />
+            <element signature="e#1608#1609#0" expanded="true" />
+            <element signature="e#1647#1648#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/library/src/bftsmart/demo/microbenchmarks/ThroughputLatencyClient.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="263">
+          <caret line="291" column="32" selection-start-line="291" selection-start-column="32" selection-end-line="291" selection-end-column="32" />
+          <folding>
+            <element signature="n#!!doc" expanded="true" />
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/bftsmart/clientsmanagement/ClientsManager.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="563">
+          <caret line="78" lean-forward="true" selection-start-line="78" selection-end-line="78" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/library/src/bftsmart/tom/util/Storage.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state>
+          <folding>
+            <element signature="n#!!doc" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/library/src/bftsmart/demo/microbenchmarks/AsyncLatencyClient.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state>
+          <folding>
+            <element signature="n#!!doc" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/bftsmart/aware/monitoring/Monitor.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="210">
+          <caret line="19" column="36" selection-start-line="19" selection-start-column="36" selection-end-line="19" selection-end-column="36" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/bftsmart/aware/monitoring/MessageLatencyMonitor.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="2640">
+          <caret line="178" column="38" selection-start-line="178" selection-start-column="38" selection-end-line="178" selection-end-column="38" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/bftsmart/aware/decisions/AwareController.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="510">
+          <caret line="39" column="27" selection-start-line="39" selection-start-column="27" selection-end-line="39" selection-end-column="27" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/bftsmart/aware/monitoring/MonitoringDataSynchronizer.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="165">
+          <caret line="16" column="25" selection-start-line="16" selection-start-column="25" selection-end-line="16" selection-end-column="25" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/bftsmart/aware/decisions/WeightConfiguration.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="375">
+          <caret line="30" column="11" selection-start-line="30" selection-start-column="11" selection-end-line="30" selection-end-column="11" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/bftsmart/consensus/roles/Acceptor.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="6990">
+          <caret line="515" column="75" selection-start-line="515" selection-start-column="75" selection-end-line="515" selection-end-column="75" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/bftsmart/demo/microbenchmarks/ThroughputLatencyClient.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="460">
+          <caret line="292" column="13" selection-start-line="292" selection-start-column="13" selection-end-line="292" selection-end-column="13" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/bftsmart/aware/decisions/Simulator.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="468">
+          <caret line="307" column="49" lean-forward="true" selection-start-line="307" selection-start-column="49" selection-end-line="307" selection-end-column="84" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+  </component>
+  <component name="masterDetails">
+    <states>
+      <state key="ArtifactsStructureConfigurable.UI">
+        <settings>
+          <artifact-editor />
+          <last-edited>LatencyClient2</last-edited>
+          <splitter-proportions>
+            <option name="proportions">
+              <list>
+                <option value="0.2" />
+                <option value="0.5" />
+              </list>
+            </option>
+          </splitter-proportions>
+        </settings>
+      </state>
+      <state key="FacetStructureConfigurable.UI">
+        <settings>
+          <last-edited>No facets are configured</last-edited>
+          <splitter-proportions>
+            <option name="proportions">
+              <list>
+                <option value="0.2" />
+              </list>
+            </option>
+          </splitter-proportions>
+        </settings>
+      </state>
+      <state key="GlobalLibrariesConfigurable.UI">
+        <settings>
+          <splitter-proportions>
+            <option name="proportions">
+              <list>
+                <option value="0.2" />
+              </list>
+            </option>
+          </splitter-proportions>
+        </settings>
+      </state>
+      <state key="JdkListConfigurable.UI">
+        <settings>
+          <last-edited>1.8</last-edited>
+          <splitter-proportions>
+            <option name="proportions">
+              <list>
+                <option value="0.2" />
+              </list>
+            </option>
+          </splitter-proportions>
+        </settings>
+      </state>
+      <state key="ModuleStructureConfigurable.UI">
+        <settings>
+          <last-edited>bft-smart</last-edited>
+          <splitter-proportions>
+            <option name="proportions">
+              <list>
+                <option value="0.2" />
+                <option value="0.6" />
+              </list>
+            </option>
+          </splitter-proportions>
+        </settings>
+      </state>
+      <state key="ProjectJDKs.UI">
+        <settings>
+          <last-edited>1.8</last-edited>
+          <splitter-proportions>
+            <option name="proportions">
+              <list>
+                <option value="0.2" />
+              </list>
+            </option>
+          </splitter-proportions>
+        </settings>
+      </state>
+      <state key="ProjectLibrariesConfigurable.UI">
+        <settings>
+          <last-edited>bft libs</last-edited>
+          <splitter-proportions>
+            <option name="proportions">
+              <list>
+                <option value="0.2" />
+              </list>
+            </option>
+          </splitter-proportions>
+        </settings>
+      </state>
+    </states>
+  </component>
+</project>
