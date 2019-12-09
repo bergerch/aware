@@ -63,7 +63,7 @@ public class AwareConfiguration implements Comparable {
 
     @Override
     public String toString() {
-        String result =  weightConfiguration.toString() + " with leader " + leader + " ";
+        String result = weightConfiguration.toString() + " with leader " + leader + " ";
         if (predictedLatency != Monitor.MISSING_VALUE)
             result += "and latency of " + predictedLatency;
 
@@ -85,35 +85,40 @@ public class AwareConfiguration implements Comparable {
     }
 
 
+    /**
+     * Creates a list of neighbor configurations given some specific configuration
+     *
+     * @param randomReplicaTo a specific configuration for which a neighborhood should be created
+     * @return list of configuration with 1-distance
+     */
     public List<AwareConfiguration> getNeighborhood(int randomReplicaTo) {
 
         List<AwareConfiguration> neighbors = new LinkedList<>();
 
-        for (Integer max: this.getWeightConfiguration().getR_max()) {
+        for (Integer max : this.getWeightConfiguration().getR_max()) {
 
 
-                AwareConfiguration y = new AwareConfiguration(this.getWeightConfiguration().deepCopy(), this.getLeader());
+            AwareConfiguration y = new AwareConfiguration(this.getWeightConfiguration().deepCopy(), this.getLeader());
 
-                TreeSet<Integer> R_max = (TreeSet<Integer>) y.getWeightConfiguration().getR_max();
-                TreeSet<Integer> R_min = (TreeSet<Integer>) y.getWeightConfiguration().getR_min();
+            TreeSet<Integer> R_max = (TreeSet<Integer>) y.getWeightConfiguration().getR_max();
+            TreeSet<Integer> R_min = (TreeSet<Integer>) y.getWeightConfiguration().getR_min();
 
-                Integer min = (Integer) R_min.toArray()[randomReplicaTo];
+            Integer min = (Integer) R_min.toArray()[randomReplicaTo];
 
-                // Swap min and max replica
-                if (max.equals(y.getLeader()))
-                    y.setLeader(min);
+            // Swap min and max replica
+            if (max.equals(y.getLeader()))
+                y.setLeader(min);
 
-                R_max.remove(max);
-                R_max.add(min);
+            R_max.remove(max);
+            R_max.add(min);
 
-                R_min.remove(min);
-                R_min.add(max);
+            R_min.remove(min);
+            R_min.add(max);
 
-                neighbors.add(y);
-
+            neighbors.add(y);
         }
 
-        return  neighbors;
+        return neighbors;
 
     }
 }

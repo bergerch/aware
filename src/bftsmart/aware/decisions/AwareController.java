@@ -16,6 +16,10 @@ import java.util.*;
  */
 public class AwareController {
 
+    // constants: emperically determined
+    public static final int ROUNDS_AMORTIZATION = 10;
+    public static final int N_SIZE_TO_USE_HEURISTICS = 10;
+
     private static AwareController instance;
 
     private AwareConfiguration currentDW;
@@ -35,6 +39,13 @@ public class AwareController {
     public ServerViewController svc;
 
 
+    /**
+     * Singelton
+     *
+     * @param svc Server View Controller
+     * @param executionManager Execution Manager
+     * @return
+     */
     public static AwareController getInstance(ServerViewController svc, ExecutionManager executionManager) {
         if (instance == null) {
             instance = new AwareController(svc, executionManager);
@@ -56,7 +67,7 @@ public class AwareController {
         timer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
-                System.out.println("%%%%%%%%% AwareController: Currently using weight config " + instance.getCurrent()
+                System.out.println("[AwARE] Controller: Currently using weight config " + instance.getCurrent()
                         + " with leader " + executionManager.getCurrentLeader());
             }
         }, 15*1000, 5*1000);
@@ -96,12 +107,12 @@ public class AwareController {
         int cid = executionManager.getTOMLayer().getLastExec();
 
         currentDW = new AwareConfiguration(current, executionManager.getCurrentLeader());
-        Long estimate_current = simulator.predictLatency(replicaSet, currentDW.getLeader(), currentDW.getWeightConfiguration(),
-                propose, write, n, f, delta, 10);
+        Long estimate_current = simulator.predictLatency(replicaSet, currentDW.getLeader(),
+                currentDW.getWeightConfiguration(), propose, write, n, f, delta, ROUNDS_AMORTIZATION);
         currentDW.setPredictedLatency(estimate_current);
 
         // For larger systems, use heuristic, e.g, Simulated Annealing
-        if (n > 10) {
+        if (n > N_SIZE_TO_USE_HEURISTICS) {
             return Simulator.simulatedAnnealing(n, f, delta, u, replicaSet, propose, write, cid).best;
         }
 
@@ -117,7 +128,7 @@ public class AwareController {
         //      determine if leader should be selected or not
         for (WeightConfiguration w : weightConfigs) {
             if (viewControl.getStaticConf().isUseLeaderSelection()) {
-                for (int primary : w.getR_max()) { // todo Only replicas in R_max will be considered to become leader ?
+                for (int primary : w.getR_max()) {
                     AwareConfiguration dwConfig = new AwareConfiguration(w, primary);
                     awareConfigurations.add(dwConfig);
                 }
@@ -134,7 +145,7 @@ public class AwareController {
         // Compute the predictet latencies of all possible configurations using the simulator
         for (AwareConfiguration dwc : awareConfigurations) {
             Long predictedLatency = simulator.predictLatency(replicaSet, dwc.getLeader(), dwc.getWeightConfiguration(),
-                    propose, write, n, f, delta, 100);
+                    propose, write, n, f, delta, ROUNDS_AMORTIZATION);
             dwc.setPredictedLatency(predictedLatency);
             //System.out.println("WeightConfig " + dwc.getWeightConfiguration() + "with leader " + dwc.getLeader() +
             //        " has predicted latency of " + ((double) Math.round(predictedLatency) / 1000) / 1000.00 + " ms");
@@ -151,10 +162,8 @@ public class AwareController {
         System.out.println("the best config is " + best);
         System.out.println("the median config is " + median);
         System.out.println("the worst config is " + worst);
-
         System.out.println();
         System.out.println("current config is estimated to be " + estimate_current);
-
 
         List<AwareConfiguration> bestConfigs = new ArrayList<>();
         for (AwareConfiguration dwc: awareConfigurations) {
