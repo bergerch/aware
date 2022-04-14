@@ -371,7 +371,7 @@ public class ServiceProxy extends TOMSender {
          * @deprecated
          */
 	protected void reconfigureTo(View v) {
-		logger.debug("Installing a most up-to-date view with id=" + v.getId());
+		logger.info("Installing a most up-to-date view with id=" + v.getId());
 		getViewManager().reconfigureTo(v);
 		getViewManager().getViewStore().storeView(v);
 		replies = new TOMMessage[getViewManager().getCurrentViewN()];

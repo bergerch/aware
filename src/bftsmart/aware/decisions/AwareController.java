@@ -3,7 +3,11 @@ package bftsmart.aware.decisions;
 import bftsmart.aware.monitoring.Monitor;
 import bftsmart.consensus.roles.Acceptor;
 import bftsmart.reconfiguration.ServerViewController;
+import bftsmart.reconfiguration.views.View;
 import bftsmart.tom.core.ExecutionManager;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
@@ -32,11 +36,13 @@ public class AwareController {
     private AwareConfiguration best;
 
     private ServerViewController viewControl;
-    private ExecutionManager executionManager;
+    private final ExecutionManager executionManager;
 
     private Simulator simulator;
 
     public ServerViewController svc;
+
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
 
     /**
@@ -67,7 +73,7 @@ public class AwareController {
         timer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
-                System.out.println("[AwARE] Controller: Currently using weight config " + instance.getCurrent()
+                logger.info("[AwARE] Controller: Currently using weight config " + instance.getCurrent()
                         + " with leader " + executionManager.getCurrentLeader());
             }
         }, 15*1000, 5*1000);
@@ -147,7 +153,7 @@ public class AwareController {
             Long predictedLatency = simulator.predictLatency(replicaSet, dwc.getLeader(), dwc.getWeightConfiguration(),
                     propose, write, n, f, delta, ROUNDS_AMORTIZATION);
             dwc.setPredictedLatency(predictedLatency);
-            //System.out.println("WeightConfig " + dwc.getWeightConfiguration() + "with leader " + dwc.getLeader() +
+            //logger.info("WeightConfig " + dwc.getWeightConfiguration() + "with leader " + dwc.getLeader() +
             //        " has predicted latency of " + ((double) Math.round(predictedLatency) / 1000) / 1000.00 + " ms");
         }
 
@@ -158,12 +164,12 @@ public class AwareController {
         AwareConfiguration median = awareConfigurations.get(awareConfigurations.size() / 2); // for evaluation
         AwareConfiguration worst = awareConfigurations.get(awareConfigurations.size() - 1); // for evaluation
 
-        // For testing, remove later
-        System.out.println("the best config is " + best);
-        System.out.println("the median config is " + median);
-        System.out.println("the worst config is " + worst);
-        System.out.println();
-        System.out.println("current config is estimated to be " + estimate_current);
+        // For testing, remove later, make it debug later
+        logger.info("the best config is " + best);
+        logger.info("the median config is " + median);
+        logger.info("the worst config is " + worst);
+        logger.info("");
+        logger.info("current config is estimated to be " + estimate_current);
 
         List<AwareConfiguration> bestConfigs = new ArrayList<>();
         for (AwareConfiguration dwc: awareConfigurations) {
@@ -204,20 +210,25 @@ public class AwareController {
             WeightConfiguration bestWeights = best.getWeightConfiguration();
             WeightConfiguration currentWeights = current.getWeightConfiguration();
 
-            System.out.println();
-            System.out.println("!!! Best: " + best);
-            System.out.println();
+            logger.info("");
+            logger.info("!!! Best: " + best);
+            logger.info("");
 
             if (svc.getStaticConf().isUseDynamicWeights() && !currentWeights.equals(bestWeights) &&
                     current.getPredictedLatency() >= best.getPredictedLatency() * svc.getStaticConf().getOptimizationGoal()) {
                 // The current weight configuration is not the best
                 // Deterministically change weights (this decision will be the same in all correct replicas)
-                svc.getCurrentView().setWeights(bestWeights);
+                // svc.getCurrentView().setWeights(bestWeights);
+                View currentView = svc.getCurrentView();
+                //     public View(int id, int[] processes, int f, InetSocketAddress[] addresses, boolean isBFT, int delta,
+                View newView = new View(currentView.getId() + 1, currentView.getProcesses(), currentView.getF(),
+                        currentView.getAddresses(), currentView.isBFT(), currentView.getDelta(), bestWeights);
+                svc.reconfigureTo(newView);
                 AwareController.getInstance(svc, executionManager).setCurrent(bestWeights);
-                System.out.println("|AWARE|  [X] Optimization: Weight adjustment, now using " + bestWeights);
+                logger.info("|AWARE|  [X] Optimization: Weight adjustment, now using " + bestWeights);
             } else {
                 // Keep the current configuration
-                System.out.println("|AWARE|  [ ] Optimization: Weight adjustment, no adjustment," +
+                logger.info("|AWARE|  [ ] Optimization: Weight adjustment, no adjustment," +
                         " current weight config is the best weight config");
             }
 
@@ -228,29 +239,29 @@ public class AwareController {
                 int newLeader =  (best.getLeader()+svc.getCurrentViewN()) % svc.getCurrentViewN();
                 executionManager.setNewLeader(newLeader);
 
-                System.out.println("-----_> NEW LEADER SET TO " + newLeader);
+                logger.info("-----_> NEW LEADER SET TO " + newLeader);
                 if (svc.getStaticConf().getProcessId() == newLeader) {
                     executionManager.getTOMLayer().imAmTheLeader();
-                    System.out.println("-----_> I AM THE LEADER " + newLeader);
+                    logger.info("-----_> I AM THE LEADER NOW" + newLeader);
                 } else {
                     Acceptor acceptor = executionManager.getAcceptor();
 
                    // int cidNew = cid+1;
-                    //System.out.println("" + acceptor.proposeRecvd[newLeader]  + " " + cidNew );
+                    //logger.info("" + acceptor.proposeRecvd[newLeader]  + " " + cidNew );
                     //if(acceptor.proposeRecvd[newLeader] != null)
-                       // System.out.println("!!!! NUMBER" + acceptor.proposeRecvd[newLeader].getNumber());
+                       // logger.info("!!!! NUMBER" + acceptor.proposeRecvd[newLeader].getNumber());
 
 
                     if(acceptor.proposeRecvd[newLeader] != null && acceptor.proposeRecvd[newLeader].getNumber() == cid + 1) {
-                        //System.out.println("!!!!!!!!" + acceptor.proposeRecvd[newLeader] + " " + acceptor.proposeRecvd[newLeader].getNumber() + " " + cidNew );
-                        //System.out.println("!!!!!!!! Receiving propose of new leader");
+                        //logger.info("!!!!!!!!" + acceptor.proposeRecvd[newLeader] + " " + acceptor.proposeRecvd[newLeader].getNumber() + " " + cidNew );
+                        //logger.info("!!!!!!!! Receiving propose of new leader");
                         acceptor.processMessage(acceptor.proposeRecvd[newLeader]);
                     }
                 }
 
-                System.out.println("|AWARE|  [X] Optimization: leader selection, new leader is? " + best.getLeader());
+                logger.info("|AWARE|  [X] Optimization: leader selection, new leader is? " + best.getLeader());
             } else { // Keep the current configuration
-                System.out.println("|AWARE|  [ ] Optimization: leader selection: no leader change," +
+                logger.info("|AWARE|  [ ] Optimization: leader selection: no leader change," +
                         " current leader is the best leader");
             }
             Monitor.getInstance(viewControl).init(svc.getCurrentViewN());

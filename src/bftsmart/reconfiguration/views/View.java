@@ -75,6 +75,22 @@ public class View implements Serializable {
         this.setWeights(weightConfiguration);
     }
 
+    public InetSocketAddress[] getAddresses() {
+        InetSocketAddress[]  addrs = new InetSocketAddress[processes.length];
+        for (int i = 0; i < processes.length; i++) {
+            addrs[i] = addresses.get(i);
+        }
+        return addrs;
+    }
+
+    public boolean isBFT() {
+        return isBFT;
+    }
+
+    public int getDelta() {
+        return delta;
+    }
+
     private void computeWeights() {
 
         overlayF = delta + f;
@@ -133,7 +149,7 @@ public class View implements Serializable {
         return processes;
     }
 
-    public void setWeights(WeightConfiguration w) {
+    private void setWeights(WeightConfiguration w) {
         double wMax = 1.00 + ((double) delta / (double) f);
         double wMin = 1.00;
         this.weights = new HashMap<Integer, Double>();

@@ -1,6 +1,8 @@
 package bftsmart.aware.monitoring;
 
 import bftsmart.reconfiguration.ServerViewController;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
@@ -18,6 +20,9 @@ public class MessageLatencyMonitor {
 
     private ArrayList<TreeMap<Integer, Long>> sentTimestamps;
     private ArrayList<TreeMap<Integer, Long>> recvdTimestamps;
+
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+
 
     /**
      * Creates a new instance of a latency monitor
@@ -99,7 +104,7 @@ public class MessageLatencyMonitor {
         if (this.sentMsgChallenges.get(monitoringInstanceID % window).equals(challenge)) {
             this.addRecvdTime(replicaID, monitoringInstanceID, timestamp);
         } else {
-           System.out.println(challenge + " does not EQUAL Expected " + this.sentMsgChallenges.get(monitoringInstanceID % window));
+           logger.info(challenge + " does not EQUAL Expected " + this.sentMsgChallenges.get(monitoringInstanceID % window));
         // TODO fix some bug with PROPOSE challenge
         }
     }
@@ -130,7 +135,7 @@ public class MessageLatencyMonitor {
                 Long sent = replicaSentTimes.get(monitoringInstance);
                 if (rcvd != null) {
                     long latency = (rcvd - sent) / 2; // one-way latency as half of round trip time
-                    // System.out.println("Latency computed " + (double) Math.round((double) latency / 1000) / 1000.00 + " ms");
+                    // logger.info("Latency computed " + (double) Math.round((double) latency / 1000) / 1000.00 + " ms");
                     latencies.add(latency);
                 }
             }
@@ -138,14 +143,14 @@ public class MessageLatencyMonitor {
             // If there are not latencies (e.g. a replica crashed) report with -1 (Failure value)
             Long medianValue = latencies.size() > 0 ? latencies.get(latencies.size() / 2) : Monitor.MISSING_VALUE;
             latency_vector[i] = medianValue;
-            // System.out.println("-- Size of " + replicaRecvdTimes.size());
+            // logger.info("-- Size of " + replicaRecvdTimes.size());
         }
         // Assume self-latency is zero
         latency_vector[myself] = 0L;
         // printLatencyVector(latenciesToMillis(latency_vector));
 
         long end = System.nanoTime();
-        System.out.println("Computed median latencies for " + description + "  in " + (double) (end - start) / 1000000.00 + " ms");
+        logger.info("Computed median latencies for " + description + "  in " + (double) (end - start) / 1000000.00 + " ms");
         return latency_vector;
     }
 
@@ -185,7 +190,8 @@ public class MessageLatencyMonitor {
         result += "\n";
         result += ("...............................................................\n");
         result += "\n";
-        System.out.println(result);
+        final Logger logger = LoggerFactory.getLogger("bftsmart.aware.monitoring.MessageLatencyMonitor");
+        logger.info(result);
     }
 
 }

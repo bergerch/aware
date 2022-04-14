@@ -392,37 +392,37 @@ public class TOMConfiguration extends Configuration {
             s = (String) configs.remove("system.initial.leader");
             initialLeader = s != null ? Integer.parseInt(s) : 0;
 
-            s = (String) configs.remove("system.dw.monitoringWindow");
+            s = (String) configs.remove("system.aware.monitoringWindow");
             monitoringWindow = s != null ? Integer.parseInt(s) : 0;
 
-            s = (String) configs.remove("system.dw.useDynamicWeights");
+            s = (String) configs.remove("system.aware.useDynamicWeights");
             useDynamicWeights = Boolean.parseBoolean(s);
 
-            s = (String) configs.remove("system.dw.useLeaderSelection");
+            s = (String) configs.remove("system.aware.useLeaderSelection");
             useLeaderSelection = Boolean.parseBoolean(s);
 
-            s = (String) configs.remove("system.dw.calculationInterval");
+            s = (String) configs.remove("system.aware.calculationInterval");
             calculationInterval = s != null ? Integer.parseInt(s) : 0;
 
-            s = (String) configs.remove("system.dw.monitoringOverhead");
+            s = (String) configs.remove("system.aware.monitoringOverhead");
             monitoringOverhead = s != null ? Double.parseDouble(s) : 0;
 
             s = (String) configs.remove("system.dv.optimizationGoal");
             optimizationGoal = s != null ? Double.parseDouble(s) : 1.00;
 
-            s = (String) configs.remove("system.dw.useDummyPropose");
+            s = (String) configs.remove("system.aware.useDummyPropose");
             useDummyPropose = Boolean.parseBoolean(s);
 
-            s = (String) configs.remove("system.dw.useProposeResponse");
+            s = (String) configs.remove("system.aware.useProposeResponse");
             useProposeResponse = Boolean.parseBoolean(s);
 
-            s = (String) configs.remove("system.dw.useWriteResponse");
+            s = (String) configs.remove("system.aware.useWriteResponse");
             useWriteResponse = Boolean.parseBoolean(s);
 
-            s = (String) configs.remove("system.dw.synchronisationPeriod");
+            s = (String) configs.remove("system.aware.synchronisationPeriod");
             synchronisationPeriod = s != null ? Integer.parseInt(s) : 20000;
 
-            s = (String) configs.remove("system.dw.synchronisationDelay");
+            s = (String) configs.remove("system.aware.synchronisationDelay");
             synchronisationDelay = s != null ? Integer.parseInt(s) : 30000;
 
 

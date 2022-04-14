@@ -3,6 +3,8 @@ package bftsmart.aware.monitoring;
 import bftsmart.consensus.Epoch;
 import bftsmart.reconfiguration.ServerViewController;
 import bftsmart.tom.core.messages.TOMMessage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -42,6 +44,9 @@ public class Monitor {
     // have been processed.
     private Long[][] m_propose;
     private Long[][] m_write;
+
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+
 
     private Monitor(ServerViewController svc) {
 
@@ -113,7 +118,7 @@ public class Monitor {
         if (svc.getStaticConf().isUseDynamicWeights()) {
             for (TOMMessage tm : epoch.getConsensus().getDecision().getDeserializedValue()) {
                 if (tm.getIsMonitoringMessage()) {
-                    System.out.println("Received disseminated monitoring message ");
+                    logger.info("Received disseminated monitoring message ");
                     onReceiveMonitoringInformation(tm.getSender(), tm.getContent(), cid);
                 }
             }

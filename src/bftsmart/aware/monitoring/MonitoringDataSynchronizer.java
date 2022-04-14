@@ -2,6 +2,8 @@ package bftsmart.aware.monitoring;
 
 import bftsmart.reconfiguration.ServerViewController;
 import bftsmart.tom.ServiceProxy;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.util.Timer;
@@ -15,6 +17,9 @@ import java.util.TimerTask;
 public class MonitoringDataSynchronizer {
 
     private ServiceProxy monitoringDataDisseminationProxy;
+
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+
 
     /**
      * Creates a new Synchronizer to disseminate data with total order
@@ -41,8 +46,7 @@ public class MonitoringDataSynchronizer {
 
                 monitoringDataDisseminationProxy.invokeOrderedMonitoring(data);
 
-                // Testing, remove later:
-                System.out.println("|---> Disseminating monitoring information with total order! ");
+                logger.debug("|---> Disseminating monitoring information with total order! ");
             }
         }, svc.getStaticConf().getSynchronisationDelay(), svc.getStaticConf().getSynchronisationPeriod());
     }

@@ -12,7 +12,7 @@ import java.util.TreeSet;
  *
  * @author cb
  */
-public class AwareConfiguration implements Comparable {
+public class AwareConfiguration implements Comparable<AwareConfiguration> {
 
     // A AWARE config consists of a weight distribution and leader selection
     private WeightConfiguration weightConfiguration;
@@ -33,8 +33,8 @@ public class AwareConfiguration implements Comparable {
     }
 
     @Override
-    public int compareTo(Object o) {
-        return Long.compare(this.predictedLatency, ((AwareConfiguration) o).predictedLatency);
+    public int compareTo(AwareConfiguration o) {
+        return Long.compare(this.predictedLatency, o.predictedLatency);
     }
 
     public WeightConfiguration getWeightConfiguration() {

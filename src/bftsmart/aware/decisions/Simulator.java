@@ -55,7 +55,7 @@ public class Simulator {
         int delta = viewControl.getStaticConf().getDelta();
 
         // Use the PredictLatency Algorithm
-        return this.predictLatency(replicaSet, leader, weightConfig, m_propose, m_write, n, f, delta, 1);
+        return this.predictLatency(replicaSet, leader, weightConfig, m_propose, m_write, n, f, delta, 10);
     }
 
 
@@ -255,9 +255,9 @@ public class Simulator {
         Random random = new Random(seed);
 
         // Simulated Annealing parameters
-        double temp = 120;
+        double temp = 25000;
         double coolingRate = 0.0055;
-        double threshold = 0.2;
+        double threshold = 0.5;
 
 
         // Debug Info

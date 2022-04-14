@@ -6,10 +6,11 @@ Adaptive Wide-Area REplication
 We incorporate the idea of self-optimization into geographically distributed, weighted replication by introducing AWARE,
 an automated and dynamic voting weight tuning and leader positioning scheme. AWARE measures replica-to-replica latencies and uses a prediction model, thriving to minimize the system’s consensus latency
 
-![](img/dynWHEATLogo.png)
+![](img/AWARE.png)
 
-A technical description of AWARE can be found in the IEEE SRDS paper: Resilient Wide-Area Byzantine Consensus Using Adaptive Weighted Replication
-[SRDS'19](https://www.fim.uni-passau.de/fileadmin/dokumente/fakultaeten/fim/lehrstuhl/reiser/publications/AWARE_paper.pdf):
+A technical description of AWARE can be found in the IEEE TDSC paper: AWARE: Adaptive Wide-Area Replication for
+Fast and Resilient Byzantine Consensus
+[TDSC'20](https://www.di.fc.ul.pt/~bessani/publications/tdsc20-aware.pdf):
 
 
 This branch contains the sources of AWARE, an automated voting weight tuning and leader positioning scheme that implements the optimizations and vote assignment schemes of WHEAT [1] and dynamically allows the system to adjust itself to the best possible configuration.
@@ -19,9 +20,8 @@ In the configuration file, you can use the following options to enable AWARE's o
 
 First, configure which optimizations you want to use:
 ```
-system.dw.useDynamicWeights = true
-
-system.dw.useLeaderSelection = true
+system.aware.useDynamicWeights = true
+system.aware.useLeaderSelection = true
 ```
 
 Then you can deploy AWARE in any starting configuration. It will automatically monitor and self-optimize.
