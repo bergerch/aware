@@ -20,7 +20,6 @@ import java.util.StringTokenizer;
 
 import java.util.regex.Pattern;
 
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,7 +43,6 @@ public class TOMConfiguration extends Configuration {
     protected boolean shutdownHookEnabled;
     protected boolean useSenderThread;
     private int numNIOThreads;
-    private int useMACs;
     private int useSignatures;
     private boolean stateTransferEnabled;
     private int checkpointPeriod;
@@ -62,11 +60,18 @@ public class TOMConfiguration extends Configuration {
     private int numRepliers;
     private int numNettyWorkers;
     private boolean sameBatchSize;
+    private boolean fairbatch;
     private String bindAddress;
 
-        private int delta;
-        private boolean useWeights;
-        private boolean tentative;
+    /* Tulio Ribeiro*/
+    //private Boolean ssltls=true;
+    private String ssltlsProtocolVersion;
+    private String keyStoreFile;
+    private String [] enabledCiphers;
+
+    private int delta;
+    private boolean useWeights;
+    private boolean tentative;
 
     // AWARE Leader and weights configs
     private int initialLeader;
@@ -80,9 +85,6 @@ public class TOMConfiguration extends Configuration {
 
     // AWARE messages
     private boolean useDummyPropose;
-
-
-
     private boolean useProposeResponse;
     private boolean useWriteResponse;
     private int monitoringWindow;
@@ -132,7 +134,7 @@ public class TOMConfiguration extends Configuration {
                     requestTimeout = 0;
                 }
             }
-
+            
             s = (String) configs.remove("system.totalordermulticast.batchtimeout");
             if (s == null) {
                 batchTimeout = -1;
@@ -206,13 +208,6 @@ public class TOMConfiguration extends Configuration {
                 numNIOThreads = 2;
             } else {
                 numNIOThreads = Integer.parseInt(s);
-            }
-
-            s = (String) configs.remove("system.communication.useMACs");
-            if (s == null) {
-                useMACs = 0;
-            } else {
-                useMACs = Integer.parseInt(s);
             }
 
             s = (String) configs.remove("system.communication.useSignatures");
@@ -358,7 +353,7 @@ public class TOMConfiguration extends Configuration {
             }
             
             s = (String) configs.remove("system.communication.bindaddress");
-
+            
             Pattern pattern = Pattern.compile("^(([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.){3}([01]?\\d\\d?|2[0-4]\\d|25[0-5])$");
 
             if (s == null || !pattern.matcher(s).matches()) {
@@ -373,6 +368,7 @@ public class TOMConfiguration extends Configuration {
             } else {
                     sameBatchSize = false;
             }
+
 
             s = (String) configs.remove("system.useweights");
             useWeights = (s != null) ? Boolean.parseBoolean(s) : false;
@@ -426,6 +422,54 @@ public class TOMConfiguration extends Configuration {
             synchronisationDelay = s != null ? Integer.parseInt(s) : 30000;
 
 
+            /**
+             * Tulio Ribeiro
+             *
+             * SSL/TLS configuration parameters.
+             * Default values:
+             *  #	keyStoreFile = "EC_KeyPair_256.pkcs12";
+             *  #	enabledCiphers = new String[] {"TLS_RSA_WITH_NULL_SHA256", "TLS_ECDHE_ECDSA_WITH_NULL_SHA"};
+             *  #	ssltlsProtocolVersion = "TLSv1.2";
+             */
+
+
+            s = (String) configs.remove("system.ssltls.key_store_file");
+            if(s == null){
+                keyStoreFile = "EC_KeyPair_256.pkcs12";
+            }else{
+                keyStoreFile = s;
+            }
+
+            s = (String) configs.remove("system.ssltls.enabled_ciphers");
+            if(s == null){
+                enabledCiphers = new String[] {"TLS_RSA_WITH_NULL_SHA256", "TLS_ECDHE_ECDSA_WITH_NULL_SHA"};
+            }else{
+                enabledCiphers = s.split(",");
+            }
+
+            s = (String) configs.remove("system.ssltls.protocol_version");
+            if (s == null) {
+                ssltlsProtocolVersion = "TLSv1.2";
+            } else {
+                switch (s) {
+                    case "SSLv3":
+                        ssltlsProtocolVersion = "SSLv3";
+                        break;
+                    case "TLSv1":
+                        ssltlsProtocolVersion = "TLSv1";
+                        break;
+                    case "TLSv1.1":
+                        ssltlsProtocolVersion = "TLSv1.1";
+                        break;
+                    case "TLSv1.2":
+                        ssltlsProtocolVersion = "TLSv1.2";
+                        break;
+                    default:
+                        ssltlsProtocolVersion = "TLSv1.2";
+                        break;
+                }
+            }
+
         } catch (Exception e) {
             logger.error("Could not parse system configuration file",e);
         }
@@ -461,7 +505,7 @@ public class TOMConfiguration extends Configuration {
     public int getBatchTimeout() {
         return batchTimeout;
     }
-
+    
     public int getReplyVerificationTime() {
         return replyVerificationTime;
     }
@@ -530,13 +574,6 @@ public class TOMConfiguration extends Configuration {
     }
 
     /**
-     * Indicates if MACs should be used (1) or not (0) to authenticate client-server and server-server messages
-     */
-    public int getUseMACs() {
-        return useMACs;
-    }
-
-    /**
      * Indicates the checkpoint period used when fetching the state from the application
      */
     public int getCheckpointPeriod() {
@@ -590,6 +627,11 @@ public class TOMConfiguration extends Configuration {
     public int getNumRepliers() {
         return numRepliers;
     }
+
+    public boolean getFairBatch() {
+        return fairbatch;
+    }
+
     public int getDelta() {
         return delta;
     }
@@ -609,6 +651,22 @@ public class TOMConfiguration extends Configuration {
     public String getBindAddress() {
         return bindAddress;
     }
+
+    /**
+     * Tulio Ribeiro ## SSL/TLS getters.
+     * */
+    public String getSSLTLSProtocolVersion() {
+        return ssltlsProtocolVersion;
+    }
+
+    public String getSSLTLSKeyStore() {
+        return keyStoreFile;
+    }
+
+    public String[] getEnabledCiphers() {
+        return enabledCiphers;
+    }
+
 
     public boolean isUseWeights() {
         return useWeights;
@@ -677,4 +735,5 @@ public class TOMConfiguration extends Configuration {
     public void setSynchronisationDelay(int synchronisationDelay) {
         this.synchronisationDelay = synchronisationDelay;
     }
+
 }
