@@ -1,16 +1,27 @@
 AWARE 0.2
 ----------
 
-Adaptive Wide-Area REplication
+**A**daptive **W**ide-**A**rea **RE**plication
 
-We incorporate the idea of self-optimization into geographically distributed, weighted replication by introducing AWARE,
-an automated and dynamic voting weight tuning and leader positioning scheme. AWARE measures replica-to-replica latencies and uses a prediction model, thriving to minimize the system’s consensus latency
 
-![](img/AWARE.png)
+With the rise of new blockchain systems, Byzantine consensus is getting practical and necessary with world-spanning replica deployments. 
 
-A technical description of AWARE can be found in the IEEE TDSC paper: AWARE: Adaptive Wide-Area Replication for
-Fast and Resilient Byzantine Consensus
-[TDSC'20](https://www.di.fc.ul.pt/~bessani/publications/tdsc20-aware.pdf):
+In geo-distributed systems, the pace at which consensus is achieved is limited by the latencies of links between replicas. Consensus-based systems can benefit from **weighted replication** (see **WHEAT** below), an approach that
+assigns higher voting weights to a clique of fast (well-connected) replicas. This allows to leverage proportionally smaller quorums to make progress, thus decreasing the latency of reaching consensus in a system.
+
+We incorporate the idea of continous self-optimization into geographically distributed, weighted replication by introducing **AWARE**,
+an automated and dynamic voting weight tuning and leader positioning scheme. AWARE **monitors** the link latencies of replicas and employs a prediction model, thriving to **continously optimize** the system’s **consensus latency**.
+
+
+
+<p align="center">
+    <img src="img/AWARE.svg" width="600"/>
+</p>
+
+A **technical description** of AWARE can be found in the **IEEE TDSC'20** paper:
+
+[AWARE: Adaptive Wide-Area Replication for
+Fast and Resilient Byzantine Consensus](https://www.di.fc.ul.pt/~bessani/publications/tdsc20-aware.pdf):
 
 
 This branch contains the sources of AWARE, an automated voting weight tuning and leader positioning scheme that implements the optimizations and vote assignment schemes of WHEAT [1] and dynamically allows the system to adjust itself to the best possible configuration.
@@ -18,13 +29,12 @@ This branch contains the sources of AWARE, an automated voting weight tuning and
 
 In the configuration file, you can use the following options to enable AWARE's optimizations:
 
-First, configure which optimizations you want to use:
 ```
 system.aware.useDynamicWeights = true
 system.aware.useLeaderSelection = true
 ```
 
-Then you can deploy AWARE in any starting configuration. It will automatically monitor and self-optimize.
+Deploy AWARE in any starting configuration. It will automatically start monitoring and self-optimizing.
 
 
 WHEAT 0.2-alpha
