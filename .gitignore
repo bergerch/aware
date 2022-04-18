@@ -5,5 +5,8 @@ test
 # Ignore Gradle project-specific cache directory
 .gradle
 
+# IntelliJ
+.idea
+
 # Ignore Gradle build output directory
 build

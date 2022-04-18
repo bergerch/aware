@@ -35,7 +35,7 @@ public class MessageLatencyMonitor {
         init();
     }
 
-    private void init() {
+    private synchronized void init() {
         int n = controller.getCurrentViewN();
         this.sentTimestamps = new ArrayList<>();
         this.recvdTimestamps = new ArrayList<>();
@@ -101,10 +101,11 @@ public class MessageLatencyMonitor {
      */
     public synchronized void addRecvdTime(int replicaID, int monitoringInstanceID, Long timestamp, int challenge) {
         // Only add a response message timestamp if there is a corresponding sent message AND challenge was included in response
-        if (this.sentMsgChallenges.get(monitoringInstanceID % window).equals(challenge)) {
+        Integer sentChallenge = this.sentMsgChallenges.get(monitoringInstanceID % window);
+        if (sentChallenge != null && sentChallenge == challenge) {
             this.addRecvdTime(replicaID, monitoringInstanceID, timestamp);
         } else {
-           logger.info(challenge + " does not EQUAL Expected " + this.sentMsgChallenges.get(monitoringInstanceID % window));
+           logger.info(challenge +" " +monitoringInstanceID  + " does not EQUAL Expected " + this.sentMsgChallenges.get(monitoringInstanceID % window));
         // TODO fix some bug with PROPOSE challenge
         }
     }

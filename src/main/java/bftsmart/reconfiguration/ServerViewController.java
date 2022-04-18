@@ -284,8 +284,8 @@ public class ServerViewController extends ViewController {
                 }
             }
 
-            this.quorumBFT = (int) Math.ceil((this.currentView.getN() + this.currentView.getF()) / 2.0);
-            this.quorumCFT = (int) Math.ceil(this.currentView.getN() / 2.0);
+            this.quorumBFT = (int) Math.ceil((this.currentView.getN() + this.currentView.getF()) / 2);
+            this.quorumCFT = (int) Math.ceil(this.currentView.getN() / 2);
 
             this.overlayN = this.currentView.getOverlayN();
             this.overlayF = this.currentView.getOverlayF();

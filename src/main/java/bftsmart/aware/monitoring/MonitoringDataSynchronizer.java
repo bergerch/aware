@@ -29,7 +29,7 @@ public class MonitoringDataSynchronizer {
     MonitoringDataSynchronizer(ServerViewController svc) {
 
         int myID = svc.getStaticConf().getProcessId();
-        monitoringDataDisseminationProxy = new ServiceProxy(myID + 100000);
+        monitoringDataDisseminationProxy = new ServiceProxy(myID);
 
         // Create a time to periodically broadcast this replica's measurements to all replicas
         Timer timer = new Timer();
