@@ -68,7 +68,7 @@ public class ServerCommunicationSystem extends Thread {
 
         inQueue = new LinkedBlockingQueue<SystemMessage>(controller.getStaticConf().getInQueueSize());
 
-        serversConn = new ServersCommunicationLayer(controller, inQueue, replica, writeLatencyMonitor);
+        serversConn = new ServersCommunicationLayer(controller, inQueue, replica);
 
         /** AWARE **/
         if (controller.getStaticConf().isUseDynamicWeights())

@@ -119,13 +119,6 @@ public class ServersCommunicationLayer extends Thread {
     public MessageLatencyMonitor writeLatenciesMonitor;
     public MessageLatencyMonitor proposeLatenciesMonitor;
 
-    public ServersCommunicationLayer(ServerViewController controller, LinkedBlockingQueue<SystemMessage> inQueue,
-                                     ServiceReplica replica, MessageLatencyMonitor writeLatenciesMonitor) throws Exception {
-        this(controller, inQueue, replica);
-        this.writeLatenciesMonitor = writeLatenciesMonitor;
-        this.proposeLatenciesMonitor = Monitor.getInstance(controller).getProposeLatencyMonitor();
-    }
-
     public ServersCommunicationLayer(ServerViewController controller,
             LinkedBlockingQueue<SystemMessage> inQueue,
             ServiceReplica replica) throws Exception {
@@ -135,6 +128,12 @@ public class ServersCommunicationLayer extends Thread {
         this.me = controller.getStaticConf().getProcessId();
         this.replica = replica;
         this.ssltlsProtocolVersion = controller.getStaticConf().getSSLTLSProtocolVersion();
+
+        /** AWARE **/
+        this.writeLatenciesMonitor = Monitor.getInstance(controller).getWriteLatencyMonitor();
+        this.proposeLatenciesMonitor = Monitor.getInstance(controller).getProposeLatencyMonitor();
+        /** END AWARE **/
+
 
         String myAddress;
         String confAddress = "";
@@ -219,6 +218,7 @@ public class ServersCommunicationLayer extends Thread {
         }
 
         start();
+
     }
 
     public SecretKey getSecretKey(int id) {
