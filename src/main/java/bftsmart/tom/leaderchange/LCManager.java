@@ -828,7 +828,7 @@ public class LCManager {
                     
                     alreadyCounted.add(consMsg.getSender());
                     countValid++;
-                 } else {
+                } else {
                     logger.error("Invalid signature in message from " + consMsg.getSender());
                 }
    

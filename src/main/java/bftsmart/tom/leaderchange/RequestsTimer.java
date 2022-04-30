@@ -15,8 +15,15 @@ limitations under the License.
 */
 package bftsmart.tom.leaderchange;
 
-import java.util.*;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.ListIterator;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.TreeSet;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.HashMap;
+import java.util.Set;
 
 import bftsmart.communication.ServerCommunicationSystem;
 import bftsmart.reconfiguration.ServerViewController;
@@ -196,27 +203,6 @@ public class RequestsTimer {
             timer.schedule(rtTask, t);
         }
         
-    }
-
-    public List<TOMMessage> getPending() {
-        LinkedList<TOMMessage> pendingRequests = new LinkedList<>();
-
-        try {
-
-            rwLock.readLock().lock();
-
-            for (Iterator<TOMMessage> i = watched.iterator(); i.hasNext();) {
-                TOMMessage request = i.next();
-                pendingRequests.add(request);
-
-            }
-
-        } finally {
-
-            rwLock.readLock().unlock();
-        }
-
-        return pendingRequests;
     }
     
     public void setSTOP(int regency, LCMessage stop) {

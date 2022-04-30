@@ -111,10 +111,6 @@ public final class ExecutionManager {
         if (controller.getCurrentViewAcceptors().length > 0)
             currentLeader = controller.getCurrentViewAcceptors()[0];
         else currentLeader = 0;
-
-
-        //if (controller.getStaticConf().getInitialLeader() >= 0)
-        //    currentLeader = controller.getStaticConf().getInitialLeader();
     }
     
     /**
