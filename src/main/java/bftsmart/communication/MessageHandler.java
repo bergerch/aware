@@ -177,13 +177,11 @@ public class MessageHandler {
                             break;
                         case "PROPOSE_RESPONSE":
                             tomLayer.getCommunication().proposeLatencyMonitor.addRecvdTime(sm.sender,
-                                    ((MonitoringMessage) sm).getNumber(), ((MonitoringMessage) sm).receivedTimestamp,
-                                    ((MonitoringMessage) sm).getChallenge());
+                                    ((MonitoringMessage) sm).getNumber(), ((MonitoringMessage) sm).getChallenge());
                             break;
                         case "WRITE_RESPONSE":
                             tomLayer.getCommunication().writeLatencyMonitor.addRecvdTime(sm.sender,
-                                    ((MonitoringMessage) sm).getNumber(), ((MonitoringMessage) sm).receivedTimestamp,
-                                    ((MonitoringMessage) sm).getChallenge());
+                                    ((MonitoringMessage) sm).getNumber(), ((MonitoringMessage) sm).getChallenge());
                             break;
                         default:
                             logger.error("Unknown Monitoring message type");

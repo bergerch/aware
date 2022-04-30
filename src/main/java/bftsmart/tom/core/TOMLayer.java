@@ -71,11 +71,11 @@ public final class TOMLayer extends Thread implements RequestReceiver {
 
     //thread pool used to paralelise verification of requests contained in a batch
     private final ExecutorService verifierExecutor;
+
     /**
      * Manage timers for pending requests
      */
     public RequestsTimer requestsTimer;
-
 
     private long lastRequest = -1;
 
@@ -153,7 +153,6 @@ public final class TOMLayer extends Thread implements RequestReceiver {
         for (int target : targets) {
             publicKey.put(target, controller.getStaticConf().getPublicKey(target));
         }
-
         // use either the same number of Netty workers threads if specified in the configuration
         // or use a many as the number of cores available
         int nWorkers = this.controller.getStaticConf().getNumNettyWorkers();
@@ -302,8 +301,6 @@ public final class TOMLayer extends Thread implements RequestReceiver {
         proposeLock.unlock();
     }
 
-
-
     /**
      * This method blocks until the PaW algorithm is finished
      */
@@ -423,7 +420,6 @@ public final class TOMLayer extends Thread implements RequestReceiver {
                 leaderLock.unlock();
             }
 
-            
             if (!doWork) break;
 
             // blocks until the current consensus finishes
@@ -497,7 +493,6 @@ public final class TOMLayer extends Thread implements RequestReceiver {
                 logger.debug("I am the leader and start consensus");
                 execManager.getProposer().startConsensus(execId, createPropose(dec));
             }
-
         }
         logger.info("TOMLayer stopped.");
     }
@@ -515,7 +510,6 @@ public final class TOMLayer extends Thread implements RequestReceiver {
 
         this.dt.delivery(dec); // Sends the decision to the delivery thread
     }
-
 
     /**
      * Verify if the value being proposed for a epoch is valid. It verifies the
@@ -572,7 +566,6 @@ public final class TOMLayer extends Thread implements RequestReceiver {
                 latch.await();
 
                 for (TOMMessage request : requests) {
-
                     if (!request.isValid) {
                         logger.warn("Request {} could not be added to the pending messages queue of its respective client", request);
                         return null;
@@ -595,7 +588,7 @@ public final class TOMLayer extends Thread implements RequestReceiver {
     public void forwardRequestToLeader(TOMMessage request) {
         int leaderId = execManager.getCurrentLeader();
         if (this.controller.isCurrentViewMember(leaderId)) {
-            logger.debug(">>>>>>>> Forwarding " + request + " to " + leaderId);
+            logger.debug("Forwarding " + request + " to " + leaderId);
             communication.send(new int[]{leaderId},
                     new ForwardedMessage(this.controller.getStaticConf().getProcessId(), request));
         }

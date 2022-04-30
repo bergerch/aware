@@ -823,26 +823,13 @@ public class LCManager {
                    
                 byte[] signature = (byte[]) consMsg.getProof();
 
-
-
-                 if (Arrays.equals(consMsg.getValue(), hashedValue) &&
+                if (Arrays.equals(consMsg.getValue(), hashedValue) &&
                         TOMUtil.verifySignature(pubKey, data, signature) && !alreadyCounted.contains(consMsg.getSender())) {
                     
                     alreadyCounted.add(consMsg.getSender());
                     countValid++;
                  } else {
-                     /** AWARE testing (work in progress) */
-                     // todo this code is for highly experimental testing only, remove later
-                     // todo note this code endangers the correctness of the LC protocol and may result in unpredictable
-                     // todo behaviour such as spinning leaders ?
-                     if ( this.SVController.getStaticConf().isUseDynamicWeights()) { // current leader is not the best one,
-                                                                            // just replace it anyway
-                         alreadyCounted.add(consMsg.getSender());
-                         countValid++;
-                     } else {
-                         logger.error("Invalid signature in message from " + consMsg.getSender());
-                     }
-                     /** End AWARE */
+                    logger.error("Invalid signature in message from " + consMsg.getSender());
                 }
    
             } else {

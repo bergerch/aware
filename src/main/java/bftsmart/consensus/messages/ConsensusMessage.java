@@ -1,25 +1,24 @@
 /**
- * Copyright (c) 2007-2013 Alysson Bessani, Eduardo Alchieri, Paulo Sousa, and the authors indicated in the @author tags
- * <p>
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * <p>
- * http://www.apache.org/licenses/LICENSE-2.0
- * <p>
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+Copyright (c) 2007-2013 Alysson Bessani, Eduardo Alchieri, Paulo Sousa, and the authors indicated in the @author tags
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
 package bftsmart.consensus.messages;
 
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
+import java.io.*;
 
 import bftsmart.communication.SystemMessage;
+
 
 
 /**
@@ -32,19 +31,16 @@ public class ConsensusMessage extends SystemMessage {
     protected int paxosType; // Message type
     private byte[] value = null; // Value used when message type is PROPOSE
     private Object proof; // Proof used when message type is COLLECT
-    // Can be either a MAC vector or a signature
+                              // Can be either a MAC vector or a signature
+
 
     /** AWARE **/
-    protected int challenge; // only necessary for BFT
-
-    public long sentTimestamp;
-    public long receivedTimestamp;
+    protected int challenge = -1; // only necessary for BFT
 
     /**
      * Creates a consensus message. Not used. TODO: How about making it private?
      */
-    public ConsensusMessage() {
-    }
+    public ConsensusMessage(){}
 
     /**
      * Creates a consensus message. Used by the message factory to create a COLLECT or PROPOSE message
@@ -55,7 +51,7 @@ public class ConsensusMessage extends SystemMessage {
      * @param from This should be this process ID
      * @param value This should be null if its a COLLECT message, or the proposed value if it is a PROPOSE message
      */
-    public ConsensusMessage(int paxosType, int id, int epoch, int from, byte[] value) {
+    public ConsensusMessage(int paxosType, int id,int epoch,int from, byte[] value){
 
         super(from);
 
@@ -64,6 +60,7 @@ public class ConsensusMessage extends SystemMessage {
         this.epoch = epoch;
         this.value = value;
         //this.macVector = proof;
+
     }
 
 
@@ -75,7 +72,7 @@ public class ConsensusMessage extends SystemMessage {
      * @param epoch Epoch timestamp
      * @param from This should be this process ID
      */
-    public ConsensusMessage(int type, int id, int epoch, int from) {
+    public ConsensusMessage(int type, int id,int epoch, int from) {
 
         this(type, id, epoch, from, null);
 
@@ -95,10 +92,7 @@ public class ConsensusMessage extends SystemMessage {
 
         /*** AWARE **/
         out.writeInt(challenge);
-
-        sentTimestamp = System.nanoTime();
-        out.writeLong(sentTimestamp);
-
+        /*** End AWARE **/
 
         if (value == null) {
 
@@ -135,8 +129,8 @@ public class ConsensusMessage extends SystemMessage {
 
         /** AWARE **/
         challenge = in.readInt();
-        sentTimestamp = in.readLong();
-        receivedTimestamp = System.nanoTime();
+        /*** End AWARE **/
+
 
 
         int toRead = in.readInt();
@@ -243,6 +237,75 @@ public class ConsensusMessage extends SystemMessage {
     public String toString() {
         return "type=" + getPaxosVerboseType() + ", number=" + getNumber() + ", epoch=" +
                 getEpoch() + ", from=" + getSender();
+    }
+
+
+
+    private void readObject(ObjectInputStream in) throws ClassNotFoundException, IOException
+    {
+        sender = in.readInt();
+        number = in.readInt();
+        epoch = in.readInt();
+        paxosType = in.readInt();
+
+
+        /*** AWARE **/
+        challenge = in.readInt();
+
+
+        int toRead = in.readInt();
+
+        if (toRead != -1) {
+
+            value = new byte[toRead];
+
+            do {
+
+                toRead -= in.read(value, value.length - toRead, toRead);
+
+            } while (toRead > 0);
+        }
+
+        boolean asProof = in.readBoolean();
+        if (asProof) {
+
+            proof = in.readObject();
+        }
+
+    }
+
+    private void writeObject(ObjectOutputStream out) throws IOException
+    {
+        out.writeInt(sender);
+        out.writeInt(number);
+        out.writeInt(epoch);
+        out.writeInt(paxosType);
+
+
+        /*** AWARE **/
+        out.writeInt(challenge);
+
+
+        if (value == null) {
+
+            out.writeInt(-1);
+
+        } else {
+
+            out.writeInt(value.length);
+            out.write(value);
+
+        }
+
+        if (this.proof != null) {
+
+            out.writeBoolean(true);
+            out.writeObject(proof);
+
+        } else {
+            out.writeBoolean(false);
+        }
+
     }
 
 }

@@ -86,7 +86,9 @@ public final class Acceptor {
         this.factory = factory;
         this.controller = controller;
 
-        /* Tulio Ribeiro */
+		this.proposeRecvd = new ConsensusMessage[controller.getCurrentView().getN()];
+
+		/* Tulio Ribeiro */
         this.privKey = controller.getStaticConf().getPrivateKey();
 
         // use either the same number of Netty workers threads if specified in the

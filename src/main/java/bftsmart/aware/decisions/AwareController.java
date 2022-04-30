@@ -74,7 +74,7 @@ public class AwareController {
             @Override
             public void run() {
                 logger.info("[AwARE] Controller: Currently using weight config " + instance.getCurrent()
-                        + " with leader " + executionManager.getCurrentLeader());
+                        + " with leader " + executionManager.getCurrentLeader() + " view number " + svc.getCurrentView().getId());
             }
         }, 15*1000, 5*1000);
     }
@@ -214,8 +214,10 @@ public class AwareController {
             logger.info("!!! Best: " + best);
             logger.info("");
 
-            if (svc.getStaticConf().isUseDynamicWeights() && !currentWeights.equals(bestWeights) &&
-                    current.getPredictedLatency() >= best.getPredictedLatency() * svc.getStaticConf().getOptimizationGoal()) {
+            if (svc.getStaticConf().isUseDynamicWeights() &&
+                !currentWeights.equals(bestWeights) &&
+                current.getPredictedLatency() > best.getPredictedLatency() * svc.getStaticConf().getOptimizationGoal()) {
+
                 // The current weight configuration is not the best
                 // Deterministically change weights (this decision will be the same in all correct replicas)
                 // svc.getCurrentView().setWeights(bestWeights);

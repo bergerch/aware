@@ -31,6 +31,7 @@ public class WeightConfiguration {
     public WeightConfiguration(boolean isBFT, ServerViewController controller) {
 
         int n = controller.getCurrentViewN();
+        int f = controller.getCurrentViewF();
 
         R_max = new TreeSet<Integer>();
         R_min = new TreeSet<Integer>();
@@ -39,11 +40,13 @@ public class WeightConfiguration {
 
         Map<Integer, Double> weights = view.getWeights();
 
-        for (int i = 0; i < n; i++) {
-            if (weights.get(i) == 1.00) {
+        int count = n;
+        for (int i = n-1; i >= 0; i--) {
+            if (weights.get(i) == 1.00 && count > 2*f) {
                 R_min.add(i);
+                count--;
             } else {
-                R_max.add(i);
+                R_max.add(i); // in a system with delta = 0, all replicas have 1.0 votes, even the ones in R_max
             }
         }
     }

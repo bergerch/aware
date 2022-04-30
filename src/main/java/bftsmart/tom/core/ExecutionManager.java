@@ -113,8 +113,8 @@ public final class ExecutionManager {
         else currentLeader = 0;
 
 
-        if (controller.getStaticConf().getInitialLeader() >= 0)
-            currentLeader = controller.getStaticConf().getInitialLeader();
+        //if (controller.getStaticConf().getInitialLeader() >= 0)
+        //    currentLeader = controller.getStaticConf().getInitialLeader();
     }
     
     /**
@@ -424,7 +424,7 @@ public final class ExecutionManager {
                     }
                 }
             }
-            
+
             if(controller.getStaticConf().isBFT()){
             	return ((countWrites > (2*controller.getCurrentViewF())) &&
             			(countAccepts > (2*controller.getCurrentViewF())));

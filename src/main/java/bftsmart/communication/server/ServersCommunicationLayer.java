@@ -218,7 +218,6 @@ public class ServersCommunicationLayer extends Thread {
         }
 
         start();
-
     }
 
     public SecretKey getSecretKey(int id) {
@@ -310,8 +309,6 @@ public class ServersCommunicationLayer extends Thread {
         /*Tulio A. Ribeiro*/
         Integer[] targetsShuffled = Arrays.stream( targets ).boxed().toArray( Integer[]::new );
         Collections.shuffle(Arrays.asList(targetsShuffled), new Random(System.nanoTime()));
-
-
 
         for (int target : targetsShuffled) {
 			try {

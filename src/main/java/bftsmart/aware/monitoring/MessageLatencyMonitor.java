@@ -85,10 +85,10 @@ public class MessageLatencyMonitor {
      * @param monitoringInstanceID id
      * @param timestamp            time
      */
-    public synchronized void addRecvdTime(int replicaID, int monitoringInstanceID, Long timestamp) {
+    public synchronized void addRecvdTime(int replicaID, int monitoringInstanceID) {
         // Only add a response message timestamp if there is a corresponding sent message
         if (this.sentTimestamps.get(replicaID).get(monitoringInstanceID % window) != null) { //
-            this.recvdTimestamps.get(replicaID).put(monitoringInstanceID % window, timestamp);
+            this.recvdTimestamps.get(replicaID).put(monitoringInstanceID % window, System.nanoTime());
         }
     }
 
@@ -99,14 +99,14 @@ public class MessageLatencyMonitor {
      * @param monitoringInstanceID id
      * @param timestamp            time
      */
-    public synchronized void addRecvdTime(int replicaID, int monitoringInstanceID, Long timestamp, int challenge) {
+    public synchronized void addRecvdTime(int replicaID, int monitoringInstanceID, int challenge) {
         // Only add a response message timestamp if there is a corresponding sent message AND challenge was included in response
         Integer sentChallenge = this.sentMsgChallenges.get(monitoringInstanceID % window);
         if (sentChallenge != null && sentChallenge == challenge) {
-            this.addRecvdTime(replicaID, monitoringInstanceID, timestamp);
+            this.addRecvdTime(replicaID, monitoringInstanceID);
         } else {
-           logger.info(challenge +" " +monitoringInstanceID  + " does not EQUAL Expected " + this.sentMsgChallenges.get(monitoringInstanceID % window));
-        // TODO fix some bug with PROPOSE challenge
+           logger.warn(challenge +" " +monitoringInstanceID  + " does not EQUAL Expected " + this.sentMsgChallenges.get(monitoringInstanceID % window));
+           // should never reach here?
         }
     }
 
