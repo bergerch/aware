@@ -229,6 +229,10 @@ public class ConsensusMessage extends SystemMessage {
             return "ACCEPT";
         else if (paxosType == MessageFactory.WRITE)
             return "WRITE";
+        else if (paxosType==MessageFactory.AUDIT)
+            return "AUDIT";
+        else if (paxosType==MessageFactory.STORAGE)
+            return "STORAGE";
         else
             return "";
     }
@@ -306,6 +310,10 @@ public class ConsensusMessage extends SystemMessage {
             out.writeBoolean(false);
         }
 
+    }
+
+    public void setValue(byte[] new_value) {
+        this.value = new_value;
     }
 
 }
