@@ -43,6 +43,7 @@ import org.slf4j.LoggerFactory;
 import java.io.Serializable;
 import java.security.*;
 import java.util.HashMap;
+import java.util.NoSuchElementException;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.CountDownLatch;
@@ -690,10 +691,13 @@ public final class TOMLayer extends Thread implements RequestReceiver {
             int execId = getLastExec() + 1;
             setInExec(execId);
             Decision dec = execManager.getConsensus(execId).getDecision();
-            byte[] value = createPropose(dec); // Send (possibly large) dummy propose with consensus value
-            logger.debug("I SEND A DUMMY PROPOSE");
-            communication.send(this.controller.getCurrentViewAcceptors(),
-                    monitoringMsgFactory.createDummyPropose(execId, 0, value));
-
+            try {
+                byte[] value = createPropose(dec); // Send (possibly large) dummy propose with consensus value
+                logger.debug("I SEND A DUMMY PROPOSE");
+                communication.send(this.controller.getCurrentViewAcceptors(),
+                        monitoringMsgFactory.createDummyPropose(execId, 0, value));
+            } catch (NoSuchElementException ex) {
+                logger.debug("No pending requests atm ?");
+            }
         }
 }

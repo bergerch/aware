@@ -368,8 +368,8 @@ public class ServiceReplica {
                 
                 logger.debug("Delivering a no-op to the recoverer");
 
-                logger.info("A consensus instance finished, but there were no commands to deliver to the application.");
-                logger.info("Notifying recoverable about a blank consensus.");
+                logger.debug("A consensus instance finished, but there were no commands to deliver to the application.");
+                logger.debug("Notifying recoverable about a blank consensus.");
 
                 byte[][] batch = null;
                 MessageContext[] msgCtx = null;

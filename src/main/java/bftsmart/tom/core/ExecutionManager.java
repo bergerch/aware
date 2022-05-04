@@ -503,4 +503,8 @@ public final class ExecutionManager {
     public String toString() {
         return stoppedMsgs.toString();
     }
+
+    public int getLastExec() {
+        return this.tomLayer != null ? tomLayer.getLastExec() : -1;
+    }
 }

@@ -73,10 +73,13 @@ public class AwareController {
         timer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
-                logger.info("[AwARE] Controller: Currently using weight config " + instance.getCurrent()
-                        + " with leader " + executionManager.getCurrentLeader() + " view number " + svc.getCurrentView().getId());
+                logger.info("[AwARE] Controller of id=" + svc.getStaticConf().getProcessId()
+                        + ": currently using weights " + instance.getCurrent()
+                        + ", leader " + executionManager.getCurrentLeader()
+                        + ", view " + svc.getCurrentView().getId()
+                        + ", last executed consensus " + executionManager.getLastExec());
             }
-        }, 15*1000, 5*1000);
+        }, 10*1000, 5*1000);
     }
 
 

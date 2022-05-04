@@ -67,6 +67,8 @@ public class Epoch implements Serializable {
 
     private double[] sumWeightsWrite;
     private double[] sumWeightsAccept;
+
+
     /**
      * Creates a new instance of Epoch for acceptors
      * @param controller
@@ -110,6 +112,9 @@ public class Epoch implements Serializable {
 
         } else {
             Epoch previousEpoch = consensus.getEpoch(timestamp - 1, controller);
+
+            this.sumWeightsWrite = previousEpoch.getSumWeightsWrite();
+            this.sumWeightsAccept = previousEpoch.getSumWeightsAccept();
 
             this.write = previousEpoch.getWrite();
             this.accept = previousEpoch.getAccept();
@@ -265,6 +270,14 @@ public class Epoch implements Serializable {
         //******* EDUARDO END **************//
     }
 
+    public double[] getSumWeightsWrite() {
+        return sumWeightsWrite;
+    }
+
+    public double[] getSumWeightsAccept() {
+        return sumWeightsAccept;
+    }
+
     /**
      * Retrieves all WRITE value from all replicas
      * @return The values from all replicas
@@ -325,7 +338,7 @@ public class Epoch implements Serializable {
      * @param acceptor The replica ID
      * @param value The value accepted from the specified replica
      */
-    public void setAccept(int acceptor, byte[] value) { // TODO: race condition?
+    public synchronized void setAccept(int acceptor, byte[] value) { // TODO: race condition?
         
         updateArrays();
         
