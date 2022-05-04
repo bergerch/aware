@@ -439,7 +439,6 @@ public class Synchronizer {
     }
     // this method is called when a timeout occurs or when a STOP message is recevied
     private void startSynchronization(int nextReg) {
-        logger.info(" >>> Start Synchronization");
 
         boolean condition;
         ObjectOutputStream out = null;

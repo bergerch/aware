@@ -151,7 +151,7 @@ public class MessageLatencyMonitor {
         // printLatencyVector(latenciesToMillis(latency_vector));
 
         long end = System.nanoTime();
-        logger.info("Computed median latencies for " + description + "  in " + (double) (end - start) / 1000000.00 + " ms");
+        logger.debug("Computed median latencies for " + description + "  in " + (double) (end - start) / 1000000.00 + " ms");
         return latency_vector;
     }
 

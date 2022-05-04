@@ -118,7 +118,7 @@ public class Monitor {
         if (svc.getStaticConf().isUseDynamicWeights()) {
             for (TOMMessage tm : epoch.getConsensus().getDecision().getDeserializedValue()) {
                 if (tm.getIsMonitoringMessage()) {
-                    logger.info("Received disseminated monitoring message ");
+                    logger.debug("Received disseminated monitoring message ");
                     onReceiveMonitoringInformation(tm.getSender(), tm.getContent(), cid);
                 }
             }

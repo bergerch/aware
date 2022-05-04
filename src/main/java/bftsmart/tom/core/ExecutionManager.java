@@ -111,10 +111,6 @@ public final class ExecutionManager {
         if (controller.getCurrentViewAcceptors().length > 0)
             currentLeader = controller.getCurrentViewAcceptors()[0];
         else currentLeader = 0;
-
-
-        //if (controller.getStaticConf().getInitialLeader() >= 0)
-        //    currentLeader = controller.getStaticConf().getInitialLeader();
     }
     
     /**
@@ -506,5 +502,9 @@ public final class ExecutionManager {
     @Override
     public String toString() {
         return stoppedMsgs.toString();
+    }
+
+    public int getLastExec() {
+        return this.tomLayer != null ? tomLayer.getLastExec() : -1;
     }
 }
