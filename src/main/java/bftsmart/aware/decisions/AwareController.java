@@ -112,6 +112,9 @@ public class AwareController {
                 write[i][j] = write_ast[i][j];
             }
         }
+        if (!instance.svc.getStaticConf().isUseDummyPropose()) {
+            propose = write;
+        }
 
         int cid = executionManager.getTOMLayer().getLastExec();
 
@@ -145,10 +148,6 @@ public class AwareController {
                 AwareConfiguration dwConfig = new AwareConfiguration(w, leader);
                 awareConfigurations.add(dwConfig);
             }
-        }
-
-        if (!instance.svc.getStaticConf().isUseDummyPropose()) {
-            propose = write;
         }
 
         // Compute the predictet latencies of all possible configurations using the simulator
@@ -217,9 +216,9 @@ public class AwareController {
             logger.info("!!! Best: " + best);
             logger.info("");
 
-            if (svc.getStaticConf().isUseDynamicWeights() &&
-                !currentWeights.equals(bestWeights) &&
-                current.getPredictedLatency() > best.getPredictedLatency() * svc.getStaticConf().getOptimizationGoal()) {
+            if (svc.getStaticConf().isUseDynamicWeights()
+                    && !currentWeights.equals(bestWeights)
+                    && current.getPredictedLatency() > best.getPredictedLatency() * svc.getStaticConf().getOptimizationGoal()) {
 
                 // The current weight configuration is not the best
                 // Deterministically change weights (this decision will be the same in all correct replicas)
@@ -230,15 +229,16 @@ public class AwareController {
                         currentView.getAddresses(), currentView.isBFT(), currentView.getDelta(), bestWeights);
                 svc.reconfigureTo(newView);
                 AwareController.getInstance(svc, executionManager).setCurrent(bestWeights);
-                logger.info("|AWARE|  [X] Optimization: Weight adjustment, now using " + bestWeights);
+                logger.info("|AWARE|-" + cid + "-[X] Optimization: Weight adjustment, now using " + bestWeights);
             } else {
                 // Keep the current configuration
-                logger.info("|AWARE|  [ ] Optimization: Weight adjustment, no adjustment," +
+                logger.info("|AWARE|-"+ cid + "-[ ] Optimization: Weight adjustment, no adjustment," +
                         " current weight config is the best weight config");
             }
 
-            if (svc.getStaticConf().isUseLeaderSelection() && executionManager.getCurrentLeader() != best.getLeader() &&
-                    current.getPredictedLatency() >= best.getPredictedLatency() * svc.getStaticConf().getOptimizationGoal()) {
+            if (svc.getStaticConf().isUseLeaderSelection()
+                    && executionManager.getCurrentLeader() != best.getLeader()
+                    && current.getPredictedLatency() > best.getPredictedLatency() * svc.getStaticConf().getOptimizationGoal()) {
 
                 // The current leader is not the best, change it to the best
                 int newLeader =  (best.getLeader()+svc.getCurrentViewN()) % svc.getCurrentViewN();

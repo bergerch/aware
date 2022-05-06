@@ -21,7 +21,7 @@ public class RecoveryTest {
 
 		ProcessExecutor controller = new ProcessExecutor(workingDirectory, controllerCommand, "controller_log");
 
-		int nServers = 4;
+		int nServers = 5;
 		int nClients = 1;
 		ProcessExecutor[] servers = new ProcessExecutor[nServers];
 		for (int i = 0; i < nServers; i++) {
