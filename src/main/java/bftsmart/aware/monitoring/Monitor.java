@@ -1,5 +1,6 @@
 package bftsmart.aware.monitoring;
 
+import bftsmart.consensus.Decision;
 import bftsmart.consensus.Epoch;
 import bftsmart.reconfiguration.ServerViewController;
 import bftsmart.tom.core.messages.TOMMessage;
@@ -120,6 +121,17 @@ public class Monitor {
                 if (tm.getIsMonitoringMessage()) {
                     logger.debug("Received disseminated monitoring message ");
                     onReceiveMonitoringInformation(tm.getSender(), tm.getContent(), cid);
+                }
+            }
+        }
+    }
+
+    public void handleMonitoringMessages(Decision decision) {
+        if (svc.getStaticConf().isUseDynamicWeights()) {
+            for (TOMMessage tm : decision.getDeserializedValue()) {
+                if (tm.getIsMonitoringMessage()) {
+                    logger.debug("Received disseminated monitoring message ");
+                    onReceiveMonitoringInformation(tm.getSender(), tm.getContent(), decision.getConsensusId());
                 }
             }
         }

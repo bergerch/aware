@@ -388,6 +388,7 @@ public class TOMMessage extends SystemMessage implements Externalizable, Compara
                     clone.timestamp = this.timestamp;
                     clone.writeSentTime = this.writeSentTime;
                     clone.retry = this.retry;
+					clone.isMonitoringMessage = this.isMonitoringMessage;
 
                     return clone;
                         

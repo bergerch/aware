@@ -303,11 +303,11 @@ public class ServiceReplica {
 
                 /** AWARE: do not deliver monitoring messages to the application
                  * (possible: consensus finished but no commands delived to application) **/
-                if (request.getIsMonitoringMessage())
-                    continue;
+                if (request.getIsMonitoringMessage()) continue;
                  /** END AWARE **/
 
-                logger.debug("Processing TOMMessage from client " + request.getSender() + " with sequence number " + request.getSequence() + " for session " + request.getSession() + " decided in consensus " + consId[consensusCount]);
+                logger.debug("Processing TOMMessage from client " + request.getSender() + " with sequence number "
+                        + request.getSequence() + " for session " + request.getSession() + " decided in consensus " + consId[consensusCount]);
 
                 if (request.getViewID() == SVController.getCurrentViewId()) {
 
@@ -321,7 +321,8 @@ public class ServiceReplica {
                                     request.getReqType(), request.getSession(), request.getSequence(), request.getOperationId(),
                                     request.getReplyServer(), request.serializedMessageSignature, firstRequest.timestamp,
                                     request.numOfNonces, request.seed, regencies[consensusCount], leaders[consensusCount],
-                                    consId[consensusCount], cDecs[consensusCount].getConsMessages(), firstRequest, false);
+                                    consId[consensusCount], cDecs[consensusCount].getConsMessages(), firstRequest, false,
+                                    request.getIsMonitoringMessage());
                             if (requestCount + 1 == requestsFromConsensus.length) {
 
                                 msgCtx.setLastInBatch();
@@ -407,7 +408,7 @@ public class ServiceReplica {
                                 m.getReqType(), m.getSession(), m.getSequence(), m.getOperationId(),
                                 m.getReplyServer(), m.serializedMessageSignature, firstRequest.timestamp,
                                 m.numOfNonces, m.seed, regencies[consensusCount], leaders[consensusCount],
-                                consId[consensusCount], cDecs[consensusCount].getConsMessages(), firstRequest, true);
+                                consId[consensusCount], cDecs[consensusCount].getConsMessages(), firstRequest, true, m.getIsMonitoringMessage());
                         msgCtx[line].setLastInBatch();
 
                         line++;

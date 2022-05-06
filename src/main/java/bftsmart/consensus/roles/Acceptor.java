@@ -545,14 +545,6 @@ public final class Acceptor {
 			// System.out.println("### Starting Forensics ###");
 			// sendAudit(cid, epoch);
 			// }
-
-            /** AWARE */
-             // We inspect of there are monitoring data dissemination messages included in this consensus:
-             //      - if so call Monitor to handled received monitoring messages of other processes
-            Monitor.getInstance(controller).handleMonitoringMessages(epoch, cid);
-            // Check if an optimization is necessary and if so tune weights (or change leader)
-            AwareController.getInstance(controller, executionManager).optimize(cid);
-            /** End AWARE */
         }
     }
 
