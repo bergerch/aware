@@ -55,7 +55,7 @@ import bftsmart.tom.util.TOMUtil;
  */
 public final class Acceptor {
 
-    private static final double THRESHOLD = -0.0000000001;
+    public static final double THRESHOLD = -0.00000001;
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 

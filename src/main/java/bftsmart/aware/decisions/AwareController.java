@@ -120,7 +120,7 @@ public class AwareController {
 
         currentDW = new AwareConfiguration(current, executionManager.getCurrentLeader());
         Long estimate_current = simulator.predictLatency(replicaSet, currentDW.getLeader(),
-                currentDW.getWeightConfiguration(), propose, write, n, f, delta, ROUNDS_AMORTIZATION);
+                currentDW.getWeightConfiguration(), propose, write, n, f, ROUNDS_AMORTIZATION);
         currentDW.setPredictedLatency(estimate_current);
 
         // For larger systems, use heuristic, e.g, Simulated Annealing
@@ -153,7 +153,7 @@ public class AwareController {
         // Compute the predictet latencies of all possible configurations using the simulator
         for (AwareConfiguration dwc : awareConfigurations) {
             Long predictedLatency = simulator.predictLatency(replicaSet, dwc.getLeader(), dwc.getWeightConfiguration(),
-                    propose, write, n, f, delta, ROUNDS_AMORTIZATION);
+                    propose, write, n, f, ROUNDS_AMORTIZATION);
             dwc.setPredictedLatency(predictedLatency);
             //logger.info("WeightConfig " + dwc.getWeightConfiguration() + "with leader " + dwc.getLeader() +
             //        " has predicted latency of " + ((double) Math.round(predictedLatency) / 1000) / 1000.00 + " ms");

@@ -1,5 +1,6 @@
 package bftsmart.aware.decisions;
 
+import bftsmart.consensus.roles.Acceptor;
 import bftsmart.reconfiguration.ServerViewController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,28 +56,10 @@ public class Simulator {
         int delta = viewControl.getStaticConf().getDelta();
 
         // Use the PredictLatency Algorithm
-        return this.predictLatency(replicaSet, leader, weightConfig, m_propose, m_write, n, f, delta, 10);
+        return this.predictLatency(replicaSet, leader, weightConfig, m_propose, m_write, n, f, 10);
     }
 
 
-    /**
-     * Predics the latency of the SMR system for a given weight configuration and leader selection
-     *
-     * @param replicaSet   all replicas
-     * @param leader       selected leader for protocol simulation
-     * @param weightConfig weight configuration to be simulated
-     * @param m_propose    sanitized PROPOSE latencies
-     * @param m_write      sanitized WRITE/ACCEPT latencies
-     * @param n            system size
-     * @param f            number of faults
-     * @param delta        number of additional spare replicas
-     * @return predicted latency of the SMR protocol
-     */
-    public Long predictLatency(int[] replicaSet, int leader, WeightConfiguration weightConfig, long[][] m_propose,
-                               long[][] m_write, int n, int f, int delta) {
-
-        return this.predictLatency(replicaSet, leader, weightConfig, m_propose, m_write, n, f, delta, 1);
-    }
 
 
     /**
@@ -91,14 +74,14 @@ public class Simulator {
      * @param m_write      sanitized WRITE/ACCEPT latencies
      * @param n            system size
      * @param f            number of faults
-     * @param delta        number of additional spare replicas
      * @param rounds       number of consensus rounds used for calculation of amortized costs (calculation depth)
      * @return predicted latency of the SMR protocol
      */
     public Long predictLatency(int[] replicaSet, int leader, WeightConfiguration weightConfig, long[][] m_propose,
-                               long[][] m_write, int n, int f, int delta, int rounds) {
+                               long[][] m_write, int n, int f, int rounds) {
 
 
+        int delta = n - (3*f+1);
         long[] consensusTimes = new long[rounds];
         long[] offsets = new long[n];
         boolean isBFT =  (viewControl == null) || viewControl.getStaticConf().isBFT();
@@ -159,7 +142,7 @@ public class Simulator {
                 double votes = 0.00;
                 //Set<Integer> quorumUsed = new TreeSet<>();
                 long t_written = Long.MAX_VALUE;
-                while (votes < Q_v) {
+                while (votes -  Q_v <= Acceptor.THRESHOLD) {
                     Vote vote = writesRcvd[i].poll();
                     if (vote != null) {
                         votes += vote.weight;
@@ -182,7 +165,7 @@ public class Simulator {
             // Compute time at which replica i decides a value (finishes consensus)
             for (int i : replicaSet) {
                 double votes = 0.00;
-                while (votes < Q_v) {
+                while (votes -  Q_v <= Acceptor.THRESHOLD) {
                     Vote vote = acceptRcvd[i].poll();
                     if (vote != null) {
                         votes += vote.weight;
@@ -238,6 +221,156 @@ public class Simulator {
     }
 
 
+    public Long[] predictLatencyE2E(int[] replicaSet, int leader, WeightConfiguration weightConfig, long[][] m_propose,
+                               long[][] m_write, int n, int f, long[] clientLatencies) {
+
+
+        long consensusTime = 0L;
+        boolean isBFT =  (viewControl == null) || viewControl.getStaticConf().isBFT();
+
+        int delta = n - (3*f+1);
+
+        // Compute weights and quorum
+        double V_min = 1.00;
+        double V_max = V_min + (double) delta / (double) f;
+        double[] V = new double[n];
+        double Q_v = isBFT ? 2 * f * V_max + 1 : f * V_max + 1;
+
+        int T = n % 3 >= 1 ? n/3 : n/3-1;
+
+        // Assign binary voting weights to replicas
+        for (int i : replicaSet)
+            V[i] = weightConfig.getR_max().contains(i) ? V_max : V_min;
+
+        // Simulate times of execution in the AWARE protocol
+        long t_request_received_by_leader = clientLatencies[leader]; // latency client to leader replica;
+
+        long[] t_proposed = new long[n];
+        long[] t_write_finished = new long[n];
+        long[] t_decided = new long[n];
+
+        long t_response_received_first = -1L;
+        long t_response_received_tp1 = -1L;
+        long t_response_received_2tp1 = -1L;
+        long t_response_received_T = -1L;
+
+
+        @SuppressWarnings("unchecked")
+        PriorityQueue<Vote>[] writesRcvd = new PriorityQueue[n];
+
+        @SuppressWarnings("unchecked")
+        PriorityQueue<Vote>[] acceptRcvd = new PriorityQueue[n];
+
+        @SuppressWarnings("unchecked")
+        PriorityQueue<Vote> repliestRcvd = new PriorityQueue<>();
+
+        // Compute time proposed time for all replicas. the proposed time is the maximum out of two times:
+        //  (1) replica i has received the PROPOSE and (2) replica 1 has finished its last consensus
+        //                                                 (respected by offsets that express waiting time)
+        for (int i : replicaSet) {
+            //  if (offsets[i] > m_propose[leader][i]) {
+            //     offsetMatters = true;
+            // }
+
+            t_proposed[i] = t_request_received_by_leader + m_propose[leader][i];
+            writesRcvd[i] = new PriorityQueue<>();
+            acceptRcvd[i] = new PriorityQueue<>();
+            // if (rounds==1000)  System.out.println("Propose received " + i + " " + t_proposed[i]);
+        }
+
+        // Performance Optimization: If all offsets do not matter, return the consensus time of the first round
+        //if (rounds < initialRoundNumber && !offsetMatters) return consensusTimes[rounds];
+
+        // Compute time at which WRITE of replica j arrives at replica i
+        for (int i : replicaSet) {
+            for (int j : replicaSet) {
+                writesRcvd[i].add(new Vote(j, V[j], t_proposed[j] + m_write[j][i]));
+            }
+        }
+
+        // Compute time at which replica i will finish its WRITE quorum
+        for (int i : replicaSet) {
+            double votes = 0.00;
+            //Set<Integer> quorumUsed = new TreeSet<>();
+            long t_written = Long.MAX_VALUE;
+            while (votes -  Q_v <= Acceptor.THRESHOLD) {
+                Vote vote = writesRcvd[i].poll();
+                if (vote != null) {
+                    votes += vote.weight;
+                    t_written = vote.arrivalTime;
+                    //quorumUsed.add(vote.castBy);
+                }
+            }
+            t_write_finished[i] = t_written;
+            // if (rounds==1000) System.out.println("Written " + i + " " + t_written);
+        }
+
+        // Compute time at which ACCEPT of replica j arrives at replica i
+        // CFT: we use proposed instead of write_finished because WRITE is skipped
+        for (int i : replicaSet) {
+            for (int j : replicaSet) {
+                acceptRcvd[i].add(new Vote(j, V[j], (isBFT ? t_write_finished[j] : t_proposed[i]) + m_write[j][i]));
+            }
+        }
+
+        // Compute time at which replica i decides a value (finishes consensus)
+        for (int i : replicaSet) {
+            double votes = 0.00;
+            while (votes -  Q_v <= Acceptor.THRESHOLD) {
+                Vote vote = acceptRcvd[i].poll();
+                if (vote != null) {
+                    votes += vote.weight;
+                    t_decided[i] = vote.arrivalTime;
+                }
+            }
+            // if (rounds==1000) System.out.println("Decided " + i + " " + t_decided[i]);
+
+        }
+        consensusTime = t_decided[leader];
+
+        // Compute time at which RESPONSE  of replica j arrives at client
+        for (int i : replicaSet) {
+                repliestRcvd.add(new Vote(i, V[i], t_decided[i] + clientLatencies[i]));
+        }
+
+        // Compute time at which client decides a value for each consistency guarantee
+
+        double votes = 0.00;
+        boolean waitingForResponses = true;
+        boolean weak_t = false;
+        boolean strong_t = false;
+        boolean strong_T = false;
+        int responses = 0;
+        while (waitingForResponses) {
+            Vote vote = repliestRcvd.poll();
+            responses++;
+            if (vote != null) {
+                votes += vote.weight;
+               if (t_response_received_first == -1L) {
+                   t_response_received_first = vote.arrivalTime; // first response was received at this time
+               }
+               if (!weak_t) {
+                   t_response_received_tp1 = vote.arrivalTime;
+                   weak_t = votes - (f*V_max+1) > Acceptor.THRESHOLD; // weak consistency under t fulfilled
+               }
+               if (!strong_t) {
+                   t_response_received_2tp1 = vote.arrivalTime;
+                   strong_t = votes - (2*f*V_max+1) > Acceptor.THRESHOLD; // linearizability under t fulfilled
+               }
+               if (!strong_T) {
+                   t_response_received_T = vote.arrivalTime;
+                   strong_T = strong_t && ( T==f || responses > (n + 2*T - (f+1))/2.0); // linearizability under T fulfilled
+               } else {
+                   waitingForResponses = false;
+               }
+
+            }
+        }
+
+        Long[] result = {consensusTime, t_response_received_first, t_response_received_tp1, t_response_received_2tp1,
+                t_response_received_T};
+        return result;
+    }
 
     public static SimulationRun simulatedAnnealing(int n, int f, int delta, int u, int[] replicaSet, long[][] propose, long[][] write, long seed) {
 
@@ -249,7 +382,7 @@ public class Simulator {
         AwareConfiguration x = new AwareConfiguration(w, 0);
         AwareConfiguration best = x;
         long prediction = simulator.predictLatency(replicaSet, x.getLeader(), x.getWeightConfiguration(), propose,
-                write, n, f, delta, 10);
+                write, n, f, 10);
         best.setPredictedLatency(prediction);
         x.setPredictedLatency(prediction);
         Random random = new Random(seed);
@@ -296,7 +429,8 @@ public class Simulator {
             R_min.remove(min);
             R_min.add(max);
 
-            Long predictY = simulator.predictLatency(replicaSet, y.getLeader(), y.getWeightConfiguration(), propose, write, n, f, delta, 10);
+            Long predictY = simulator.predictLatency(replicaSet, y.getLeader(), y.getWeightConfiguration(),
+                    propose, write, n, f, 10);
 
             // If the new solution is better, it is accepted
             if (predictY < predictX) {
@@ -348,7 +482,7 @@ public class Simulator {
         AwareConfiguration x = new AwareConfiguration(new WeightConfiguration(u, replicaSet), 0);
         AwareConfiguration best = x;
         long prediction = simulator.predictLatency(replicaSet, x.getLeader(), x.getWeightConfiguration(), propose,
-                write, n, f, delta, 10);
+                write, n, f, 10);
         best.setPredictedLatency(prediction);
         x.setPredictedLatency(prediction);
         int initExamined = examined;
@@ -365,7 +499,7 @@ public class Simulator {
             for (AwareConfiguration ac : neighbors) {
                // System.out.println(ac.getWeightConfiguration() + " L" + ac.getLeader());
                 long fitnessY = simulator.predictLatency(replicaSet, ac.getLeader(), ac.getWeightConfiguration(), propose,
-                        write, n, f, delta, 10);
+                        write, n, f, 10);
 
                 if (!tabuList.contains(ac) && fitnessY < best.getPredictedLatency()) {
                     x = ac;
@@ -394,7 +528,8 @@ public class Simulator {
     }
 
 
-    public static SimulationRun pickSampleConfigs(int n, int f, int delta, int u, int[] replicaSet, long[][] propose, long[][] write, int sample) {
+    public static SimulationRun pickSampleConfigs(int n, int f, int delta, int u, int[] replicaSet, long[][] propose,
+                                                  long[][] write, int sample) {
 
         long t1 = System.nanoTime();
         List<WeightConfiguration> weightConfigs = WeightConfiguration.allPossibleWeightConfigurations(u, replicaSet);
@@ -414,7 +549,7 @@ public class Simulator {
             if (sample == -1 || count % skip == 0) {
                 for (int primary : w.getR_max()) { // Only replicas in R_max will be considered to become leader ?
                     examined++;
-                    Long prediction = simulator.predictLatency(replicaSet, primary, w, propose, write, n, f, delta, 10);
+                    Long prediction = simulator.predictLatency(replicaSet, primary, w, propose, write, n, f, 1);
 
                     if (prediction < bestLatency) {
                         bestLatency = prediction;
@@ -444,10 +579,75 @@ public class Simulator {
 
 
 
+    public static SimulationRun pickSampleConfigs(int n, int f, int delta, int u, int[] replicaSet, long[][] propose,
+                                                  long[][] write, int sample, long[] clientLatencies) {
+
+        long t1 = System.nanoTime();
+        List<WeightConfiguration> weightConfigs = WeightConfiguration.allPossibleWeightConfigurations(u, replicaSet);
+        Simulator simulator = new Simulator(null);
+
+        long bestLatency = Long.MAX_VALUE;
+        long worstLatency = Long.MIN_VALUE;
+
+        AwareConfiguration best = new AwareConfiguration(new WeightConfiguration(u, replicaSet), 0);
+        AwareConfiguration worst = new AwareConfiguration(new WeightConfiguration(u, replicaSet), 0);
+
+        int skip = Math.max(weightConfigs.size()*u/sample,1);
+        int count = 0;
+        int examined = 0;
+        for (WeightConfiguration w : weightConfigs) {
+            count++;
+            if (sample == -1 || count % skip == 0) {
+                for (int primary : w.getR_max()) { // Only replicas in R_max will be considered to become leader ?
+                    examined++;
+                    Long prediction = simulator.predictLatency(replicaSet, primary, w, propose, write, n, f, 1);
+
+                    if (prediction < bestLatency) {
+                        bestLatency = prediction;
+                        best = new AwareConfiguration(w, primary, prediction);
+                    }
+
+                    if (prediction > worstLatency) {
+                        worstLatency = prediction;
+                        worst = new AwareConfiguration(w, primary, prediction);
+                    }
+                }
+            }
+
+        }
+        Long[] consistencyLatencies = simulator.predictLatencyE2E(replicaSet, best.getLeader(),
+                best.getWeightConfiguration(), propose, write, n, f, clientLatencies);
+
+        long t2 = System.nanoTime();
+        double time = ((double) (t2 - t1)) / 1000000.00; // in ms
+
+        String additionalParameters = ""; //sample == -1 ? "Worst Configuration performs in " + worstLatency + " ms" : "";
+        additionalParameters += "/n";
+        additionalParameters += " " + consistencyLatencies[1] + " " + consistencyLatencies[2] +" "
+                + consistencyLatencies[3] +" " + consistencyLatencies[4];
+
+        String strategy = sample != -1 ? "Wide-Spread Sample of " + sample : "Exhaustive Search (Brute-Force)";
+
+        Simulator.printStrategyInfo(strategy, examined, best, time, additionalParameters);
+
+        SimulationRun result =  sample != -1 ? simulator.new SimulationRun(time, best.getPredictedLatency(), best):
+                simulator.new SimulationRun(time, best.getPredictedLatency(), best, worst);
+
+        result.setLatencies(consistencyLatencies);
+        return result;
+    }
 
     public static SimulationRun exhaustiveSearch(int n, int f, int delta, int u, int[] replicaSet, long[][] propose, long[][] write) {
 
         return pickSampleConfigs(n, f, delta, u, replicaSet, propose, write, -1);
+
+    }
+
+
+    public static SimulationRun exhaustiveSearch(int n, int f, int delta, int u, int[] replicaSet, long[][] propose,
+                                                 long[][] write, long[] clientLatencies) {
+
+        return pickSampleConfigs(n, f, delta, u, replicaSet, propose, write, -1, clientLatencies);
 
     }
 
@@ -462,6 +662,7 @@ public class Simulator {
         System.out.println("Configurations examined: " + examined + "      time needed: " + timeNeeded + " ms" );
         System.out.println("Final solution latency: " + best.getPredictedLatency());
         System.out.println("Best Configuratuon: " + " " + best.getWeightConfiguration() + " with leader " + best.getLeader());
+        System.out.println("Best Latency: " + " " + best.getPredictedLatency());
         System.out.println(additionalParameters);
         System.out.println();
 
@@ -492,6 +693,8 @@ public class Simulator {
         AwareConfiguration best;
         AwareConfiguration worst;
 
+        Long[] latencies;
+
         SimulationRun(double time, long solutionLatency, AwareConfiguration best, AwareConfiguration worst) {
             this.timeNeeded = time;
             this.solutionLatency = solutionLatency;
@@ -521,6 +724,15 @@ public class Simulator {
         public int compareTo(Object o) {
             return Long.compare(this.solutionLatency, ((SimulationRun) o).solutionLatency);
         }
+
+        public Long[] getLatencies() {
+            return latencies;
+        }
+
+        public void setLatencies(Long[] latencies) {
+            this.latencies = latencies;
+        }
+
     }
 
 }

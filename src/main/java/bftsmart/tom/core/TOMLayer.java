@@ -485,7 +485,8 @@ public final class TOMLayer extends Thread implements RequestReceiver {
             }
             /** End AWARE **/
 
-            if ((execManager.getCurrentLeader() == this.controller.getStaticConf().getProcessId()) && //I'm the leader
+            if ((
+                    execManager.getCurrentLeader() == this.controller.getStaticConf().getProcessId()) && //I'm the leader
                     (clientsManager.havePendingRequests()) && //there are messages to be ordered
                     (getInExec() == -1)) { //there is no consensus in execution
                 // Sets the current consensus
