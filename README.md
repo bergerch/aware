@@ -187,3 +187,4 @@ If you are interested in learning more about BFT-SMaRt, you can read:
 - The tool description published in [DSN'14](http://www.di.fc.ul.pt/~bessani/publications/dsn14-bftsmart.pdf):
 
 ***Feel free to contact us if you have any questions!***
+
