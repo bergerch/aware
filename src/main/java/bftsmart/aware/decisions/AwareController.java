@@ -1,6 +1,8 @@
 package bftsmart.aware.decisions;
 
 import bftsmart.aware.monitoring.Monitor;
+import bftsmart.consensus.messages.ConsensusMessage;
+import bftsmart.consensus.messages.MessageFactory;
 import bftsmart.consensus.roles.Acceptor;
 import bftsmart.reconfiguration.ServerViewController;
 import bftsmart.reconfiguration.views.View;
@@ -196,14 +198,34 @@ public class AwareController {
     }
 
 
+
+    public void audit(int cid) {
+        if (svc.getStaticConf().isUseDynamicWeights() && cid % 99 == 0 & cid > 0) { // todo hardcoded interval
+
+            // perform audit periodically
+            MessageFactory factory = new MessageFactory(svc.getStaticConf().getProcessId());
+            ConsensusMessage cm = factory.createAudit(svc.getCurrentViewId());
+            executionManager.getTOMLayer().getCommunication()
+                    .getServersConn().send(svc.getCurrentViewOtherAcceptors(), cm, true);
+        }
+    }
+
     /**
-     * Optimizes weight distribution and leader selection
+     * Optimizes weight distribution and leader selection, and threshold
      *
      * @param cid consensus id
      */
     public void optimize(int cid) {
         // Re-calculate best weight distribution after every x consensus
         if (svc.getStaticConf().isUseDynamicWeights() && cid % svc.getStaticConf().getCalculationInterval() == 0 & cid > 0) {
+
+            // Threshold-AWARE: Currently: Periodically try to improve the threshold
+            if (svc.getCurrentView().isFastestConfig()) {
+                System.out.println("System cant get any faster");
+            } else {
+                System.out.println("###### SWITCH #####");
+                svc.switchToFasterConfig();
+            }
 
             AwareController awareController = AwareController.getInstance(svc, executionManager);
             AwareConfiguration best = awareController.computeBest();

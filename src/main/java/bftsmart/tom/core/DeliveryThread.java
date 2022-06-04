@@ -302,9 +302,10 @@ public final class DeliveryThread extends Thread {
 						count++;
 
 						/**
-						 *  AWARE
+						 *  t-AWARE
 						 */
 						Monitor.getInstance(controller).handleMonitoringMessages(d);
+						AwareController.getInstance(controller, tomLayer.execManager).audit(d.getConsensusId());
 						AwareController.getInstance(controller, tomLayer.execManager).optimize(d.getConsensusId());
 						/**
 						 **/

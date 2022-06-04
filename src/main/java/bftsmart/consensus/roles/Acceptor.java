@@ -557,14 +557,6 @@ public final class Acceptor {
 
 		epoch.getConsensus().decided(epoch, true);
 
-		if(epoch.getConsensus().getId() % 100 == 10){ // after a set number of consensus switch to faster cofiguration
-			System.out.println("###### SWITCH #####");
-			if (controller.getCurrentView().isFastestConfig()) {
-				System.out.println("System cant get any faster");
-			} else {
-				controller.switchToFasterConfig();
-			}
-		}
 		if(epoch.getConsensus().getId() % 100 == 10 + me*(100/controller.getCurrentViewProcesses().length)){ // after a set number of consensus perform forensics
 			// System.out.println("###### FORENSICS #####");
 			// sendAudit(epoch.getConsensus().getId(), epoch);
