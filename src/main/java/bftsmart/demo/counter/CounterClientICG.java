@@ -26,7 +26,6 @@ import bftsmart.communication.client.ReplyListener;
 import bftsmart.correctable.Consistency;
 import bftsmart.correctable.Correctable;
 import bftsmart.correctable.CorrectableState;
-import bftsmart.reconfiguration.views.View;
 import bftsmart.tom.AsynchServiceProxy;
 import bftsmart.tom.RequestContext;
 import bftsmart.tom.core.messages.TOMMessage;
