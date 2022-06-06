@@ -190,19 +190,16 @@ public class RequestsTimer {
             if (!pendingRequests.isEmpty()) {
                 // leader timeout detected
                 // switch to safer config before leader change
-                controller.switchToSaferConfig();
+                //controller.switchToSaferConfig();
+                // cb: I guess the protocol switch would not be deterministic here, because requests can time out in only
+                // some specific replicas while they do not time out in others? We need to think of a better place to
+                // switch back
                 
                 logger.info("Attempting to start leader change for requests {}", pendingRequests);
                 //Logger.debug = true;
                 //tomLayer.requestTimeout(pendingRequests);
                 //if (reconfManager.getStaticConf().getProcessId() == 4) Logger.debug = true;
                 tomLayer.getSynchronizer().triggerTimeout(pendingRequests);
-
-                // perform audit after leader change
-                // TODO best place to do this?
-                MessageFactory factory = new MessageFactory(controller.getStaticConf().getProcessId());
-                ConsensusMessage cm = factory.createAudit(controller.getCurrentViewId());
-                communication.getServersConn().send(controller.getCurrentViewOtherAcceptors(), cm, true);
             }
             else {
                 rtTask = new RequestTimerTask();
