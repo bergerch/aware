@@ -300,11 +300,12 @@ public final class DeliveryThread extends Thread {
 						}
 
 						count++;
-
+						
 						/**
 						 *  t-AWARE
 						 */
 						Monitor.getInstance(controller).handleMonitoringMessages(d);
+						// Audit should only happen here if storage is to big
 						AwareController.getInstance(controller, tomLayer.execManager).audit(d.getConsensusId());
 						AwareController.getInstance(controller, tomLayer.execManager).optimize(d.getConsensusId());
 						/**

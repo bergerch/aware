@@ -320,6 +320,7 @@ public class ServerViewController extends ViewController {
     private int K = 1; // granularity
 
     public void switchToSaferConfig() {
+        System.out.println("================== SWITCH to SAFE ==================");
         View currentView = this.getCurrentView();
         if (currentView.isSaferConfig()) return;
 
@@ -333,6 +334,7 @@ public class ServerViewController extends ViewController {
     }
 
     public void switchToFasterConfig() {
+        System.out.println("================== SWITCH to FAST ==================");
         View currentView = this.getCurrentView();
         if (currentView.isFastestConfig()) return;
 
