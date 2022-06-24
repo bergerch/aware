@@ -34,6 +34,7 @@ import bftsmart.consensus.Consensus;
 import bftsmart.tom.core.ExecutionManager;
 import bftsmart.consensus.Epoch;
 import bftsmart.consensus.messages.MessageFactory;
+import bftsmart.forensic.AuditProvider;
 import bftsmart.forensic.AuditResult;
 import bftsmart.forensic.AuditStorage;
 import bftsmart.forensic.Auditor;
@@ -73,14 +74,9 @@ public final class Acceptor {
 	private PrivateKey privKey;
 
 	/**
-	 * Forensics
+	 * BEGIN Forensics
 	 **/
-	private AuditStorage storage;
-	private Auditor audit;
-	private int lastAudit = -1;
-	Map<Integer, Integer> nAudits = new HashMap<>(100); // consensus id to number of storages receives (usefull for garbage
-														// collection)
-														// TODO size of map
+	private AuditProvider audit_provider;
 	/**
 	 * END Forensics
 	 **/
@@ -90,10 +86,6 @@ public final class Acceptor {
 
 	/** END AWARE */
 
-	public Acceptor(ServerCommunicationSystem communication, MessageFactory factory, ServerViewController controller) {
-		this(communication, factory, controller, null);
-	}
-
 	/**
 	 * Creates a new instance of Acceptor.
 	 *
@@ -101,10 +93,7 @@ public final class Acceptor {
 	 * @param factory       Message factory for PaW messages
 	 * @param controller
 	 */
-	public Acceptor(ServerCommunicationSystem communication, MessageFactory factory, ServerViewController controller,
-			AuditStorage storage) {
-		this.storage = storage;
-		this.audit = new Auditor();
+	public Acceptor(ServerCommunicationSystem communication, MessageFactory factory, ServerViewController controller) {
 
 		this.communication = communication;
 		this.me = controller.getStaticConf().getProcessId();
@@ -125,6 +114,8 @@ public final class Acceptor {
 		 * this.proofExecutor = Executors.newWorkStealingPool(nWorkers);
 		 */
 		this.proofExecutor = Executors.newSingleThreadExecutor();
+
+		this.audit_provider = new AuditProvider(controller);
 	}
 
 	public MessageFactory getFactory() {
@@ -382,10 +373,7 @@ public final class Acceptor {
 				 * Forensics
 				 * Who partecipated in write quorum
 				 */
-				if (storage != null && cid > lastAudit) {
-					epoch.createWriteAggregate();
-					storage.addWriteAggregate(cid, epoch.getWriteAggregate());
-				}
+				audit_provider.registerWrite(epoch, cid);
 				/**
 				 *
 				 */
@@ -535,10 +523,7 @@ public final class Acceptor {
 			 * Forensics
 			 * who partecipated in accept quorum
 			 */
-			if (storage != null && cid > lastAudit) {
-				epoch.createAcceptAggregate();
-				storage.addAcceptAggregate(cid, epoch.getAcceptAggregate());
-			}
+			audit_provider.registerAccept(epoch, cid);
 			/**
 			 *
 			 */
@@ -579,10 +564,6 @@ public final class Acceptor {
 
 	/*************************** FORENSICS METHODS *******************************/
 
-	public AuditStorage getAudiStorage() {
-		return storage;
-	}
-
 	/**
 	 * Called when audit sender is client
 	 * Receives audit message and sends storage to client
@@ -592,7 +573,7 @@ public final class Acceptor {
 	public void auditReceived(TOMMessage msg) {
 		// System.out.println("Audit message received from " + msg.getSender());
 		TOMMessage response = new TOMMessage(me, msg.getSession(), msg.getSequence(),
-				msg.getOperationId(), this.storage.toByteArray(), msg.getViewID(), TOMMessageType.AUDIT);
+				msg.getOperationId(), this.audit_provider.getStorage().toByteArray(), msg.getViewID(), TOMMessageType.AUDIT);
 		communication.getClientsConn().send(new int[] { msg.getSender() }, response, false); // send to storage to
 																								// sender client
 	}
@@ -607,7 +588,7 @@ public final class Acceptor {
 	private void auditReceived(Epoch epoch, ConsensusMessage msg) {
 		// System.out.println("Audit message received from " + msg.getSender());
 		ConsensusMessage cm = factory.createStorage(epoch.getConsensus().getId(), epoch.getTimestamp(),
-				storage.toByteArray());
+				this.audit_provider.getStorage().toByteArray());
 		// System.out.println("Will send storage to " + msg.getSender());
 		communication.getServersConn().send(new int[] { msg.getSender() }, cm, true); // send storage to sender replica
 	}
@@ -635,36 +616,12 @@ public final class Acceptor {
 	private void storageReceived(ConsensusMessage msg) {
 		// System.out.println("Storage message received from " + msg.getSender());
 		AuditStorage receivedStorage = AuditStorage.fromByteArray(msg.getValue());
-		int minCid = Math.min(receivedStorage.getMinCID(), lastAudit);
-		int maxCid = receivedStorage.getMaxCID();
+		boolean success = this.audit_provider.compareStorages(receivedStorage);
 
-		if (maxCid <= lastAudit) {
-			return; // received storage does not have needed information...
-		}
-		AuditResult result = audit.audit(this.storage, receivedStorage, lastAudit + 1);
-
-		if (result.conflictFound()) {
-			System.out.println(result);
-			// TODO inform other replicas <PANIC MESSAGE>
-			// change config to safer config -> TODO remove faulty from view
-			controller.switchToSaferConfig();
-			// TODO Rollback
+		if (success) {
+			// System.out.println("AUDIT PERFORMED WITH SUCCESSS");
 		} else {
-			// System.out.println("No conflict found");
+			System.out.println("CONFLICT FOUND");
 		}
-
-		for (int i = minCid; i <= maxCid; i++) { // update information on audits executed
-			int reps = nAudits.containsKey(i) ? nAudits.get(i) : 0;
-			nAudits.put(i, reps + 1);
-			
-			if (nAudits.get(i) >= 2 * controller.getCurrentView().getT() + 1) { // need to be done with T not t
-				lastAudit = i; // this is the last cid that for certain is safe
-				storage.removeProofsUntil(i); // garbage collection for unecessary proofs
-			}
-		}
-		if (storage.getSize() < nAudits.size()) {
-			nAudits.clear(); // probably not the best way to clean this map
-		}
-		// System.out.println("Storage after audit:\n\tsize = " + storage.getSize() + "\n\tnAudits = " + nAudits.size());
 	}
 }

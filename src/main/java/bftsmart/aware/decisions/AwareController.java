@@ -221,12 +221,11 @@ public class AwareController {
     public void optimize(int cid) {
         // Re-calculate best weight distribution after every x consensus
         if (svc.getStaticConf().isUseDynamicWeights() && cid % svc.getStaticConf().getCalculationInterval() == 0 & cid > 0) {
-
             // Threshold-AWARE: Currently: Periodically try to improve the threshold
             if (svc.getCurrentView().isFastestConfig()) {
-                // System.out.println("System cant get any faster");
+                System.out.println("System cant get any faster");
             } else {
-                // System.out.println("###### SWITCH #####");
+                System.out.println("###### SWITCH #####");
                 svc.switchToFasterConfig();
             }
 

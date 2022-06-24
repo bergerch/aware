@@ -3,6 +3,7 @@ package bftsmart.tom;
 import bftsmart.communication.client.ReplyListener;
 import bftsmart.correctable.Consistency;
 import bftsmart.correctable.Correctable;
+import bftsmart.correctable.CorrectableSimple;
 import bftsmart.reconfiguration.views.View;
 import bftsmart.tom.core.messages.TOMMessage;
 import bftsmart.tom.core.messages.TOMMessageType;
@@ -274,6 +275,54 @@ public class AsynchServiceProxy extends ServiceProxy {
     /**
      * Correctable method
      */
+    public CorrectableSimple invokeCorrectable(byte[] request) {
+        CorrectableSimple correctable = new CorrectableSimple(super.getViewManager());
+
+        int targets[] = super.getViewManager().getCurrentViewProcesses();
+        logger.debug("Asynchronously sending request to " + Arrays.toString(targets));
+
+        RequestContext requestContext = null;
+        TOMMessageType reqType = TOMMessageType.ORDERED_REQUEST;
+        System.out.println("REQUEST " + Arrays.toString(request));
+        canSendLock.lock();
+
+        requestContext = new RequestContext(generateRequestId(reqType), generateOperationId(),
+                reqType, targets, System.currentTimeMillis(), new ReplyListener() {
+
+                    @Override
+                    public void reset() {
+                        correctable.reset();
+                    }
+
+                    @Override
+                    public void replyReceived(RequestContext context, TOMMessage reply) {
+
+                        if (!correctable.isFinal()) {
+                            correctable.update(context, reply);
+                        }
+                        if (correctable.isFinal()) { // close after last level of consistency (can be lower than FINAL)
+                            cleanAsynchRequest(context.getOperationId()); // TODO do I need to define the last level of
+                                                                          // desired consistency to be able to define
+                                                                          // when to close? What if I want to close
+                                                                          // before FINAL consistency??
+                        }
+                    }
+                }, request);
+
+        try {
+            logger.debug("Storing request context for " + requestContext.getOperationId());
+            requestsContext.put(requestContext.getOperationId(), requestContext);
+            requestsReplies.put(requestContext.getOperationId(),
+                    new TOMMessage[super.getViewManager().getCurrentViewN()]);
+
+            sendMessageToTargets(request, requestContext.getReqId(), requestContext.getOperationId(), targets, reqType);
+
+        } finally {
+            canSendLock.unlock();
+        }
+        return correctable;
+    }
+
     public Correctable invokeCorrectable(byte[] request, Consistency[] levels) {
         Correctable correctable = new Correctable();
 
@@ -318,7 +367,8 @@ public class AsynchServiceProxy extends ServiceProxy {
                         if (votes >= q) {
                             if (levels[level_index].equals(Consistency.FINAL)) {
                                 int needed_responces = (int) Math.ceil((N + 2 * T - t + 1) / 2.0);
-                                if (votes >= q && responces > needed_responces) { // received weights votes and confirmations
+                                if (votes >= q && responces > needed_responces) { // received weights votes and
+                                                                                  // confirmations
                                     System.out.println("Received enouch replies and confirmations, executing Update");
                                     correctable.update(context, reply);
                                     level_index++;
@@ -329,7 +379,8 @@ public class AsynchServiceProxy extends ServiceProxy {
                                 level_index++;
                             }
                         }
-                        if (level_index >= levels.length) { // close after last level of consistency (can be lower than FINAL)
+                        if (level_index >= levels.length) { // close after last level of consistency (can be lower than
+                                                            // FINAL)
                             cleanAsynchRequest(context.getOperationId());
                             correctable.close(context, reply);
                         }

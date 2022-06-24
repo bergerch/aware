@@ -487,7 +487,7 @@ public class ServiceReplica {
         // Assemble the total order messaging layer
         MessageFactory messageFactory = new MessageFactory(id);
 
-        Acceptor acceptor = new Acceptor(cs, messageFactory, SVController, new AuditStorage());
+        Acceptor acceptor = new Acceptor(cs, messageFactory, SVController);
         // Acceptor acceptor = new Acceptor(cs, messageFactory, SVController);
         cs.setAcceptor(acceptor);
 

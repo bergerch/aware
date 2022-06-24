@@ -299,6 +299,10 @@ public class ServerViewController extends ViewController {
         }
         System.out.println("Reconfigure:\n\tN = " + this.currentView.getN() + "\tt = " + this.currentView.getF()
                 + "\n\tDelta = " + this.currentView.getDelta());
+
+
+        System.out.println("OVerlayF = " + overlayF);
+        System.out.println("OVerlayN = " + overlayN);
     }
 
     /*
@@ -354,4 +358,8 @@ public class ServerViewController extends ViewController {
     private static int calculateDelta(int N, int T) {
         return N - 3 * T - 1;
     }
+
+    // private int getTotalWeights(){
+    //     return ;
+    // }
 }
