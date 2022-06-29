@@ -4,6 +4,7 @@ import bftsmart.communication.client.ReplyListener;
 import bftsmart.correctable.Consistency;
 import bftsmart.correctable.Correctable;
 import bftsmart.correctable.CorrectableSimple;
+import bftsmart.reconfiguration.ClientViewController;
 import bftsmart.reconfiguration.views.View;
 import bftsmart.tom.core.messages.TOMMessage;
 import bftsmart.tom.core.messages.TOMMessageType;
@@ -30,14 +31,27 @@ public class AsynchServiceProxy extends ServiceProxy {
     private HashMap<Integer, TOMMessage[]> requestsReplies;
     private HashMap<Integer, Integer> requestsAlias;
 
+    private boolean useVotes = false;
+
     /**
      * Constructor
      *
      * @see bellow
      */
+
     public AsynchServiceProxy(int processId) {
         this(processId, null);
         init();
+    }
+
+    public AsynchServiceProxy(int processId, boolean useVotes) {
+        this(processId, null);
+        init();
+        changeVotes(useVotes);
+    }
+
+    private void changeVotes(boolean useVotes) {
+        this.useVotes = useVotes;
     }
 
     /**
@@ -167,16 +181,16 @@ public class AsynchServiceProxy extends ServiceProxy {
                 View v = null;
 
                 if (replyListener != null) {
-
                     // if (reply.getViewID() > getViewManager().getCurrentViewId()) { // Deal with a
                     // system reconfiguration
+
                     if ((v = newView(reply.getContent())) != null
                             && !requestsAlias.containsKey(reply.getOperationId())) { // Deal with a system
                                                                                      // reconfiguration
-
                         TOMMessage[] replies = requestsReplies.get(reply.getOperationId());
 
-                        int sameContent = 1;
+                        int sameContent = 0;
+                        double totalVotes = 0.0;
                         int replyQuorum = getReplyQuorum();
 
                         int pos = getViewManager().getCurrentViewPos(reply.getSender());
@@ -189,16 +203,20 @@ public class AsynchServiceProxy extends ServiceProxy {
                                     && (reply.getReqType() != TOMMessageType.ORDERED_REQUEST
                                             || Arrays.equals(replies[i].getContent(), reply.getContent()))) {
                                 sameContent++;
+                                if (useVotes) {
+                                    totalVotes += getViewManager().getCurrentView().getWeight(i);
+                                }
                             }
                         }
 
-                        if (sameContent >= replyQuorum) {
+                        if (sameContent >= replyQuorum || totalVotes >= replyQuorum) {
+                            // System.out.println("Same content " + sameContent + "; reply q: " + replyQuorum + "; totalVotes: " + totalVotes);
 
                             if (v.getId() > getViewManager().getCurrentViewId()) {
 
                                 reconfigureTo(v);
                             }
-
+                            // System.out.println("Goint to reset");
                             requestContext.getReplyListener().reset();
 
                             Thread t = new Thread() {
@@ -219,7 +237,6 @@ public class AsynchServiceProxy extends ServiceProxy {
                         }
 
                     } else if (!requestsAlias.containsKey(reply.getOperationId())) {
-
                         requestContext.getReplyListener().replyReceived(requestContext, reply);
                     }
                 }
@@ -275,31 +292,48 @@ public class AsynchServiceProxy extends ServiceProxy {
     /**
      * Correctable method
      */
+
+    // public CorrectableSimple invokeCorrectable(byte[] request){
+    // CorrectableSimple correctable = new
+    // CorrectableSimple(super.getViewManager());
+
+    // return correctable;
+    // }
+
     public CorrectableSimple invokeCorrectable(byte[] request) {
         CorrectableSimple correctable = new CorrectableSimple(super.getViewManager());
 
+        ClientViewController cViewController = super.getViewManager();
         int targets[] = super.getViewManager().getCurrentViewProcesses();
         logger.debug("Asynchronously sending request to " + Arrays.toString(targets));
 
         RequestContext requestContext = null;
         TOMMessageType reqType = TOMMessageType.ORDERED_REQUEST;
-        System.out.println("REQUEST " + Arrays.toString(request));
+        // System.out.println("REQUEST " + Arrays.toString(request));
         canSendLock.lock();
 
         requestContext = new RequestContext(generateRequestId(reqType), generateOperationId(),
                 reqType, targets, System.currentTimeMillis(), new ReplyListener() {
 
+                    private int responses = 0;
+                    private double votes = 0.0;
+
                     @Override
                     public void reset() {
+                        responses = 0;
+                        votes = 0;
                         correctable.reset();
                     }
 
                     @Override
                     public void replyReceived(RequestContext context, TOMMessage reply) {
 
-                        if (!correctable.isFinal()) {
-                            correctable.update(context, reply);
-                        }
+                        responses++;
+                        votes += cViewController.getCurrentView().getWeight(reply.getSender());
+                        // System.out.println("update");
+                        correctable.update(context, reply, votes, responses);
+                        // System.out.printf("Votes = %f; Responses = %d\n", votes, responses);
+
                         if (correctable.isFinal()) { // close after last level of consistency (can be lower than FINAL)
                             cleanAsynchRequest(context.getOperationId()); // TODO do I need to define the last level of
                                                                           // desired consistency to be able to define

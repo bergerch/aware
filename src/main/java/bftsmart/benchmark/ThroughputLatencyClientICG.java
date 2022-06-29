@@ -81,7 +81,7 @@ public class ThroughputLatencyClientICG {
 			this.isWrite = isWrite;
 			this.measurementLeader = measurementLeader;
 			this.latch = latch;
-			this.asynch_proxy = new AsynchServiceProxy(clientId);
+			this.asynch_proxy = new AsynchServiceProxy(clientId, true);
 			this.asynch_proxy.setInvokeTimeout(40); // in seconds
 		}
 
@@ -98,6 +98,7 @@ public class ThroughputLatencyClientICG {
 					t1 = System.nanoTime();
 					if (isWrite) {
 						CorrectableSimple cor = asynch_proxy.invokeCorrectable(serializedWriteRequest);
+						// System.out.println("Ronda: " + i);
 
 						// None consistency
 						response = cor.getValueNoneConsistency();
@@ -107,13 +108,27 @@ public class ThroughputLatencyClientICG {
 							System.out.println("M:NONE: " + latency);
 						}
 						// Weak Consistency
-						System.out.println("Before WEAK");
 						response = cor.getValueWeakConsistency();
-						System.out.println("After WEAK");
 						t2 = System.nanoTime();
 						latency = t2 - t1;
 						if (initialClientId == clientId && measurementLeader) {
 							System.out.println("M:WEAK: " + latency);
+						}
+
+						// Strong Consistency
+						response = cor.getValueLineConsistency();
+						t2 = System.nanoTime();
+						latency = t2 - t1;
+						if (initialClientId == clientId && measurementLeader) {
+							System.out.println("M:STRONG: " + latency);
+						}
+
+						// Final Consistency
+						response = cor.getValueFinalConsistency();
+						t2 = System.nanoTime();
+						latency = t2 - t1;
+						if (initialClientId == clientId && measurementLeader) {
+							System.out.println("M:FINAL: " + latency);
 						}
 					} else {
 						response = asynch_proxy.invokeUnordered(serializedReadRequest);

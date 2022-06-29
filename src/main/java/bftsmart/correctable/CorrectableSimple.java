@@ -1,10 +1,8 @@
 package bftsmart.correctable;
 
-import java.rmi.RemoteException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.Phaser;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
 import bftsmart.reconfiguration.ClientViewController;
@@ -17,32 +15,37 @@ public class CorrectableSimple {
     private CorrectableState state;
     private byte[] ret_value;
 
-    private Map<byte[], Double> vote_map; // value to weights receives
-    private Map<byte[], Integer> response_map; // value to responces received
-
     private ClientViewController controller;
-
+    
     private ReentrantLock mutex = new ReentrantLock();
-    private Phaser phaser;
+    private Semaphore block;
+
+    private double votes = 0.0;
+    private int responses = 0;
 
     public CorrectableSimple(ClientViewController controller) {
         this.state = CorrectableState.UPDATING;
         this.ret_value = null;
 
-        vote_map = new HashMap<>();
-        response_map = new HashMap<>();
-
         this.controller = controller;
 
-        this.phaser = new Phaser(controller.getCurrentViewN());
+        this.block = new Semaphore(controller.getCurrentViewN());
+        this.block.drainPermits();
     }
 
     public void reset() {
         this.state = CorrectableState.UPDATING;
         ret_value = null;
-
-        vote_map = new HashMap<>();
-        response_map = new HashMap<>();
+        votes = 0.0;
+        responses = 0;
+        block.drainPermits();
+        block = new Semaphore(controller.getCurrentViewN());
+        try {
+            block.acquire(controller.getCurrentViewN());
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        mutex = new ReentrantLock();
     }
 
     public byte[] getValueNoneConsistency() {
@@ -51,28 +54,55 @@ public class CorrectableSimple {
 
     public byte[] getValueWeakConsistency() {
         View current_view = controller.getCurrentView();
-        System.out.println(current_view);
         int t = current_view.getF();
         double wMax = 1.00 + ((double) current_view.getDelta() / (double) t);
-        return getValue(t * wMax + 1.0, 1);
+        double nVotes = t * wMax + 1.0;
+        return getValue(t * wMax + 1.0, minResponses(nVotes, wMax, t));
     }
 
     public byte[] getValueLineConsistency() {
         View current_view = controller.getCurrentView();
         int t = current_view.getF();
         double wMax = 1.00 + ((double) current_view.getDelta() / (double) t);
-        return getValue(2 * t * wMax + 1.0, 1);
+        double nVotes = 2 * t * wMax + 1.0;
+        return getValue(2 * t * wMax + 1.0, minResponses(nVotes, wMax, t));
+    }
+
+    private int minResponses(double nVotes, double vmax, int t) {
+        // System.out.printf("nVotes = %f; vmax = %f; t = %d\n", nVotes, vmax, t);
+        if (nVotes <= vmax) {
+            return 1;
+        } else if(nVotes <= vmax * 2 * t) {
+            return (int)Math.ceil(nVotes/vmax);
+        } else {
+            return 2*t + (int) Math.ceil(nVotes - 2*t*vmax);
+        }
     }
 
     public byte[] getValueFinalConsistency() {
+        View current_view = controller.getCurrentView();
+        int t = current_view.getF();
+        int T = current_view.getT();
+        int N = current_view.getN();
+        int needed_responses = (N + 2 * T - (t + 1)) / 2;
+        // int time = 1;
         while (true) {
+            try {
+                block.tryAcquire(needed_responses, 100, TimeUnit.MILLISECONDS);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            // System.out.printf("after block of %d needed response for the %d time\n", needed_responses, time++);
             if (state == CorrectableState.FINAL) {
+                // System.out.printf("Will return final consistency using %d responses and %f votes (needed at least %d responses)\n", responses, votes, needed_responses);
+                block.release(needed_responses);
                 return ret_value;
             }
             if (state == CorrectableState.ERROR) {
+                block.release(needed_responses);
                 return null;
             }
-            // lock.lock();
+            block.release(needed_responses);
         }
     }
 
@@ -84,76 +114,56 @@ public class CorrectableSimple {
      * @return decision value if Correct, null otherwise (ERROR state)
      */
     public byte[] getValue(double needed_votes, int needed_responses) {
+        // int time = 1;
         while (true) {
-
-            if (state == CorrectableState.FINAL) {
-                return ret_value;
+            // System.out.println("before try Acquire");
+            try {
+                block.tryAcquire(needed_responses, 100, TimeUnit.MILLISECONDS);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
+            // System.out.println("Before lock");
+            mutex.lock();
             if (state == CorrectableState.ERROR) {
+                mutex.unlock();
+                block.release(needed_responses);
                 return null;
             }
-            mutex.lock();
-            // System.out.println("needed = " + needed_votes + ", have = " + vote_map.get(ret_value));
-            // System.out.println("needed = " + needed_responses + ", have = " + response_map.get(ret_value));
-            // System.out.println(isFinal());
-            if (ret_value != null && vote_map.get(ret_value) >= needed_votes
-                    && response_map.get(ret_value) >= needed_responses) {
+            // System.out.println("votes >= needed_votes && responses >= needed_responses : " + votes + " >= " + needed_votes + " && " + responses + " >= " + needed_responses);
+            if (votes >= needed_votes && responses >= needed_responses) {
+                // System.out.printf("Will return using %d responses and %f votes (needed at least %d responses and %f votes)\n", responses, votes, needed_responses, needed_votes);
                 mutex.unlock();
+                block.release(needed_responses);
                 return ret_value;
             }
+            mutex.unlock();
+            block.release(needed_responses);
+        }
+    }
+
+    public void update(RequestContext context, TOMMessage reply, double votes, int responses) {
+        if (!isFinal()) {
+            mutex.lock();
+            block.drainPermits();
+            this.votes = votes;
+            this.responses = responses;
+            ret_value = reply.getContent();
+            // System.out.println("update " + responses + ": votes = " + votes + "; responses = " + responses);
+            checkFinal();
+            
+            block.release(responses); // informs that a responce was received
             mutex.unlock();
         }
     }
 
-    public void update(RequestContext context, TOMMessage reply) {
-
-        System.out.println("Correctable update ");
-
-        int sender = reply.getSender();
-        double sender_weight = controller.getCurrentView().getWeight(sender);
-
-        mutex.lock();
-
-        byte[] content = reply.getContent();
-        System.out.println("content = " + Arrays.toString(content));
-        System.out.println("Hash = " + content.hashCode());
-
-        Integer current_responces = response_map.get(content);
-        Double current_weight = vote_map.get(content);
-
-        if (current_responces == null)
-            current_responces = 0;
-        if (current_weight == null)
-            current_weight = 0.0;
-
-        response_map.put(content, current_responces + 1);
-        vote_map.put(content, current_weight + sender_weight);
-
-        System.out.println(vote_map);
-
-        // TODO check for ERROR
-        if (ret_value == null)
-            ret_value = content;
-        else if (!content.equals(ret_value) && vote_map.get(content) > vote_map.get(ret_value)) { // if new value has
-                                                                                                  // more weight change
-                                                                                                  // correctable value
-            ret_value = content;
-        }
-
-        // check if it should be closed
-        checkFinal(content);
-        // lock.unlock(); // unlock possible responses to clients.
-        mutex.unlock();
-    }
-
-    private void checkFinal(byte[] value) { // TODO can I otimize this?
+    private void checkFinal() {
         View current_view = controller.getCurrentView();
         int t = current_view.getF();
         int T = current_view.getT();
         int N = current_view.getN();
         double wMax = 1.00 + ((double) current_view.getDelta() / (double) t);
-        int responces = (N + 2 * T - (t + 1)) / 2;
-        if (vote_map.get(value) >= 2 * t * wMax + 1.0 && response_map.get(value) >= responces) {
+        int needed_responces = (int) Math.ceil((N + 2 * T - (t + 1)) / 2.0);
+        if (this.responses >= needed_responces && this.votes >= 2 * t * wMax + 1.0) {
             close();
         }
     }
