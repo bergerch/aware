@@ -31,8 +31,6 @@ public class AsynchServiceProxy extends ServiceProxy {
     private HashMap<Integer, TOMMessage[]> requestsReplies;
     private HashMap<Integer, Integer> requestsAlias;
 
-    private boolean useVotes = false;
-
     /**
      * Constructor
      *
@@ -43,17 +41,7 @@ public class AsynchServiceProxy extends ServiceProxy {
         this(processId, null);
         init();
     }
-
-    public AsynchServiceProxy(int processId, boolean useVotes) {
-        this(processId, null);
-        init();
-        changeVotes(useVotes);
-    }
-
-    private void changeVotes(boolean useVotes) {
-        this.useVotes = useVotes;
-    }
-
+    
     /**
      * Constructor
      *
@@ -189,7 +177,7 @@ public class AsynchServiceProxy extends ServiceProxy {
                                                                                      // reconfiguration
                         TOMMessage[] replies = requestsReplies.get(reply.getOperationId());
 
-                        int sameContent = 0;
+                        int sameContent = 0; // TODO remove
                         double totalVotes = 0.0;
                         int replyQuorum = getReplyQuorum();
 
@@ -203,14 +191,11 @@ public class AsynchServiceProxy extends ServiceProxy {
                                     && (reply.getReqType() != TOMMessageType.ORDERED_REQUEST
                                             || Arrays.equals(replies[i].getContent(), reply.getContent()))) {
                                 sameContent++;
-                                if (useVotes) {
-                                    totalVotes += getViewManager().getCurrentView().getWeight(i);
-                                }
+                                totalVotes += getViewManager().getCurrentView().getWeight(i);
                             }
                         }
 
-                        if (sameContent >= replyQuorum || totalVotes >= replyQuorum) {
-                            // System.out.println("Same content " + sameContent + "; reply q: " + replyQuorum + "; totalVotes: " + totalVotes);
+                        if (/*sameContent >= replyQuorum ||*/ totalVotes >= replyQuorum) {
 
                             if (v.getId() > getViewManager().getCurrentViewId()) {
 

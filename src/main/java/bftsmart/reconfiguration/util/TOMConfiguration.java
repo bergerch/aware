@@ -91,6 +91,8 @@ public class TOMConfiguration extends Configuration {
     private int synchronisationPeriod;
     private int synchronisationDelay;
 
+    private boolean useforensics;
+
     /** Creates a new instance of TOMConfiguration */
     public TOMConfiguration(int processId, KeyLoader loader) {
         super(processId, loader);
@@ -420,6 +422,10 @@ public class TOMConfiguration extends Configuration {
             s = (String) configs.remove("system.aware.synchronisationDelay");
             synchronisationDelay = s != null ? Integer.parseInt(s) : 30000;
 
+            /** T-AWARE **/
+
+            s = (String) configs.remove("system.taware.useforensics");
+            useforensics = Boolean.parseBoolean(s);
 
             /**
              * Tulio Ribeiro
@@ -741,5 +747,9 @@ s = (String) configs.remove("system.client.invokeOrderedTimeout");
 
     public void setSynchronisationDelay(int synchronisationDelay) {
         this.synchronisationDelay = synchronisationDelay;
+    }
+
+    public boolean useForensics(){
+        return useforensics;
     }
 }

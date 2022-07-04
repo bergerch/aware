@@ -1,6 +1,5 @@
 package bftsmart.correctable;
 
-import java.util.concurrent.Phaser;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
@@ -17,7 +16,7 @@ public class CorrectableSimple {
 
     private ClientViewController controller;
     
-    private ReentrantLock mutex = new ReentrantLock();
+    // private ReentrantLock mutex = new ReentrantLock();
     private Semaphore block;
 
     private double votes = 0.0;
@@ -29,7 +28,7 @@ public class CorrectableSimple {
 
         this.controller = controller;
 
-        this.block = new Semaphore(controller.getCurrentViewN());
+        this.block = new Semaphore(controller.getCurrentViewN(), true);
         this.block.drainPermits();
     }
 
@@ -38,14 +37,13 @@ public class CorrectableSimple {
         ret_value = null;
         votes = 0.0;
         responses = 0;
-        block.drainPermits();
         block = new Semaphore(controller.getCurrentViewN());
         try {
             block.acquire(controller.getCurrentViewN());
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        mutex = new ReentrantLock();
+        // mutex = new ReentrantLock();
     }
 
     public byte[] getValueNoneConsistency() {
@@ -118,32 +116,32 @@ public class CorrectableSimple {
         while (true) {
             // System.out.println("before try Acquire");
             try {
-                block.tryAcquire(needed_responses, 100, TimeUnit.MILLISECONDS);
+                block.tryAcquire(needed_responses, 100, TimeUnit.MILLISECONDS); // do i need the timeout?
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
             // System.out.println("Before lock");
-            mutex.lock();
+            // mutex.lock();
             if (state == CorrectableState.ERROR) {
-                mutex.unlock();
+                // mutex.unlock();
                 block.release(needed_responses);
                 return null;
             }
             // System.out.println("votes >= needed_votes && responses >= needed_responses : " + votes + " >= " + needed_votes + " && " + responses + " >= " + needed_responses);
             if (votes >= needed_votes && responses >= needed_responses) {
                 // System.out.printf("Will return using %d responses and %f votes (needed at least %d responses and %f votes)\n", responses, votes, needed_responses, needed_votes);
-                mutex.unlock();
+                // mutex.unlock();
                 block.release(needed_responses);
                 return ret_value;
             }
-            mutex.unlock();
+            // mutex.unlock();
             block.release(needed_responses);
         }
     }
 
     public void update(RequestContext context, TOMMessage reply, double votes, int responses) {
         if (!isFinal()) {
-            mutex.lock();
+            // mutex.lock();
             block.drainPermits();
             this.votes = votes;
             this.responses = responses;
@@ -152,7 +150,7 @@ public class CorrectableSimple {
             checkFinal();
             
             block.release(responses); // informs that a responce was received
-            mutex.unlock();
+            // mutex.unlock();
         }
     }
 

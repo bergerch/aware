@@ -81,7 +81,7 @@ public class ThroughputLatencyClientICG {
 			this.isWrite = isWrite;
 			this.measurementLeader = measurementLeader;
 			this.latch = latch;
-			this.asynch_proxy = new AsynchServiceProxy(clientId, true);
+			this.asynch_proxy = new AsynchServiceProxy(clientId);
 			this.asynch_proxy.setInvokeTimeout(40); // in seconds
 		}
 
@@ -98,7 +98,7 @@ public class ThroughputLatencyClientICG {
 					t1 = System.nanoTime();
 					if (isWrite) {
 						CorrectableSimple cor = asynch_proxy.invokeCorrectable(serializedWriteRequest);
-						// System.out.println("Ronda: " + i);
+						System.out.println("Ronda: " + i);
 
 						// None consistency
 						response = cor.getValueNoneConsistency();

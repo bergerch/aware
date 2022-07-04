@@ -115,7 +115,9 @@ public final class Acceptor {
 		 */
 		this.proofExecutor = Executors.newSingleThreadExecutor();
 
-		this.audit_provider = new AuditProvider(controller);
+		if (controller.getStaticConf().useForensics()) {
+			this.audit_provider = new AuditProvider(controller);
+		}
 	}
 
 	public MessageFactory getFactory() {
@@ -373,7 +375,9 @@ public final class Acceptor {
 				 * Forensics
 				 * Who partecipated in write quorum
 				 */
-				audit_provider.registerWrite(epoch, cid);
+				if (audit_provider != null) {
+					audit_provider.registerWrite(epoch, cid);
+				}
 				/**
 				 *
 				 */
@@ -523,7 +527,9 @@ public final class Acceptor {
 			 * Forensics
 			 * who partecipated in accept quorum
 			 */
-			audit_provider.registerAccept(epoch, cid);
+			if (audit_provider != null) {
+				audit_provider.registerAccept(epoch, cid);
+			}
 			/**
 			 *
 			 */
@@ -552,13 +558,13 @@ public final class Acceptor {
 
 		epoch.getConsensus().decided(epoch, true);
 
-		if (epoch.getConsensus().getId() % 100 == 10 + me * (100 / controller.getCurrentViewN())) { // after a set
-																									// number of
-																									// consensus perform
-																									// forensics
-			// System.out.println("###### FORENSICS #####");
-			// sendAudit(epoch.getConsensus().getId(), epoch);
-		}
+		// if (epoch.getConsensus().getId() % 100 == 10 + me * (100 / controller.getCurrentViewN())) { // after a set
+		// 																							// number of
+		// 																							// consensus perform
+		// 																							// forensics
+		// 	// System.out.println("###### FORENSICS #####");
+		// 	// sendAudit(epoch.getConsensus().getId(), epoch);
+		// }
 		// System.out.println(this.storage);
 	}
 
@@ -573,7 +579,8 @@ public final class Acceptor {
 	public void auditReceived(TOMMessage msg) {
 		// System.out.println("Audit message received from " + msg.getSender());
 		TOMMessage response = new TOMMessage(me, msg.getSession(), msg.getSequence(),
-				msg.getOperationId(), this.audit_provider.getStorage().toByteArray(), msg.getViewID(), TOMMessageType.AUDIT);
+				msg.getOperationId(), this.audit_provider.getStorage().toByteArray(), msg.getViewID(),
+				TOMMessageType.AUDIT);
 		communication.getClientsConn().send(new int[] { msg.getSender() }, response, false); // send to storage to
 																								// sender client
 	}
