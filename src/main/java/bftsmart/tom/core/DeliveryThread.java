@@ -271,7 +271,6 @@ public final class DeliveryThread extends Thread {
 					break;
 
 				if (decisions.size() > 0) {
-
 					TOMMessage[][] requests = new TOMMessage[decisions.size()][];
 					int[] consensusIds = new int[requests.length];
 					int[] leadersIds = new int[requests.length];
@@ -301,15 +300,12 @@ public final class DeliveryThread extends Thread {
 						}
 
 						count++;
-						
+
 						/**
 						 *  t-AWARE
 						 */
 						Monitor.getInstance(controller).handleMonitoringMessages(d);
-						// Audit should only happen here if storage is to big
-						if (controller.getStaticConf().useForensics()) {
-							AwareController.getInstance(controller, tomLayer.execManager).audit(d.getConsensusId());
-						}
+						AwareController.getInstance(controller, tomLayer.execManager).audit(d.getConsensusId());
 						AwareController.getInstance(controller, tomLayer.execManager).optimize(d.getConsensusId());
 						/**
 						 **/

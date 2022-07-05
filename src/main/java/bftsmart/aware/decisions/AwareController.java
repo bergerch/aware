@@ -200,12 +200,9 @@ public class AwareController {
 
 
     public void audit(int cid) {
-        int me = viewControl.getStaticConf().getProcessId();
-        int interval = 50; // TODO change this to get from configuration file
-        // if (svc.getStaticConf().isUseDynamicWeights() && cid % 99 == 0 & cid > 0) { // todo hardcoded interval
-        if (svc.getStaticConf().isUseDynamicWeights() && cid > 0 && cid % interval == me * (interval/viewControl.getCurrentViewN())) {
+        if (svc.getStaticConf().isUseDynamicWeights() && cid % 99 == 0 & cid > 0) { // todo hardcoded interval
+
             // perform audit periodically
-            // System.out.println("Audit in consensus " + cid);
             MessageFactory factory = new MessageFactory(svc.getStaticConf().getProcessId());
             ConsensusMessage cm = factory.createAudit(svc.getCurrentViewId());
             executionManager.getTOMLayer().getCommunication()
