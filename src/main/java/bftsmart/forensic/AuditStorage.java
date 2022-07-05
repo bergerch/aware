@@ -136,4 +136,8 @@ public class AuditStorage implements Serializable {
         }
         // System.out.println("Size of proofs = " + writeAggregate.keySet().size());
     }
+
+    public int getSize(){
+        return this.acceptAggregate.size() + this.writeAggregate.size();
+    }
 }

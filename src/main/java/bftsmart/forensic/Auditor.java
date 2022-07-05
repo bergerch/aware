@@ -274,8 +274,10 @@ public class Auditor {
      */
     public boolean validSignature(Aggregate agg) {
         for (Integer sender_id : agg.get_senders()) {
-            if (keys.get(sender_id) == null)
+            if (keys.get(sender_id) == null){
+                System.out.printf("Puting public key of sender %d\n", sender_id);
                 keys.put(sender_id, new Configuration(sender_id, null).getPublicKey());
+            }
 
             ConsensusMessage cm = agg.getProofs().get(sender_id);
             byte[] signature = (byte[]) cm.getProof();

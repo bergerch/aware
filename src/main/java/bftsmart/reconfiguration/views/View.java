@@ -145,6 +145,10 @@ public class View implements Serializable {
         return this.processes.length;
     }
 
+    public int getT(){
+        return (getN()-1)/3;
+    }
+
     public int[] getProcesses() {
         return processes;
     }
