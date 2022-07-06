@@ -7,6 +7,7 @@ import bftsmart.tom.core.messages.TOMMessage;
 public class Correctable {
 
     private CorrectableState state;
+    private Consistency consistency;
     private byte[] value;
 
     private ReplyListener updateListener;
@@ -14,10 +15,15 @@ public class Correctable {
 
     public Correctable(){
         this.state = CorrectableState.UPDATING;
+        this.consistency = Consistency.NONE;
     }
 
     public CorrectableState getState(){
         return state;
+    }
+
+    public Consistency getConsistency(){
+        return this.consistency;
     }
 
     public byte[] getValue(){
