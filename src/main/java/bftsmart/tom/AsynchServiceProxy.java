@@ -195,12 +195,16 @@ public class AsynchServiceProxy extends ServiceProxy {
                             }
                         }
 
-                        if (/*sameContent >= replyQuorum ||*/ totalVotes >= replyQuorum) {
+                        if (sameContent >= Math.ceil((getViewManager().getCurrentViewN() + getViewManager().getCurrentViewF() + 1) / 2.0)
+                                //totalVotes >= replyQuorum
+                            && v.getId() > getViewManager().getCurrentViewId() ) {
 
-                            if (v.getId() > getViewManager().getCurrentViewId()) {
+                            logger.info("sameContent: " + sameContent);
+                            logger.info("totalVotes: " + totalVotes);
+                            logger.info("replyQuorum: " + replyQuorum);
 
-                                reconfigureTo(v);
-                            }
+                            reconfigureTo(v);
+
                             // System.out.println("Goint to reset");
                             requestContext.getReplyListener().reset();
 

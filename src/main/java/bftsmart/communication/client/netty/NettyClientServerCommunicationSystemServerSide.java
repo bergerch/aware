@@ -246,7 +246,7 @@ public class NettyClientServerCommunicationSystemServerSide extends SimpleChanne
 		if (requestReceiver == null)
 			logger.warn("Request receiver is still null!");
 		else
-			requestReceiver.requestReceived(sm);
+			requestReceiver.requestReceived(sm, true);
 	}
 
 	@Override
@@ -269,6 +269,7 @@ public class NettyClientServerCommunicationSystemServerSide extends SimpleChanne
 
 		// debugSessions();
 
+		rl.writeLock().lock();
 		Set s = sessionReplicaToClient.entrySet();
 		Iterator i = s.iterator();
 		while (i.hasNext()) {
@@ -280,6 +281,7 @@ public class NettyClientServerCommunicationSystemServerSide extends SimpleChanne
 				break;
 			}
 		}
+		rl.writeLock().unlock();
 
 		logger.debug("Session Closed, active clients=" + sessionReplicaToClient.size());
 	}
