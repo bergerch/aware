@@ -4,6 +4,7 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
+import bftsmart.consensus.roles.Acceptor;
 import bftsmart.reconfiguration.ClientViewController;
 import bftsmart.reconfiguration.views.View;
 import bftsmart.tom.RequestContext;
@@ -128,7 +129,8 @@ public class CorrectableSimple {
                 return null;
             }
             // System.out.println("votes >= needed_votes && responses >= needed_responses : " + votes + " >= " + needed_votes + " && " + responses + " >= " + needed_responses);
-            if (votes >= needed_votes && responses >= needed_responses) {
+            if (votes - needed_votes >= Acceptor.THRESHOLD
+                    && responses >= needed_responses) {
                 // System.out.printf("Will return using %d responses and %f votes (needed at least %d responses and %f votes)\n", responses, votes, needed_responses, needed_votes);
                 // mutex.unlock();
                 block.release(needed_responses);
