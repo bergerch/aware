@@ -82,6 +82,8 @@ public class TOMConfiguration extends Configuration {
 
     // AWARE calc & monitoring overhead config
     private int calculationInterval;
+
+    private int calculationDelay;
     private double monitoringOverhead;
     private double optimizationGoal;
 
@@ -423,6 +425,9 @@ public class TOMConfiguration extends Configuration {
             s = (String) configs.remove("system.aware.calculationInterval");
             calculationInterval = s != null ? Integer.parseInt(s) : 0;
 
+            s = (String) configs.remove("system.aware.calculationDelay");
+            calculationDelay = s != null ? Integer.parseInt(s) : calculationInterval / 5;
+
             s = (String) configs.remove("system.aware.monitoringOverhead");
             monitoringOverhead = s != null ? Double.parseDouble(s) : 0;
 
@@ -737,6 +742,10 @@ s = (String) configs.remove("system.client.invokeOrderedTimeout");
 
     public int getCalculationInterval() {
         return calculationInterval;
+    }
+
+    public int getCalculationDelay() {
+        return calculationDelay;
     }
 
     public double getMonitoringOverhead() {

@@ -213,7 +213,8 @@ public final class Acceptor {
 		} else {
 			/** BEGIN AWARE */
 			if (       epoch.getConsensus().getId() > 1
-					&& epoch.getConsensus().getId() % this.controller.getStaticConf().getCalculationInterval() == 1) {
+					&& epoch.getConsensus().getId() % this.controller.getStaticConf().getCalculationInterval() ==
+					this.controller.getStaticConf().getCalculationDelay() + 1) {
 				logger.info("I remember Propose of " + msg.getSender() + " " + epoch.getConsensus().getId());
 				proposeRecvd[msg.getSender()] = msg; // Remember a non-leader proposal during a potential leader change
 			} else {
