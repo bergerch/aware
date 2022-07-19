@@ -337,10 +337,11 @@ public class ServerViewController extends ViewController {
         this.reconfigureTo(newView);
     }
 
-    public void switchToFasterConfig() {
-        System.out.println("================== SWITCH to FAST ==================");
+
+
+    public View nextFasterConfig() {
         View currentView = this.getCurrentView();
-        if (currentView.isFastestConfig()) return;
+        if (currentView.isFastestConfig()) return currentView;
 
         int N = currentView.getProcesses().length;
         int max_faults = max_fault(N);
@@ -348,6 +349,15 @@ public class ServerViewController extends ViewController {
         int new_delta = calculateDelta(N, new_faults);
         View newView = new View(currentView.getId() + 1, currentView.getProcesses(), new_faults,
                 currentView.getAddresses(), currentView.isBFT(), new_delta);
+        return newView;
+    }
+
+    public void switchToFasterConfig() {
+        System.out.println("================== SWITCH to FAST ==================");
+        View currentView = this.getCurrentView();
+        if (currentView.isFastestConfig()) return;
+
+        View newView = this.nextFasterConfig();
         this.reconfigureTo(newView);
     }
 

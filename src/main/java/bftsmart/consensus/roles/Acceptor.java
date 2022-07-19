@@ -54,7 +54,7 @@ import bftsmart.tom.util.TOMUtil;
  */
 public final class Acceptor {
 
-	private static final double THRESHOLD = -0.0000000001;
+	public static final double THRESHOLD = -0.0000000001;
 
 	private Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -212,9 +212,10 @@ public final class Acceptor {
 			executePropose(epoch, msg.getValue());
 		} else {
 			/** BEGIN AWARE */
-			if (epoch.getConsensus().getId() > 1
-					&& epoch.getConsensus().getId() % this.controller.getStaticConf().getCalculationInterval() == 1) {
-				logger.debug("I remember Propose of " + msg.getSender() + " " + epoch.getConsensus().getId());
+			if (       epoch.getConsensus().getId() > 1
+					&& epoch.getConsensus().getId() % this.controller.getStaticConf().getCalculationInterval() ==
+					this.controller.getStaticConf().getCalculationDelay() + 1) {
+				logger.info("I remember Propose of " + msg.getSender() + " " + epoch.getConsensus().getId());
 				proposeRecvd[msg.getSender()] = msg; // Remember a non-leader proposal during a potential leader change
 			} else {
 				logger.warn("The Propose I received is not from the expected leader " + msg.getSender() + " "
@@ -498,7 +499,7 @@ public final class Acceptor {
 	/**
 	 * Computes ACCEPT values according to the Byzantine consensus
 	 * specification
-	 * 
+	 *
 	 * @param epoch Epoch of the receives message
 	 * @param value Value sent in the message
 	 */

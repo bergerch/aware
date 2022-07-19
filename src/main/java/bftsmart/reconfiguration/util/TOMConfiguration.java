@@ -37,6 +37,7 @@ public class TOMConfiguration extends Configuration {
     protected int timeoutHighMark;
     protected int replyVerificationTime;
     protected int maxBatchSize;
+    protected int maxBatchSizeInBytes;
     protected int numberOfNonces;
     protected int inQueueSize;
     protected int outQueueSize;
@@ -48,6 +49,7 @@ public class TOMConfiguration extends Configuration {
     private int checkpointPeriod;
     private int globalCheckpointPeriod;
     private int useControlFlow;
+    private int maxRequestSize;
     private int[] initialView;
     private int ttpId;
     private boolean isToLog;
@@ -80,6 +82,8 @@ public class TOMConfiguration extends Configuration {
 
     // AWARE calc & monitoring overhead config
     private int calculationInterval;
+
+    private int calculationDelay;
     private double monitoringOverhead;
     private double optimizationGoal;
 
@@ -183,6 +187,16 @@ public class TOMConfiguration extends Configuration {
                 maxBatchSize = Integer.parseInt(s);
             }
 
+            s = (String) configs.remove("system.totalordermulticast.maxBatchSizeInBytes");
+            if (s == null) {
+                maxBatchSizeInBytes = Integer.MAX_VALUE;
+            } else {
+                maxBatchSizeInBytes = Integer.parseInt(s);
+                if (maxBatchSizeInBytes < 1) {
+                    maxBatchSizeInBytes = Integer.MAX_VALUE;
+                }
+            }
+
             s = (String) configs.remove("system.totalordermulticast.replayVerificationTime");
             if (s == null) {
                 replyVerificationTime = 0;
@@ -237,6 +251,16 @@ public class TOMConfiguration extends Configuration {
                 useControlFlow = 0;
             } else {
                 useControlFlow = Integer.parseInt(s);
+            }
+
+            s = (String) configs.remove("system.communication.maxRequestSize");
+            if (s == null) {
+                maxRequestSize = Integer.MAX_VALUE;
+            } else {
+                maxRequestSize = Integer.parseInt(s);
+                if (maxRequestSize < 1) {
+                    maxRequestSize = Integer.MAX_VALUE;
+                }
             }
 
             s = (String) configs.remove("system.initial.view");
@@ -401,6 +425,9 @@ public class TOMConfiguration extends Configuration {
             s = (String) configs.remove("system.aware.calculationInterval");
             calculationInterval = s != null ? Integer.parseInt(s) : 0;
 
+            s = (String) configs.remove("system.aware.calculationDelay");
+            calculationDelay = s != null ? Integer.parseInt(s) : calculationInterval / 5;
+
             s = (String) configs.remove("system.aware.monitoringOverhead");
             monitoringOverhead = s != null ? Double.parseDouble(s) : 0;
 
@@ -544,6 +571,14 @@ s = (String) configs.remove("system.client.invokeOrderedTimeout");
         return maxBatchSize;
     }
 
+    /**
+     * The maximum size a batch of messages can have in bytes. This limit is useful for performance and
+     * memory limiting reasons when handling large requests.
+     */
+    public int getMaxBatchSizeInBytes() {
+        return maxBatchSizeInBytes;
+    }
+
     public boolean isShutdownHookEnabled() {
         return shutdownHookEnabled;
     }
@@ -629,6 +664,14 @@ s = (String) configs.remove("system.client.invokeOrderedTimeout");
         return useControlFlow;
     }
 
+    /**
+     * Maximum size in bytes a request from a client may have. Larger messages are discarded.
+     * This setting is useful when malicious clients are present.
+     */
+    public int getMaxRequestSize() {
+        return maxRequestSize;
+    }
+
     public boolean isBFT(){
     	return this.isBFT;
     }
@@ -699,6 +742,10 @@ s = (String) configs.remove("system.client.invokeOrderedTimeout");
 
     public int getCalculationInterval() {
         return calculationInterval;
+    }
+
+    public int getCalculationDelay() {
+        return calculationDelay;
     }
 
     public double getMonitoringOverhead() {
