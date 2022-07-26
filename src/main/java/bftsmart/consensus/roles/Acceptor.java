@@ -212,9 +212,9 @@ public final class Acceptor {
 			executePropose(epoch, msg.getValue());
 		} else {
 			/** BEGIN AWARE */
-			if (       epoch.getConsensus().getId() > 1
-					&& epoch.getConsensus().getId() % this.controller.getStaticConf().getCalculationInterval() ==
-					this.controller.getStaticConf().getCalculationDelay() + 1) {
+			if (epoch.getConsensus().getId() > 1
+					&& epoch.getConsensus().getId() % this.controller.getStaticConf()
+							.getCalculationInterval() == this.controller.getStaticConf().getCalculationDelay() + 1) {
 				logger.info("I remember Propose of " + msg.getSender() + " " + epoch.getConsensus().getId());
 				proposeRecvd[msg.getSender()] = msg; // Remember a non-leader proposal during a potential leader change
 			} else {
@@ -536,15 +536,6 @@ public final class Acceptor {
 			 */
 
 			decide(epoch);
-
-			// Forensics
-			// placeholder for testing, should be modified to make all replicas audit from
-			// time to time
-			// in different cids
-			// if (me == 0) {
-			// System.out.println("### Starting Forensics ###");
-			// sendAudit(cid, epoch);
-			// }
 		}
 	}
 
@@ -559,14 +550,31 @@ public final class Acceptor {
 
 		epoch.getConsensus().decided(epoch, true);
 
-		// if (epoch.getConsensus().getId() % 100 == 10 + me * (100 / controller.getCurrentViewN())) { // after a set
-		// 																							// number of
-		// 																							// consensus perform
-		// 																							// forensics
-		// 	// System.out.println("###### FORENSICS #####");
-		// 	// sendAudit(epoch.getConsensus().getId(), epoch);
+		/**
+		 * Forensics
+		 */
+		// if (audit_provider != null
+		// // && (epoch.getConsensus().getId() + (me + 1)) % FORENSICS_INTERVAL == 0
+		// && audit_provider.getStorage().getSize() >=
+		// controller.getStaticConf().maxStorageSize()) {
+		// System.out.println("Begin audit in consensus " +
+		// epoch.getConsensus().getId());
+		// sendAudit(epoch.getConsensus().getId(), epoch);
 		// }
-		// System.out.println(this.storage);
+		// if (audit_provider != null
+		// 		&& audit_provider.getStorage().getSize() >= controller.getStaticConf().maxStorageSize()) {
+		// 			System.out.println("Reducing storage to last checkpoint " + controller.getLastCheckpoint());
+		// 			audit_provider.clean(controller.getLastCheckpoint());
+		// 			System.out.println("Current storage size = " + audit_provider.getStorage().getSize());
+		// 			if (audit_provider.getStorage().getSize() >= controller.getStaticConf().maxStorageSize()) {
+		// 				//if after clean up storage is still to bigm send audit
+		// 				System.out.println("STORAGE STILL TOO BIG");
+		// 				sendAudit(epoch.getConsensus().getId(), epoch);
+		// 			}
+		// }
+		/**
+		 * 
+		 */
 	}
 
 	/*************************** FORENSICS METHODS *******************************/
@@ -594,7 +602,7 @@ public final class Acceptor {
 	 * @param msg   consensus message
 	 */
 	private void auditReceived(Epoch epoch, ConsensusMessage msg) {
-		// System.out.println("Audit message received from " + msg.getSender());
+		System.out.println("Audit message received from " + msg.getSender());
 		ConsensusMessage cm = factory.createStorage(epoch.getConsensus().getId(), epoch.getTimestamp(),
 				this.audit_provider.getStorage().toByteArray());
 		// System.out.println("Will send storage to " + msg.getSender());
@@ -608,7 +616,6 @@ public final class Acceptor {
 	 * @param epoch consensus epoch
 	 */
 	private void sendAudit(int cid, Epoch epoch) {
-		System.out.println("Begin audit in consensus " + cid);
 		int[] targets = this.controller.getCurrentViewOtherAcceptors();
 		ConsensusMessage cm = this.factory.createAudit(this.controller.getCurrentViewId());
 		communication.getServersConn().send(targets, cm, true);
@@ -623,11 +630,15 @@ public final class Acceptor {
 	 */
 	private void storageReceived(ConsensusMessage msg) {
 		// System.out.println("Storage message received from " + msg.getSender());
+		if (audit_provider == null) {
+			return;
+		}
+		// System.out.println("Storage message received from " + msg.getSender());
 		AuditStorage receivedStorage = AuditStorage.fromByteArray(msg.getValue());
 		boolean success = this.audit_provider.compareStorages(receivedStorage);
 
 		if (success) {
-			// System.out.println("AUDIT PERFORMED WITH SUCCESSS");
+			System.out.println("AUDIT PERFORMED WITH SUCCESSS");
 		} else {
 			System.out.println("CONFLICT FOUND");
 		}

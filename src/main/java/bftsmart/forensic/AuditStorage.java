@@ -17,6 +17,8 @@ public class AuditStorage implements Serializable {
     private Map<Integer, Aggregate> writeAggregate; // consensus id to write aggregate
     private Map<Integer, Aggregate> acceptAggregate; // consensus id to accept aggregate
 
+    private int last_clean = 0;
+
     public AuditStorage() {
         // System.out.println("Audit store created...");
         writeAggregate = new HashMap<>();
@@ -101,9 +103,6 @@ public class AuditStorage implements Serializable {
         for (int cid : writeAggregate.keySet()) {
             result = Math.min(result, cid);
         }
-        for (int cid : acceptAggregate.keySet()) { // probably unecessary
-            result = Math.min(result, cid);
-        }
         return result;
     }
 
@@ -117,9 +116,6 @@ public class AuditStorage implements Serializable {
         for (int cid : acceptAggregate.keySet()) {
             result = Math.max(result, cid);
         }
-        for (int cid : writeAggregate.keySet()) { // probably unecessary
-            result = Math.max(result, cid);
-        }
         return result;
     }
 
@@ -129,11 +125,11 @@ public class AuditStorage implements Serializable {
      * @param cid last cid to remove
      */
     public void removeProofsUntil(int cid) {
-        int minCid = getMinCID();
-        for (int i = minCid; i <= cid; i++) {
+        for (int i = last_clean+1; i <= cid; i++) {
             writeAggregate.remove(i);
             acceptAggregate.remove(i);
         }
+        last_clean = cid;
         // System.out.println("Size of proofs = " + writeAggregate.keySet().size());
     }
 

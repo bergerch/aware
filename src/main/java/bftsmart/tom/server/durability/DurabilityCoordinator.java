@@ -134,6 +134,7 @@ public abstract class DurabilityCoordinator implements Recoverable, BatchExecuta
                         
 			if (cid % globalCheckpointPeriod == replicaCkpIndex && lastCkpCID < cid ) {
 				logger.debug("Performing checkpoint for consensus " + cid);
+				System.out.println("Performing checkpoint for consensus " + cid);
 				stateLock.lock();
 				byte[] snapshot = getSnapshot();
 				stateLock.unlock();

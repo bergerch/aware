@@ -55,6 +55,8 @@ public class ServerViewController extends ViewController {
     private int overlayQ_BFT;
     private int overlayQ_CFT;
 
+    private int last_checkpoint;
+
     public ServerViewController(int procId, KeyLoader loader) {
         this(procId, "", loader);
         /*
@@ -372,4 +374,11 @@ public class ServerViewController extends ViewController {
     // private int getTotalWeights(){
     //     return ;
     // }
+
+    public int getLastCheckpoint(){
+        return last_checkpoint;
+    }
+    public void updateLastCheckpoint(int cid){
+        this.last_checkpoint = cid;
+    }
 }

@@ -99,21 +99,21 @@ public class CounterClientForensics {
 
         byte[] reply = counterProxy.invoke(out.toByteArray(), TOMMessageType.AUDIT);
         
-        try {
-            List<AuditStorage> storages = (List<AuditStorage>) TOMUtil.getObject(reply);
+        // try {
+        //     List<AuditStorage> storages = (List<AuditStorage>) TOMUtil.getObject(reply);
 
-            Auditor audit = new Auditor();
-            AuditResult result = audit.audit(storages);
+        //     Auditor audit = new Auditor();
+        //     AuditResult result = audit.audit(storages);
 
-            if (result.conflictFound()) {
-                System.out.println(result);
-            } else {
-                System.out.println("No conflict found");
-            }
+        //     if (result.conflictFound()) {
+        //         System.out.println(result);
+        //     } else {
+        //         System.out.println("No conflict found");
+        //     }
 
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        // } catch (Exception e) {
+        //     e.printStackTrace();
+        // }
         System.out.println("### Forensics complete ###");
     }
 
