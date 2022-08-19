@@ -101,6 +101,15 @@ public abstract class DefaultSingleRecoverable implements Recoverable, SingleExe
 	            stateLock.unlock();
 	            saveState(snapshot, cid);
                 controller.updateLastCheckpoint(cid);
+
+                //In no need to execute forensics, clean forensics storages here
+                System.out.println("STATE SAVED");
+                if (config.useForensics()) {
+                    // Can I do this? dont I need further confirmation that cid is correct?
+                    // where is the confirmation before executing a checkpoint
+                    controller.getAuditProvider().getStorage().removeProofsUntil(cid);
+                    System.out.println("AUDIT STORAGE SIZE AFTER CHECKPOINT = " + controller.getAuditProvider().getStorage().getSize());
+                }
 	        } else {
 	            saveCommands(commands.toArray(new byte[0][]), msgContexts.toArray(new MessageContext[0]));
 	        }

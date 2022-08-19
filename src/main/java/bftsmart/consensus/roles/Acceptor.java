@@ -117,6 +117,7 @@ public final class Acceptor {
 
 		if (controller.getStaticConf().useForensics()) {
 			this.audit_provider = new AuditProvider(controller);
+			this.controller.registerAuditProvider(audit_provider);
 		}
 	}
 

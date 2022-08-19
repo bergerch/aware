@@ -17,7 +17,8 @@ public class AuditStorage implements Serializable {
     private Map<Integer, Aggregate> writeAggregate; // consensus id to write aggregate
     private Map<Integer, Aggregate> acceptAggregate; // consensus id to accept aggregate
 
-    private int last_clean = 0;
+    private int maxCID;
+    private int minCID;
 
     public AuditStorage() {
         // System.out.println("Audit store created...");
@@ -32,8 +33,9 @@ public class AuditStorage implements Serializable {
      * @param agg aggregate
      */
     public void addWriteAggregate(int cid, Aggregate agg) {
-        if (writeAggregate.get(cid) == null) {
+        if (writeAggregate.get(cid) == null && cid >= minCID) {
             writeAggregate.put(cid, agg);
+            maxCID = cid > maxCID ? cid : maxCID;
         }
     }
 
@@ -44,8 +46,9 @@ public class AuditStorage implements Serializable {
      * @param agg aggregate
      */
     public void addAcceptAggregate(int cid, Aggregate agg) {
-        if (acceptAggregate.get(cid) == null) {
+        if (acceptAggregate.get(cid) == null && cid >= minCID) {
             acceptAggregate.put(cid, agg);
+            maxCID = cid > maxCID ? cid : maxCID;
         }
     }
 
@@ -99,11 +102,12 @@ public class AuditStorage implements Serializable {
      * @return minimum consensus id
      */
     public int getMinCID() {
-        int result = Integer.MAX_VALUE;
-        for (int cid : writeAggregate.keySet()) {
-            result = Math.min(result, cid);
-        }
-        return result;
+        // int result = Integer.MAX_VALUE;
+        // for (int cid : writeAggregate.keySet()) {
+        //     result = Math.min(result, cid);
+        // }
+        // return result;
+        return minCID;
     }
 
     /**
@@ -112,11 +116,12 @@ public class AuditStorage implements Serializable {
      * @return maximum consensus id
      */
     public int getMaxCID() {
-        int result = -1;
-        for (int cid : acceptAggregate.keySet()) {
-            result = Math.max(result, cid);
-        }
-        return result;
+        // int result = -1;
+        // for (int cid : acceptAggregate.keySet()) {
+        //     result = Math.max(result, cid);
+        // }
+        // return result;
+        return maxCID;
     }
 
     /**
@@ -125,15 +130,15 @@ public class AuditStorage implements Serializable {
      * @param cid last cid to remove
      */
     public void removeProofsUntil(int cid) {
-        for (int i = last_clean+1; i <= cid; i++) {
+        for (int i = minCID; i <= cid; i++) {
             writeAggregate.remove(i);
             acceptAggregate.remove(i);
         }
-        last_clean = cid;
+        minCID = cid+1;
         // System.out.println("Size of proofs = " + writeAggregate.keySet().size());
     }
 
     public int getSize(){
-        return this.acceptAggregate.size() + this.writeAggregate.size();
+        return this.acceptAggregate.size();
     }
 }

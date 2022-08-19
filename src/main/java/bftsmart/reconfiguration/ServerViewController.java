@@ -21,6 +21,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.StringTokenizer;
 
+import bftsmart.forensic.AuditProvider;
 import bftsmart.reconfiguration.views.View;
 import bftsmart.tom.core.TOMLayer;
 import bftsmart.tom.core.messages.TOMMessage;
@@ -56,6 +57,14 @@ public class ServerViewController extends ViewController {
     private int overlayQ_CFT;
 
     private int last_checkpoint;
+
+    /**
+    * Forensics
+    */
+    private AuditProvider auditProvider;
+    /**
+     * 
+     */
 
     public ServerViewController(int procId, KeyLoader loader) {
         this(procId, "", loader);
@@ -380,5 +389,12 @@ public class ServerViewController extends ViewController {
     }
     public void updateLastCheckpoint(int cid){
         this.last_checkpoint = cid;
+    }
+
+    public void registerAuditProvider(AuditProvider audit_provider) {
+        this.auditProvider = audit_provider;
+    }
+    public AuditProvider getAuditProvider(){
+        return auditProvider;
     }
 }

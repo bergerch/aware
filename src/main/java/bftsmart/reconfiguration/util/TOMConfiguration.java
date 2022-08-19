@@ -97,7 +97,7 @@ public class TOMConfiguration extends Configuration {
 
     // T-AWARE
     private boolean useforensics;
-    private int max_storage_size;
+    private int min_storage_size;
 
     /** Creates a new instance of TOMConfiguration */
     public TOMConfiguration(int processId, KeyLoader loader) {
@@ -509,7 +509,7 @@ public class TOMConfiguration extends Configuration {
             useforensics = s == null ? false : Boolean.parseBoolean(s);
 
             s = (String) configs.remove("system.taware.storagesize");
-            max_storage_size = s == null ? 1000 : Integer.parseInt(s);
+            min_storage_size = s == null ? 1000 : Integer.parseInt(s);
         } catch (Exception e) {
             logger.error("Could not parse system configuration file", e);
         }
@@ -809,7 +809,7 @@ public class TOMConfiguration extends Configuration {
         return useforensics;
     }
 
-    public int maxStorageSize() {
-        return max_storage_size;
+    public int minStorageSize() {
+        return min_storage_size;
     }
 }
