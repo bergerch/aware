@@ -469,6 +469,7 @@ public final class TOMLayer extends Thread implements RequestReceiver {
                     continue;
 
                 }
+                logger.info("=====Start Consensus {} ======",execId);
                 execManager.getProposer().startConsensus(execId, createPropose(dec));
             }
         }

@@ -99,6 +99,7 @@ public final class DeliveryThread extends Thread {
 			notEmptyQueue.signalAll();
 			decidedLock.unlock();
 			logger.debug("Consensus " + dec.getConsensusId() + " finished. Decided size=" + decided.size());
+			logger.info("====Consensus {} finished=====", dec.getConsensusId());
 		} catch (Exception e) {
 			logger.error("Could not insert decision into decided queue", e);
 		}
