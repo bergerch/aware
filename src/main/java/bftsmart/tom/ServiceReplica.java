@@ -29,6 +29,7 @@ import bftsmart.consensus.roles.Proposer;
 import bftsmart.reconfiguration.ReconfigureReply;
 import bftsmart.reconfiguration.ServerViewController;
 import bftsmart.reconfiguration.VMMessage;
+import bftsmart.tom.core.PipelineManager;
 import bftsmart.tom.core.ReplyManager;
 import bftsmart.tom.core.TOMLayer;
 import bftsmart.tom.core.messages.TOMMessage;
@@ -451,16 +452,18 @@ public class ServiceReplica {
         // Assemble the total order messaging layer
         MessageFactory messageFactory = new MessageFactory(id);
 
+        PipelineManager pipelineManager = new PipelineManager();
+
         Acceptor acceptor = new Acceptor(cs, messageFactory, SVController);
         cs.setAcceptor(acceptor);
 
         Proposer proposer = new Proposer(cs, messageFactory, SVController);
 
-        ExecutionManager executionManager = new ExecutionManager(SVController, acceptor, proposer, id);
+        ExecutionManager executionManager = new ExecutionManager(SVController, acceptor, proposer, id, pipelineManager);
 
         acceptor.setExecutionManager(executionManager);
 
-        tomLayer = new TOMLayer(executionManager, this, recoverer, acceptor, cs, SVController, verifier);
+        tomLayer = new TOMLayer(executionManager, this, recoverer, acceptor, cs, SVController, verifier,pipelineManager);
 
         executionManager.setTOMLayer(tomLayer);
 

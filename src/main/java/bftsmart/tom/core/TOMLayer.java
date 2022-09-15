@@ -71,6 +71,9 @@ public final class TOMLayer extends Thread implements RequestReceiver {
     //thread pool used to paralelise verification of requests contained in a batch
     private final ExecutorService verifierExecutor;
 
+    public PipelineManager pipelineManager;
+
+
     /**
      * Manage timers for pending requests
      */
@@ -128,10 +131,11 @@ public final class TOMLayer extends Thread implements RequestReceiver {
                     Acceptor a,
                     ServerCommunicationSystem cs,
                     ServerViewController controller,
-                    RequestVerifier verifier) {
+                    RequestVerifier verifier,
+                    PipelineManager pipelineManager) {
 
         super("TOM Layer");
-
+        this.pipelineManager = pipelineManager;
         this.execManager = manager;
         this.acceptor = a;
         this.communication = cs;

@@ -1,4 +1,4 @@
-<configuration debug="false"> 
+<configuration debug="true">
 
   <!-- Logging to console -->
   <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
@@ -40,11 +40,14 @@
   <!--
   
   <logger name="bftsmart.consensus.roles.AcceptorSSLTLS" level="TRACE"></logger>
-  <logger name="bftsmart.consensus.roles.Acceptor" level="TRACE"></logger>
   <logger name="bftsmart.communication.server.ServersCommunicationLayerSSLTLS" level="DEBUG"></logger>
-    	
+
    <logger name="bftsmart.reconfiguration.util.ECDSAKeyLoader" level="TRACE"></logger>
 	-->
+  <logger name="bftsmart.tom.core.DeliveryThread" level="TRACE"></logger>
+  <logger name="bftsmart.tom.core.TOMLayer" level="TRACE"></logger>
+  <logger name="bftsmart.tom.core.PipelineManager" level="TRACE"></logger>
+  <logger name="bftsmart.consensus.roles.Acceptor" level="TRACE"></logger>
   <logger name="bftsmart.reconfiguration.util.RSAKeyLoader" level="TRACE"></logger>
   
 </configuration>

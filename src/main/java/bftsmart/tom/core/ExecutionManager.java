@@ -70,7 +70,7 @@ public final class ExecutionManager {
     private ReentrantLock stoppedMsgsLock = new ReentrantLock(); //lock for stopped messages
     private TOMLayer tomLayer; // TOM layer associated with this execution manager
     private int paxosHighMark; // Paxos high mark for consensus instances
-    
+    private PipelineManager pipelineManager;
     /** THIS IS JOAO'S CODE, TO HANDLE THE STATE TRANSFER */
     
     private int revivalHighMark; // Paxos high mark for consensus instances when this replica CID equals 0
@@ -93,11 +93,12 @@ public final class ExecutionManager {
      * @param me This process ID
      */
     public ExecutionManager(ServerViewController controller, Acceptor acceptor,
-            Proposer proposer, int me) {
+            Proposer proposer, int me,PipelineManager pipelineManager) {
         //******* EDUARDO BEGIN **************//
         this.controller = controller;
         this.acceptor = acceptor;
         this.proposer = proposer;
+        this.pipelineManager = pipelineManager;
         //this.me = me;
 
         this.paxosHighMark = this.controller.getStaticConf().getPaxosHighMark();
