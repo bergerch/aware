@@ -287,12 +287,19 @@ public final class TOMLayer extends Thread implements RequestReceiver {
     public void setInExec(int inEx) {
         proposeLock.lock();
         logger.debug("Modifying inExec from " + this.inExecution + " to " + inEx);
+        if(inEx!=-1) {
+            this.pipelineManager.addToConsensusInExecList(inEx);
+        } else {
+            this.pipelineManager.removeFromConsensusInExecList(this.inExecution);
+        }
         this.inExecution = inEx;
-        if (inEx == -1 && !isRetrievingState()) {
+        if (inEx == -1 && pipelineManager.isLessThanMaxConsInExecListAllowed() && !isRetrievingState()) {
             canPropose.signalAll();
         }
         proposeLock.unlock();
     }
+
+//            this.pipelineManager.addConsensusInExecList(inEx);
 
     /**
      * This method blocks until the PaW algorithm is finished
@@ -440,10 +447,11 @@ public final class TOMLayer extends Thread implements RequestReceiver {
 
             if ((execManager.getCurrentLeader() == this.controller.getStaticConf().getProcessId()) && //I'm the leader
                     (clientsManager.havePendingRequests()) && //there are messages to be ordered
-                    (getInExec() == -1)) { //there is no consensus in execution
+                    pipelineManager.isLessThanMaxConsInExecListAllowed()) { //there is no consensus in execution
 
                 // Sets the current consensus
-                int execId = getLastExec() + 1;
+//                int execId = getLastExec() + 1;
+                int execId = getLastExec() + (pipelineManager.getConsensusesInExecution().size()==0 ? 1 : (pipelineManager.getConsensusesInExecution().size() + 1));
                 setInExec(execId);
 
                 Decision dec = execManager.getConsensus(execId).getDecision();
@@ -588,6 +596,7 @@ public final class TOMLayer extends Thread implements RequestReceiver {
 
         proposeLock.lock();
         this.inExecution = -1;
+        pipelineManager.cleanUpConsensusesInExec();
         //ot.addUpdate();
         canPropose.signalAll();
         proposeLock.unlock();

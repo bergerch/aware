@@ -17,11 +17,15 @@ public class PipelineManager {
         return this.consensusesInExecution;
     }
 
-    public boolean isAllowedToAddToConsensusInExecList() {
+    public boolean isLessThanMaxConsInExecListAllowed() {
+        return this.isAllowedToAddToConsensusInExecList();
+    }
+
+    private boolean isAllowedToAddToConsensusInExecList() {
         return this.consensusesInExecution.size()< maxConsensusesInExec ? true : false;
     }
 
-    public void addConsensusInExecList(int cid) {
+    public void addToConsensusInExecList(int cid) {
         if(!this.consensusesInExecution.contains(cid) && isAllowedToAddToConsensusInExecList()) {
             this.consensusesInExecution.add(cid);
             logger.debug("Adding to consensusesInExecution value " + (cid));
@@ -31,7 +35,7 @@ public class PipelineManager {
         }
     }
 
-    public void removeValueFromConsensusInExecList(int cid) {
+    public void removeFromConsensusInExecList(int cid) {
         if(this.consensusesInExecution.size() > minConsensusesInExec && this.consensusesInExecution.contains(cid)) {
             this.consensusesInExecution.remove(this.consensusesInExecution.indexOf(cid));
             logger.debug("Removing in consensusesInExecution value: {}", cid);
