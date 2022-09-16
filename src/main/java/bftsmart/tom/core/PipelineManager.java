@@ -31,7 +31,7 @@ public class PipelineManager {
             logger.debug("Adding to consensusesInExecution value " + (cid));
             logger.debug("Current consensusesInExecution : {} ", this.consensusesInExecution.toString());
         } else {
-            logger.debug("Value {} already exist in consensusesInExecution list or the list if full: ",cid);
+            logger.debug("Value {} already exist in consensusesInExecution list or the list is full. List size {}: ",cid, this.consensusesInExecution.size());
         }
     }
 

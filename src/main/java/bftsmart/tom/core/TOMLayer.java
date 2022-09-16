@@ -291,7 +291,7 @@ public final class TOMLayer extends Thread implements RequestReceiver {
             this.pipelineManager.addToConsensusInExecList(inEx);
         }
         this.inExecution = inEx;
-        if (inEx == -1 && pipelineManager.isLessThanMaxConsInExecListAllowed() && !isRetrievingState()) {
+        if (pipelineManager.isLessThanMaxConsInExecListAllowed() && !isRetrievingState()) {
             canPropose.signalAll();
         }
         proposeLock.unlock();
@@ -302,13 +302,11 @@ public final class TOMLayer extends Thread implements RequestReceiver {
         logger.debug("Modifying inExec from " + this.inExecution + " to " + -1);
         if(inExToRemove!=-1) this.pipelineManager.removeFromConsensusInExecList(inExToRemove);
         this.inExecution = -1;
-        if (inExToRemove == -1 && pipelineManager.isLessThanMaxConsInExecListAllowed() && !isRetrievingState()) {
+        if (pipelineManager.isLessThanMaxConsInExecListAllowed() && !isRetrievingState()) {
             canPropose.signalAll();
         }
         proposeLock.unlock();
     }
-
-//            this.pipelineManager.addConsensusInExecList(inEx);
 
     /**
      * This method blocks until the PaW algorithm is finished
