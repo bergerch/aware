@@ -433,7 +433,7 @@ public final class TOMLayer extends Thread implements RequestReceiver {
 
             if (!doWork) break;
 
-            logger.debug("I'm the leader.");
+            logger.info("I'm the leader.");
 
             // blocks until there are requests to be processed/ordered
             messagesLock.lock();
