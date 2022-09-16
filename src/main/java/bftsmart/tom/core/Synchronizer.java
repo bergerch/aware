@@ -1190,6 +1190,7 @@ public class Synchronizer {
             // resume normal operation
             execManager.restart();
             //leaderChanged = true;
+            logger.info("SetINExec Sync 1193");
             tom.setInExec(currentCID);
             if (iAmLeader) {
                 logger.debug("Waking up proposer thread");

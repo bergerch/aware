@@ -289,11 +289,20 @@ public final class TOMLayer extends Thread implements RequestReceiver {
         logger.debug("Modifying inExec from " + this.inExecution + " to " + inEx);
         if(inEx!=-1) {
             this.pipelineManager.addToConsensusInExecList(inEx);
-        } else {
-            this.pipelineManager.removeFromConsensusInExecList(this.inExecution);
         }
         this.inExecution = inEx;
         if (inEx == -1 && pipelineManager.isLessThanMaxConsInExecListAllowed() && !isRetrievingState()) {
+            canPropose.signalAll();
+        }
+        proposeLock.unlock();
+    }
+
+    public void removeInExec(int inExToRemove) {
+        proposeLock.lock();
+        logger.debug("Modifying inExec from " + this.inExecution + " to " + -1);
+        if(inExToRemove!=-1) this.pipelineManager.removeFromConsensusInExecList(inExToRemove);
+        this.inExecution = -1;
+        if (inExToRemove == -1 && pipelineManager.isLessThanMaxConsInExecListAllowed() && !isRetrievingState()) {
             canPropose.signalAll();
         }
         proposeLock.unlock();
@@ -452,6 +461,7 @@ public final class TOMLayer extends Thread implements RequestReceiver {
                 // Sets the current consensus
 //                int execId = getLastExec() + 1;
                 int execId = getLastExec() + (pipelineManager.getConsensusesInExecution().size()==0 ? 1 : (pipelineManager.getConsensusesInExecution().size() + 1));
+                logger.info("SetINExec TOMLayer 455");
                 setInExec(execId);
 
                 Decision dec = execManager.getConsensus(execId).getDecision();

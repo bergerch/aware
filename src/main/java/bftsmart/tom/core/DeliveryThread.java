@@ -110,7 +110,9 @@ public final class DeliveryThread extends Thread {
 			// set this decision as the last one from this replica
 			tomLayer.setLastExec(dec.getConsensusId());
 			// define that end of this execution
-			tomLayer.setInExec(-1);
+			logger.info("SetINExec DeliveryThread 113");
+//			tomLayer.setInExec(-1);
+			tomLayer.removeInExec(dec.getConsensusId());
 		} // else if (tomLayer.controller.getStaticConf().getProcessId() == 0)
 		// System.exit(0);
 		else {
@@ -312,7 +314,9 @@ public final class DeliveryThread extends Thread {
 						logger.debug("Setting last executed consensus to " + lastDecision.getConsensusId());
 						tomLayer.setLastExec(lastDecision.getConsensusId());
 						// define that end of this execution
-						tomLayer.setInExec(-1);
+						logger.info("SetINExec DeliveryThread 316");
+//						tomLayer.setInExec(-1);
+						tomLayer.removeInExec(lastDecision.getConsensusId());
 						// ******* EDUARDO END **************//
 
 						lastReconfig = -2;
