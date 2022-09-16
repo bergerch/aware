@@ -49,5 +49,6 @@
   <logger name="bftsmart.tom.core.PipelineManager" level="TRACE"></logger>
   <logger name="bftsmart.consensus.roles.Acceptor" level="INFO"></logger>
   <logger name="bftsmart.reconfiguration.util.RSAKeyLoader" level="TRACE"></logger>
-  
+  <logger name="bftsmart.tom.util.ShutdownHookThread" level="TRACE"></logger>
+
 </configuration>
