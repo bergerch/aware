@@ -202,7 +202,6 @@ public final class Acceptor {
 //			if (cid == tomLayer.getLastExec() + 1) {
 //			TODO && tomLayer.pipelineManager.getConsensusesInExecution().contains(cid)
 			if(cid >= (tomLayer.getLastExec() + 1) && cid <= (tomLayer.getLastExec() + 3)) {
-				logger.info("SetINExec Acceptor 205");
 				tomLayer.setInExec(cid);
 			}
 			epoch.deserializedPropValue = tomLayer.checkProposedValue(value, true);

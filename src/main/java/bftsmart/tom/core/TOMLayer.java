@@ -459,7 +459,6 @@ public final class TOMLayer extends Thread implements RequestReceiver {
                 // Sets the current consensus
 //                int execId = getLastExec() + 1;
                 int execId = getLastExec() + (pipelineManager.getConsensusesInExecution().size()==0 ? 1 : (pipelineManager.getConsensusesInExecution().size() + 1));
-                logger.info("SetINExec TOMLayer 455");
                 setInExec(execId);
 
                 Decision dec = execManager.getConsensus(execId).getDecision();
