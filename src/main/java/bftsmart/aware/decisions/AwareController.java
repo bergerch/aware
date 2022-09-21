@@ -124,6 +124,7 @@ public class AwareController {
 
         int cid = executionManager.getTOMLayer().getLastExec();
 
+        current = v.getWeightConfiguration();
         currentDW = new AwareConfiguration(current, executionManager.getCurrentLeader());
         Long estimate_current = simulator.predictLatency(replicaSet, currentDW.getLeader(),
                 currentDW.getWeightConfiguration(), propose, write, n, f, delta, ROUNDS_AMORTIZATION);
@@ -225,7 +226,9 @@ public class AwareController {
         // Calculate a good configuration for a future reconfiguration
         if (svc.getStaticConf().isUseDynamicWeights() && cid % svc.getStaticConf().getCalculationInterval() == 0 & cid > 0) {
             // threshold-AWARE: check the next faster view if there is one
-           View v = svc.getCurrentView().isFastestConfig() ? svc.getCurrentView() : svc.nextFasterConfig();
+           View v = (svc.getStaticConf().isAutoSwitching() && svc.getCurrentView().isFastestConfig())
+                   ? svc.getCurrentView()
+                   : svc.nextFasterConfig();
 
            // start new Thread to compute the best AWARE config in the background
             Thread computationOfBestConfig = new Thread(){
@@ -257,12 +260,14 @@ public class AwareController {
 
             // Threshold-AWARE: Currently: Periodically try to improve the threshold
             boolean thresholdDecrease = false;
-            if (svc.getCurrentView().isFastestConfig()) {
-                logger.info("System cant get any faster");
-            } else {
-                logger.info("###### SWITCH #####");
-                //svc.switchToFasterConfig();
-                thresholdDecrease = true;
+            if (svc.getStaticConf().isAutoSwitching()) {
+                if (svc.getCurrentView().isFastestConfig()) {
+                    logger.info("System cant get any faster");
+                } else {
+                    logger.info("###### SWITCH #####");
+                    //svc.switchToFasterConfig();
+                    thresholdDecrease = true;
+                }
             }
 
             AwareController awareController = AwareController.getInstance(svc, executionManager);
@@ -282,6 +287,7 @@ public class AwareController {
                     || thresholdDecrease)
             ) {
 
+                if (!thresholdDecrease) System.out.println("Opt.: Current config estimated: " + current.getPredictedLatency() + " and targeted is " +best.getPredictedLatency() );
                 // The current weight configuration is not the best
                 // Deterministically change weights (this decision will be the same in all correct replicas)
 

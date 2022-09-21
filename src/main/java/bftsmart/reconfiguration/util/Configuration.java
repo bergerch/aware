@@ -69,6 +69,8 @@ public class Configuration {
 
 	protected boolean defaultKeys = false;
 
+	protected boolean autoSwitching = false;
+
 	public Configuration(int procId, KeyLoader loader) {
 		logger = LoggerFactory.getLogger(this.getClass());
 		processId = procId;
@@ -83,6 +85,7 @@ public class Configuration {
 		keyLoader = loader;
 		init();
 	}
+
 
 	protected void init() {
 		logger = LoggerFactory.getLogger(this.getClass());
@@ -124,6 +127,13 @@ public class Configuration {
 				hashAlgorithm = DEFAULT_HASH;
 			} else {
 				hashAlgorithm = s;
+			}
+
+			s = (String) configs.remove("system.taware.autoswitching");
+			if (s == null) {
+				this.autoSwitching = false;
+			} else {
+				this.autoSwitching = Boolean.parseBoolean(s);
 			}
 
 			s = (String) configs.remove("system.communication.secretKeyAlgorithmProvider");
@@ -313,6 +323,15 @@ public class Configuration {
 			logger.error("Could not load private key", e);
 			return null;
 		}
+	}
+
+
+	public boolean isAutoSwitching() {
+		return autoSwitching;
+	}
+
+	public void setAutoSwitching(boolean autoSwitching) {
+		this.autoSwitching = autoSwitching;
 	}
 
 	private void loadConfig() {
