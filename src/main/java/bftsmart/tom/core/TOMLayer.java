@@ -53,7 +53,7 @@ import java.util.concurrent.locks.ReentrantLock;
 /**
  * This class implements the state machine replication protocol described in
  * Joao Sousa's 'From Byzantine Consensus to BFT state machine replication: a latency-optimal transformation' (May 2012)
- *
+ * <p>
  * The synchronization phase described in the paper is implemented in the Synchronizer class
  */
 public final class TOMLayer extends Thread implements RequestReceiver {
@@ -117,13 +117,13 @@ public final class TOMLayer extends Thread implements RequestReceiver {
     /**
      * Creates a new instance of TOMulticastLayer
      *
-     * @param manager Execution manager
-     * @param receiver Object that receives requests from clients
-     * @param recoverer Object of a class implementing Recoverable interface for the state management
-     * @param a Acceptor role of the PaW algorithm
-     * @param cs Communication system between replicas
+     * @param manager    Execution manager
+     * @param receiver   Object that receives requests from clients
+     * @param recoverer  Object of a class implementing Recoverable interface for the state management
+     * @param a          Acceptor role of the PaW algorithm
+     * @param cs         Communication system between replicas
      * @param controller Reconfiguration Manager
-     * @param verifier Implementation of predicate used to verify client requests
+     * @param verifier   Implementation of predicate used to verify client requests
      */
     public TOMLayer(ExecutionManager manager,
                     ServiceReplica receiver,
@@ -144,7 +144,7 @@ public final class TOMLayer extends Thread implements RequestReceiver {
         /*Tulio Ribeiro*/
         this.privateKey = this.controller.getStaticConf().getPrivateKey();
         this.publicKey = new HashMap<>();
-        int [] targets  = this.controller.getCurrentViewAcceptors();
+        int[] targets = this.controller.getCurrentViewAcceptors();
         for (int target : targets) {
             publicKey.put(target, controller.getStaticConf().getPublicKey(target));
         }
@@ -164,13 +164,13 @@ public final class TOMLayer extends Thread implements RequestReceiver {
         try {
             this.md = TOMUtil.getHashEngine();
         } catch (Exception e) {
-            logger.error("Failed to get message digest engine",e);
+            logger.error("Failed to get message digest engine", e);
         }
 
         try {
             this.engine = TOMUtil.getSigEngine();
         } catch (Exception e) {
-            logger.error("Failed to get signature engine",e);
+            logger.error("Failed to get signature engine", e);
         }
 
         this.dt = new DeliveryThread(this, receiver, recoverer, this.controller); // Create delivery thread
@@ -224,7 +224,7 @@ public final class TOMLayer extends Thread implements RequestReceiver {
         try {
             return new SignedObject(obj, privateKey, engine);
         } catch (Exception e) {
-            logger.error("Failed to sign object",e);
+            logger.error("Failed to sign object", e);
             return null;
         }
     }
@@ -232,7 +232,7 @@ public final class TOMLayer extends Thread implements RequestReceiver {
     /**
      * Verifies the signature of a signed object
      *
-     * @param so Signed object to be verified
+     * @param so     Signed object to be verified
      * @param sender Replica id that supposedly signed this object
      * @return True if the signature is valid, false otherwise
      */
@@ -240,7 +240,7 @@ public final class TOMLayer extends Thread implements RequestReceiver {
         try {
             return so.verify(publicKey.get(sender), engine);
         } catch (Exception e) {
-            logger.error("Failed to verify object signature",e);
+            logger.error("Failed to verify object signature", e);
         }
         return false;
     }
@@ -287,7 +287,7 @@ public final class TOMLayer extends Thread implements RequestReceiver {
     public void setInExec(int inEx) {
         proposeLock.lock();
         logger.debug("Modifying inExec from " + this.inExecution + " to " + inEx);
-        if(inEx!=-1) {
+        if (inEx != -1) {
             this.pipelineManager.addToConsensusInExecList(inEx);
         }
         this.inExecution = inEx;
@@ -300,12 +300,21 @@ public final class TOMLayer extends Thread implements RequestReceiver {
     public void removeInExec(int inExToRemove) {
         proposeLock.lock();
         logger.debug("Modifying inExec from " + this.inExecution + " to " + -1);
-        if(inExToRemove!=-1) this.pipelineManager.removeFromConsensusInExecList(inExToRemove);
+        if (inExToRemove != -1) this.pipelineManager.removeFromConsensusInExecList(inExToRemove);
         this.inExecution = -1;
         if (pipelineManager.isLessThanMaxConsInExecListAllowed() && !isRetrievingState()) {
             canPropose.signalAll();
         }
         proposeLock.unlock();
+    }
+
+    public void setDelayBeforeConsStartInPipeline() {
+        try {
+            logger.debug("Waiting {}ms ...", pipelineManager.getAmountOfMillisecondsToWait());
+            Thread.sleep(pipelineManager.getAmountOfMillisecondsToWait());
+        } catch (InterruptedException ex) {
+            ex.printStackTrace();
+        }
     }
 
     /**
@@ -351,7 +360,7 @@ public final class TOMLayer extends Thread implements RequestReceiver {
 
             if (clientsManager.requestReceived(msg, true, communication)) {
 
-                if(controller.getStaticConf().getBatchTimeout() == -1) {
+                if (controller.getStaticConf().getBatchTimeout() == -1) {
                     haveMessages();
                 } else {
 
@@ -425,7 +434,7 @@ public final class TOMLayer extends Thread implements RequestReceiver {
 
             // blocks until the current consensus finishes
             proposeLock.lock();
-            if (getInExec() != -1 && pipelineManager.getConsensusesInExecution().size()==pipelineManager.maxConsensusesInExec) { //there are already max amount of consensus running
+            if (getInExec() != -1 && pipelineManager.getConsensusesInExecutionList().size() == pipelineManager.maxConsensusesInExec) { //there are already max amount of consensus running
                 logger.debug("Waiting for consensus " + getInExec() + " termination.");
                 canPropose.awaitUninterruptibly();
             }
@@ -458,7 +467,7 @@ public final class TOMLayer extends Thread implements RequestReceiver {
 
                 // Sets the current consensus
 //                int execId = getLastExec() + 1;
-                int execId = getLastExec() + (pipelineManager.getConsensusesInExecution().size()==0 ? 1 : (pipelineManager.getConsensusesInExecution().size() + 1));
+                int execId = getLastExec() + (pipelineManager.getConsensusesInExecutionList().size() == 0 ? 1 : (pipelineManager.getConsensusesInExecutionList().size() + 1));
                 setInExec(execId);
 
                 Decision dec = execManager.getConsensus(execId).getDecision();
@@ -484,8 +493,21 @@ public final class TOMLayer extends Thread implements RequestReceiver {
                     continue;
 
                 }
-                logger.info("=====Start Consensus {} ======",execId);
+
+//                TODO currently it blocks entire thread. We have to use canPropose and in adding newCons check for timeDiff. and invoke canPorpose.signalALl()
+//                remove thread.sleep and instead just do check everytime we want to start a new cons :) and if already allowed we start.
+//                but what if no invocation of the method that do signalAll. Then we anyway have to check it regularly.
+//                CHECK IT AGAIN.: looks like working good.
+//                proposeLock.lock();
+                if (!pipelineManager.isDelayedBeforeNewConsensusStart()) {
+                    logger.debug("Waiting before starting new consensus...");
+                    setDelayBeforeConsStartInPipeline();
+                }
+//                proposeLock.unlock();
+
+                logger.info("=====Start Consensus {} ======, timestamp: {}", execId, System.nanoTime());
                 execManager.getProposer().startConsensus(execId, createPropose(dec));
+                pipelineManager.setLastProposedTimestamp();
             }
         }
         logger.info("TOMLayer stopped.");
@@ -508,16 +530,16 @@ public final class TOMLayer extends Thread implements RequestReceiver {
     /**
      * Verify if the value being proposed for a epoch is valid. It verifies the
      * client signature of all batch requests.
-     *
+     * <p>
      * TODO: verify timestamps and nonces
      *
-     * @param proposedValue the value being proposed
+     * @param proposedValue      the value being proposed
      * @param addToClientManager add the requests to the client manager
      * @return Valid messages contained in the proposed value
      */
     public TOMMessage[] checkProposedValue(byte[] proposedValue, boolean addToClientManager) {
 
-        try{
+        try {
 
             logger.debug("Checking proposed value");
 
@@ -543,13 +565,14 @@ public final class TOMLayer extends Thread implements RequestReceiver {
                             //notifies the client manager that this request was received and get
                             //the result of its validation
                             request.isValid = clientsManager.requestReceived(request, false);
-                            if (Thread.holdsLock(clientsManager.getClientsLock())) clientsManager.getClientsLock().unlock();
+                            if (Thread.holdsLock(clientsManager.getClientsLock()))
+                                clientsManager.getClientsLock().unlock();
 
-                        }
-                        catch (Exception e) {
+                        } catch (Exception e) {
 
                             logger.error("Error while validating requests", e);
-                            if (Thread.holdsLock(clientsManager.getClientsLock())) clientsManager.getClientsLock().unlock();
+                            if (Thread.holdsLock(clientsManager.getClientsLock()))
+                                clientsManager.getClientsLock().unlock();
 
                         }
 
@@ -572,7 +595,7 @@ public final class TOMLayer extends Thread implements RequestReceiver {
             return requests;
 
         } catch (Exception e) {
-            logger.error("Failed to check proposed value",e);
+            logger.error("Failed to check proposed value", e);
             if (Thread.holdsLock(clientsManager.getClientsLock())) clientsManager.getClientsLock().unlock();
 
             return null;
