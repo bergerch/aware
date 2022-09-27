@@ -283,11 +283,13 @@ public class AwareController {
             logger.info("");
 
             if (svc.getStaticConf().isUseDynamicWeights()
-                    && ((!currentWeights.equals(bestWeights) && current.getPredictedLatency() > best.getPredictedLatency() * svc.getStaticConf().getOptimizationGoal())
+                    && ((!currentWeights.equals(bestWeights)
+                    && ((double) current.getPredictedLatency()) > ((double) best.getPredictedLatency()) * svc.getStaticConf().getOptimizationGoal())
                     || thresholdDecrease)
             ) {
 
-                if (!thresholdDecrease) System.out.println("Opt.: Current config estimated: " + current.getPredictedLatency() + " and targeted is " +best.getPredictedLatency() );
+                if (!thresholdDecrease)
+                    System.out.println("Opt.: Current config estimated: " + current.getPredictedLatency() + " and targeted is " +best.getPredictedLatency() );
                 // The current weight configuration is not the best
                 // Deterministically change weights (this decision will be the same in all correct replicas)
 
@@ -318,7 +320,7 @@ public class AwareController {
 
             if (svc.getStaticConf().isUseLeaderSelection()
                     && executionManager.getCurrentLeader() != best.getLeader()
-                    && current.getPredictedLatency() > best.getPredictedLatency() * svc.getStaticConf().getOptimizationGoal()) {
+                    && ((double) current.getPredictedLatency()) > ((double) best.getPredictedLatency()) * svc.getStaticConf().getOptimizationGoal()) {
 
                 // The current leader is not the best, change it to the best
                 int newLeader =  (best.getLeader()+svc.getCurrentViewN()) % svc.getCurrentViewN();

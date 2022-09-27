@@ -115,13 +115,19 @@ public class CorrectableSimple {
     public byte[] getValue(double needed_votes, int needed_responses) {
         // int time = 1;
         while (true) {
-            // System.out.println("before try Acquire");
+             //System.out.println("before try Acquire");
             try {
                 block.tryAcquire(needed_responses, 100, TimeUnit.MILLISECONDS); // do i need the timeout?
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            // System.out.println("Before lock");
+            // System.out.println("Before release");
+            try {
+                Thread.sleep(0, 20);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+            //System.out.println("Slept 1 ms");
             // mutex.lock();
             if (state == CorrectableState.ERROR) {
                 // mutex.unlock();

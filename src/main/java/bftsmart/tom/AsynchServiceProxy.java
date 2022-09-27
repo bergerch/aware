@@ -424,6 +424,86 @@ public class AsynchServiceProxy extends ServiceProxy {
         return correctable;
     }
 
+
+    public long[] invokeCorrectableLatency(byte[] request) {
+        return this.invokeCorrectableLatency(request, new Consistency[]{Consistency.NONE, Consistency.WEAK, Consistency.LINE, Consistency.FINAL});
+    }
+    public long[] invokeCorrectableLatency(byte[] request, Consistency[] levels) {
+
+        long[] latency = new long[levels.length];
+        int targets[] = super.getViewManager().getCurrentViewProcesses();
+        logger.debug("Asynchronously sending request to " + Arrays.toString(targets));
+
+        RequestContext requestContext = null;
+        TOMMessageType reqType = TOMMessageType.ORDERED_REQUEST;
+
+        canSendLock.lock(); /** Critical Section **/
+        long start = System.nanoTime();
+        requestContext = new RequestContext(generateRequestId(reqType), generateOperationId(), reqType, targets, System.currentTimeMillis(), new ReplyListener() {
+
+            int responces = 0;
+            double votes = 0.0;
+            int level_index = 0;
+
+            @Override
+            public void reset() {
+                responces = 0;
+                votes = 0;
+                level_index = 0;
+                long[] latency = new long[levels.length];
+            }
+
+            @Override
+            public void replyReceived(RequestContext context, TOMMessage reply) {
+                responces++;
+                View view = getViewManager().getCurrentView();
+                int sender = reply.getSender();
+                votes += view.getWeight(sender);
+
+                int delta = view.getDelta();
+                int t = view.getF();
+                double Vmax = 1.0 + (double) delta / (double) t;
+                // System.out.println("Vmax = " + Vmax);
+                int N = view.getN();
+                int T = (N - 1) / 3;
+
+                double q = calculateConsistencyQ(levels[level_index], (double) t, Vmax);
+
+                if (votes >= q) {
+                    if (levels[level_index].equals(Consistency.FINAL)) {
+                        int needed_responces = (int) Math.ceil((N + 2 * T - t + 1) / 2.0);
+                        if (responces > needed_responces) { // received weights votes and confirmations
+                            System.out.println("Received enouch replies and confirmations, executing Update");
+                            latency[level_index] = System.nanoTime() - start;
+                            level_index++;
+                        }
+                    } else {
+                        System.out.println("Received enouch replies, executing Update");
+                        latency[level_index] = System.nanoTime() - start;
+                        level_index++;
+                    }
+                }
+                if (level_index >= levels.length) { // close after last level of consistency (can be lower than
+                    // FINAL)
+                    cleanAsynchRequest(context.getOperationId());
+                }
+            }
+        }, request);
+
+        try {
+            logger.debug("Storing request context for " + requestContext.getOperationId());
+            requestsContext.put(requestContext.getOperationId(), requestContext);
+            requestsReplies.put(requestContext.getOperationId(),
+                    new TOMMessage[super.getViewManager().getCurrentViewN()]);
+
+            sendMessageToTargets(request, requestContext.getReqId(), requestContext.getOperationId(), targets, reqType);
+
+        } finally {
+            canSendLock.unlock();
+        }
+        return latency;
+    }
+
     private double calculateConsistencyQ(Consistency level, double t, double Vmax) {
         if (level.equals(Consistency.NONE)) {
             return 1.0;

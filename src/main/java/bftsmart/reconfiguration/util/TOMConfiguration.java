@@ -431,8 +431,8 @@ public class TOMConfiguration extends Configuration {
             s = (String) configs.remove("system.aware.monitoringOverhead");
             monitoringOverhead = s != null ? Double.parseDouble(s) : 0;
 
-            s = (String) configs.remove("system.dv.optimizationGoal");
-            optimizationGoal = s != null ? Double.parseDouble(s) : 1.00;
+            s = (String) configs.remove("system.aware.optimizationGoal");
+            optimizationGoal = s != null ? Double.parseDouble(s) : 1.05;
 
             s = (String) configs.remove("system.aware.useDummyPropose");
             useDummyPropose = Boolean.parseBoolean(s);

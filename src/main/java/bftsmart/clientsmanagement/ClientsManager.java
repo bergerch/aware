@@ -340,7 +340,7 @@ public class ClientsManager {
                 //          The leader then would reject the message, because it already accounted for the message reception. -> leader change
                 //clientData.setLastMessageReceived(request.getSequence());
                 //clientData.setLastMessageReceivedTime(request.receptionTime);
-
+                logger.warn("simple flow control mechanism to avoid out of memory exception");
                 clientData.clientLock.unlock();
                 return false;
             }
@@ -441,6 +441,7 @@ public class ClientsManager {
         
         clientData.clientLock.unlock();
 
+        logger.debug("request received completed");
         return accounted;
     }
 

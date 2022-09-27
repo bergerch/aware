@@ -565,7 +565,7 @@ public final class TOMLayer extends Thread implements RequestReceiver {
 
         try {
 
-            logger.debug("Checking proposed value");
+            logger.debug("Checking proposed value"); // TODO Threading problem between here and next debug statement! -cb
 
             BatchReader batchReader = new BatchReader(proposedValue,
                     this.controller.getStaticConf().getUseSignatures() == 1);
