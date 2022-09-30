@@ -173,7 +173,7 @@ public class NettyClientServerCommunicationSystemServerSide extends SimpleChanne
 
             /** AWARE **/
             if (controller.getStaticConf().isUseWeights()) {
-                logger.info("Using WHEAT Extensions: ");
+                logger.info("thres-AWARE built_300922, Extensions: ");
                 logger.info("Use dynamic weight adjustments (AWARE): " + controller.getStaticConf().isUseDynamicWeights());
                 logger.info("Use Leader selection optimization: " + controller.getStaticConf().isUseLeaderSelection());
                 logger.info("Use WRITE-RESPONSE: " + controller.getStaticConf().isUseWriteResponse());

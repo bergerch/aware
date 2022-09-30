@@ -181,11 +181,14 @@ public class ThroughputLatencyClientICG {
 				System.out.println("Waiting for last results to arrive..");
 				Thread.sleep(30000);
 
+				int k= 0;
 				for (long[] latencies: latenciesRounds) {
-					none.store(latencies[0]);
-					weak.store(latencies[1]);
-					strong.store(latencies[2]);
-					finalized.store(latencies[3]);
+					if (k < numOperations/2) {
+						none.store(latencies[0]);
+						weak.store(latencies[1]);
+						strong.store(latencies[2]);
+						finalized.store(latencies[3]);
+					}
 				}
 			} catch (InterruptedException e) {
 				System.out.println("Interrupted Thread");
