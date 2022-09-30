@@ -181,6 +181,7 @@ public class NettyClientServerCommunicationSystemServerSide extends SimpleChanne
                 logger.info("Use PROPOSE-RESPONSE: " + controller.getStaticConf().isUseProposeResponse());
                 logger.info("Monitoring overhead: " + controller.getStaticConf().getMonitoringOverhead());
                 logger.info("Re-Calculate after x consensus: " + controller.getStaticConf().getCalculationInterval());
+				logger.info("Calc Delay: " + controller.getStaticConf().getCalculationDelay());
 				logger.info("Opt goal " + controller.getStaticConf().getOptimizationGoal());
             }
 
