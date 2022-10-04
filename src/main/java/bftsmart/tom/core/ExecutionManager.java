@@ -108,7 +108,9 @@ public final class ExecutionManager {
         //******* EDUARDO END **************//
         
         // Get initial leader
-        if (controller.getCurrentViewAcceptors().length > 0)
+        if (controller.getStaticConf().getInitialLeader() > 0)
+            currentLeader = controller.getStaticConf().getInitialLeader();
+        else if (controller.getCurrentViewAcceptors().length > 0)
             currentLeader = controller.getCurrentViewAcceptors()[0];
         else currentLeader = 0;
     }
