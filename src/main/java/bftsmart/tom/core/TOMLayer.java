@@ -16,6 +16,7 @@
  */
 package bftsmart.tom.core;
 
+import bftsmart.aware.decisions.AwareController;
 import bftsmart.clientsmanagement.ClientsManager;
 import bftsmart.clientsmanagement.RequestList;
 import bftsmart.communication.ServerCommunicationSystem;
@@ -110,6 +111,10 @@ public final class TOMLayer extends Thread implements RequestReceiver {
     private final Condition haveMessages = messagesLock.newCondition();
     private final ReentrantLock proposeLock = new ReentrantLock();
     private final Condition canPropose = proposeLock.newCondition();
+
+    private final ReentrantLock reconfigurationLock = new ReentrantLock();
+
+    private final Condition reconfigurationCompleted = reconfigurationLock.newCondition();
 
     private final PrivateKey privateKey;
     private final HashMap<Integer, PublicKey> publicKey;
@@ -280,6 +285,17 @@ public final class TOMLayer extends Thread implements RequestReceiver {
     }
 
     /**
+     * A reconfiguration has been successfully completed
+     */
+    public void reconfigurationCompleted() {
+        logger.debug("Finished Optimization");
+        reconfigurationLock.lock();
+        logger.debug("Signal Proposer thread to continue after Reconf");
+        reconfigurationCompleted.signal();
+        reconfigurationLock.unlock();
+    }
+
+    /**
      * Sets which consensus was the last to be executed
      *
      * @param last ID of the consensus which was last to be executed
@@ -330,6 +346,10 @@ public final class TOMLayer extends Thread implements RequestReceiver {
      */
     public int getInExec() {
         return this.inExecution;
+    }
+
+    public ReentrantLock getReconfigurationLock() {
+        return this.reconfigurationLock;
     }
 
     /**
@@ -473,6 +493,23 @@ public final class TOMLayer extends Thread implements RequestReceiver {
 
             if (!doWork)
                 break;
+
+
+            //START t-AWARE:  block untils t-AWARE reconfiguration completes
+            reconfigurationLock.lock();
+            if ( (getLastExec() % controller.getStaticConf().getCalculationInterval()) == controller.getStaticConf().getCalculationDelay()
+                    && getLastExec() >=  controller.getStaticConf().getCalculationInterval() + controller.getStaticConf().getCalculationDelay()
+                    && getLastExec() > AwareController.getInstance(controller, execManager).getLastReconfigurationCID()
+            ) {
+                logger.debug("There may be a reconfiguration. Waiting for this to complete");
+                reconfigurationCompleted.awaitUninterruptibly();
+                logger.debug("Reconfiguration completed");
+            }
+            reconfigurationLock.unlock();
+            if (execManager.getCurrentLeader() != this.controller.getStaticConf().getProcessId()) {
+              break;
+            }
+            //END t-AWARE:  block untils t-AWARE reconfiguration completes
 
             logger.debug("I'm the leader.");
 

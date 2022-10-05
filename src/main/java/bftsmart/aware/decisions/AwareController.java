@@ -49,6 +49,8 @@ public class AwareController {
 
     private ReentrantLock computationCompletedLock = new ReentrantLock();
 
+    private int lastReconfigurationCID = -1;
+
     /**
      * Singelton
      *
@@ -253,6 +255,9 @@ public class AwareController {
                 && (cid % svc.getStaticConf().getCalculationInterval() ) == svc.getStaticConf().getCalculationDelay()
                 && cid >=  svc.getStaticConf().getCalculationInterval() + svc.getStaticConf().getCalculationDelay()) {
 
+            // Lock here until reconfiguration completes
+            executionManager.getTOMLayer().getReconfigurationLock().lock();
+
             logger.info("Trying to lock, Computation should be completed, at cid" + cid);
 
             computationCompletedLock.lock();
@@ -338,7 +343,6 @@ public class AwareController {
                     //if(acceptor.proposeRecvd[newLeader] != null)
                        // logger.info("!!!! NUMBER" + acceptor.proposeRecvd[newLeader].getNumber());
 
-
                     if(acceptor.proposeRecvd[newLeader] != null && acceptor.proposeRecvd[newLeader].getNumber() == cid + 1) {
                         //logger.info("!!!!!!!!" + acceptor.proposeRecvd[newLeader] + " " + acceptor.proposeRecvd[newLeader].getNumber() + " " + cidNew );
                         //logger.info("!!!!!!!! Receiving propose of new leader");
@@ -355,6 +359,10 @@ public class AwareController {
             /* End critical section */
             computationCompletedLock.unlock();
             logger.info("Optimization code completed");
+            this.lastReconfigurationCID = cid;
+            executionManager.getTOMLayer().getReconfigurationLock().unlock();
+            // Signal TOMLayer to continue processing consensus instances
+            executionManager.getTOMLayer().reconfigurationCompleted();
         }
     }
 
@@ -417,5 +425,9 @@ public class AwareController {
 
     public void setCurrentDW(AwareConfiguration currentDW) {
         this.currentDW = currentDW;
+    }
+
+    public int getLastReconfigurationCID() {
+        return this.lastReconfigurationCID;
     }
 }
