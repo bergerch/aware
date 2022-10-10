@@ -447,7 +447,7 @@ public class TOMConfiguration extends Configuration {
             synchronisationPeriod = s != null ? Integer.parseInt(s) : 20000;
 
             s = (String) configs.remove("system.aware.synchronisationDelay");
-            synchronisationDelay = s != null ? Integer.parseInt(s) : 30000;
+            synchronisationDelay = s != null ? Integer.parseInt(s) : 120000;
 
             /** T-AWARE **/
 

@@ -507,7 +507,7 @@ public final class TOMLayer extends Thread implements RequestReceiver {
             }
             reconfigurationLock.unlock();
             if (execManager.getCurrentLeader() != this.controller.getStaticConf().getProcessId()) {
-              break;
+              continue;
             }
             //END t-AWARE:  block untils t-AWARE reconfiguration completes
 
