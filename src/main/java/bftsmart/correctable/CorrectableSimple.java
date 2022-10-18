@@ -88,9 +88,10 @@ public class CorrectableSimple {
         int N = current_view.getN();
         int needed_responses = (N + 2 * T - (t + 1)) / 2;
         // int time = 1;
+        boolean acquire = false;
         while (true) {
             try {
-                block.tryAcquire(needed_responses, ACQUIRETIMEOUT, TIMEUNIT);
+                acquire = block.tryAcquire(needed_responses, ACQUIRETIMEOUT, TIMEUNIT);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -104,7 +105,9 @@ public class CorrectableSimple {
                 block.release(needed_responses);
                 return null;
             }
-            block.release(needed_responses);
+            if (acquire) {
+                block.release(needed_responses);   
+            }
         }
     }
 
@@ -117,10 +120,11 @@ public class CorrectableSimple {
      */
     public byte[] getValue(double needed_votes, int needed_responses) {
         // int time = 1;
+        boolean acquire = false;
         while (true) {
             // System.out.println("before try Acquire");
             try {
-                block.tryAcquire(needed_responses, ACQUIRETIMEOUT, TIMEUNIT); // do i need the timeout?
+                acquire = block.tryAcquire(needed_responses, ACQUIRETIMEOUT, TIMEUNIT); // do i need the timeout?
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -140,7 +144,9 @@ public class CorrectableSimple {
                 return ret_value;
             }
             // mutex.unlock();
-            block.release(needed_responses);
+            if (acquire) {
+                block.release(needed_responses);   
+            }
         }
     }
 

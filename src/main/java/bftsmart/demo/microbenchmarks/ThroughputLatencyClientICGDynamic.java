@@ -328,10 +328,10 @@ public class ThroughputLatencyClientICGDynamic {
             Storage strongst = new Storage(numberOfOps / 2);
             Storage finalst = new Storage(numberOfOps / 2);
 
-            long ex_initial_time = System.nanoTime();
-
             System.out.println("Executing experiment for " + numberOfOps / 2 + " ops after "
                     + (System.nanoTime() - initial_time) + " us of execution");
+
+            long ex_initial_time = System.nanoTime();
 
             for (int i = 0; i < numberOfOps / 2; i++, req++) {
                 long last_send_instant = System.nanoTime();
@@ -351,39 +351,31 @@ public class ThroughputLatencyClientICGDynamic {
                     CorrectableSimple cor = proxy.invokeCorrectable(request);
                     cor.getValueNoneConsistency();
                     long nonelatency = System.nanoTime() - last_send_instant;
-                    long nonetime = System.nanoTime() / 1000000000;
                     nonest.store(nonelatency);
-
                     cor.getValueWeakConsistency();
                     long weaklatency = System.nanoTime() - last_send_instant;
-                    long weaktime = System.nanoTime() / 1000000000;
                     weakst.store(weaklatency);
-
                     cor.getValueLineConsistency();
                     long linelatency = System.nanoTime() - last_send_instant;
-                    long linetime = System.nanoTime() / 1000000000;
                     strongst.store(linelatency);
-
+                    System.out.print(5);
                     cor.getValueFinalConsistency();
                     long finallatency = System.nanoTime() - last_send_instant;
-                    long finaltime = System.nanoTime() / 1000000000;
                     finalst.store(finallatency);
+                    System.out.print(6);
+                    long final_time = (last_send_instant - ex_initial_time) / 1000000000;
 
                     try {
-                        latencies.put(id + "\tt: " + nonetime + " s : " + nonelatency / 1000000 + " ms -> None\n");
-                        latencies.put(id + "\tt: " + weaktime + " s : " + weaklatency / 1000000 + " ms -> Weak\n");
-                        latencies.put(id + "\tt: " + linetime + " s : " + linelatency / 1000000 + " ms -> Strong\n");
-                        latencies.put(id + "\tt: " + finaltime + " s : " + finallatency / 1000000 + " ms -> Final\n");
-                        // f.write(id + "\t" + System.nanoTime() + "\t" + nonelatency + " us -> None\n"
-                        // + id + "\t" + System.nanoTime() + "\t" + weaklatency + " us -> Weak\n"
-                        // + id + "\t" + System.nanoTime() + "\t" + linelatency + " us -> Strong\n"
-                        // + id + "\t" + System.nanoTime() + "\t" + finallatency + " us -> Final\n");
+                        latencies.put(id + "; t: " + final_time + " s; None: " + nonelatency / 1000000
+                                + " ms; Weak: " + weaklatency / 1000000 + " ms; Strong: " + linelatency / 1000000
+                                + " ms; Final: " + finallatency / 1000000 + " ms\n");
                     } catch (InterruptedException ex) {
                         ex.printStackTrace();
                     } // catch (IOException e) {
                       // // TODO Auto-generated catch block
                       // e.printStackTrace();
                       // }
+                    System.out.println(7);
                 }
 
                 if (verbose)
@@ -399,6 +391,7 @@ public class ThroughputLatencyClientICGDynamic {
                         double waitTime = Math.random() * interval * -1;
                         System.out.println("waiting for " + waitTime + " ms");
                         Thread.sleep(Math.round(waitTime));
+                        System.out.println(8);
                     }
                     if (this.rampup > 0) {
                         Thread.sleep(this.rampup);
