@@ -23,6 +23,9 @@ public class CorrectableSimple {
     private double votes = 0.0;
     private int responses = 0;
 
+    private int ACQUIRETIMEOUT = 1000;
+    private TimeUnit TIMEUNIT = TimeUnit.MILLISECONDS;
+
     public CorrectableSimple(ClientViewController controller) {
         this.state = CorrectableState.UPDATING;
         this.ret_value = null;
@@ -87,7 +90,7 @@ public class CorrectableSimple {
         // int time = 1;
         while (true) {
             try {
-                block.tryAcquire(needed_responses, 100, TimeUnit.MILLISECONDS);
+                block.tryAcquire(needed_responses, ACQUIRETIMEOUT, TIMEUNIT);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -117,7 +120,7 @@ public class CorrectableSimple {
         while (true) {
             // System.out.println("before try Acquire");
             try {
-                block.tryAcquire(needed_responses, 100, TimeUnit.MILLISECONDS); // do i need the timeout?
+                block.tryAcquire(needed_responses, ACQUIRETIMEOUT, TIMEUNIT); // do i need the timeout?
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

@@ -20,14 +20,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.List;
-
-import bftsmart.forensic.AuditResult;
-import bftsmart.forensic.AuditStorage;
-import bftsmart.forensic.Auditor;
 import bftsmart.tom.ServiceProxy;
 import bftsmart.tom.core.messages.TOMMessageType;
-import bftsmart.tom.util.TOMUtil;
 
 /**
  * Example client that updates a BFT replicated service (a counter).

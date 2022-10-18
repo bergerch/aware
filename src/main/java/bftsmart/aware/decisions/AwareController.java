@@ -52,7 +52,7 @@ public class AwareController {
     /**
      * Singelton
      *
-     * @param svc Server View Controller
+     * @param svc              Server View Controller
      * @param executionManager Execution Manager
      * @return
      */
@@ -78,28 +78,31 @@ public class AwareController {
         timer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
-                 logger.info("[AwARE] Controller of id=" + svc.getStaticConf().getProcessId()
-                         + ": currently using weights " + instance.getCurrent()
-                         + ", leader " + executionManager.getCurrentLeader()
-                         + ", view " + svc.getCurrentView().getId()
-                         + ", last executed consensus " + executionManager.getLastExec()
-                         + ", current Delta " + viewControl.getCurrentView().getDelta());
+                logger.info("[AwARE] Controller of id=" + svc.getStaticConf().getProcessId()
+                        + ": currently using weights " + instance.getCurrent()
+                        + ", leader " + executionManager.getCurrentLeader()
+                        + ", view " + svc.getCurrentView().getId()
+                        + ", last executed consensus " + executionManager.getLastExec()
+                        + ", current Delta " + viewControl.getCurrentView().getDelta());
             }
-        }, 10*1000, 5*1000);
+        }, 10 * 1000, 5 * 1000);
     }
 
-
     /**
-     * This is where we start our search for the best weight configuration and protocol leader. We will generate
-     * all possible weight configs first, then compute the predicted latency for all of them and for all possible
-     * leader variants. Note, that this way, we traverse the entire search space. Since we compute combinations,
-     * the search space is factorial in N and needs to be handled with some heuristics in larger systems
+     * This is where we start our search for the best weight configuration and
+     * protocol leader. We will generate
+     * all possible weight configs first, then compute the predicted latency for all
+     * of them and for all possible
+     * leader variants. Note, that this way, we traverse the entire search space.
+     * Since we compute combinations,
+     * the search space is factorial in N and needs to be handled with some
+     * heuristics in larger systems
      */
     public AwareConfiguration computeBest(View v) {
         Simulator simulator = new Simulator(viewControl);
         Monitor monitor = Monitor.getInstance(viewControl);
 
-        int[] replicaSet =v.getProcesses();
+        int[] replicaSet = v.getProcesses();
         int n = v.getN();
         int f = v.getF();
         int u = v.isBFT() ? 2 * f : f;
@@ -134,16 +137,15 @@ public class AwareController {
             return Simulator.simulatedAnnealing(n, f, delta, u, replicaSet, propose, write, cid).best;
         }
 
-
         // Generate the search space:
-        //      Computes all possible combinates of R_max and R_min distributions
+        // Computes all possible combinates of R_max and R_min distributions
         List<WeightConfiguration> weightConfigs = WeightConfiguration.allPossibleWeightConfigurations(u, replicaSet);
 
         List<AwareConfiguration> awareConfigurations = new ArrayList<>();
         int leader = executionManager.getCurrentLeader();
 
         // Generate the search space
-        //      determine if leader should be selected or not
+        // determine if leader should be selected or not
         for (WeightConfiguration w : weightConfigs) {
             if (viewControl.getStaticConf().isUseLeaderSelection()) {
                 for (int primary : w.getR_max()) {
@@ -156,13 +158,16 @@ public class AwareController {
             }
         }
 
-        // Compute the predictet latencies of all possible configurations using the simulator
+        // Compute the predictet latencies of all possible configurations using the
+        // simulator
         for (AwareConfiguration dwc : awareConfigurations) {
             Long predictedLatency = simulator.predictLatency(replicaSet, dwc.getLeader(), dwc.getWeightConfiguration(),
                     propose, write, n, f, delta, ROUNDS_AMORTIZATION);
             dwc.setPredictedLatency(predictedLatency);
-            //logger.info("WeightConfig " + dwc.getWeightConfiguration() + "with leader " + dwc.getLeader() +
-            //        " has predicted latency of " + ((double) Math.round(predictedLatency) / 1000) / 1000.00 + " ms");
+            // logger.info("WeightConfig " + dwc.getWeightConfiguration() + "with leader " +
+            // dwc.getLeader() +
+            // " has predicted latency of " + ((double) Math.round(predictedLatency) / 1000)
+            // / 1000.00 + " ms");
         }
 
         // Sort configurations for ascending predicted latency
@@ -180,7 +185,7 @@ public class AwareController {
         logger.info("current config is estimated to be " + estimate_current);
 
         List<AwareConfiguration> bestConfigs = new ArrayList<>();
-        for (AwareConfiguration dwc: awareConfigurations) {
+        for (AwareConfiguration dwc : awareConfigurations) {
             if (dwc.getPredictedLatency() == best.getPredictedLatency()) {
                 bestConfigs.add(dwc);
             }
@@ -189,7 +194,7 @@ public class AwareController {
         int currentLeader = this.executionManager.getCurrentLeader();
 
         best = bestConfigs.get(0);
-        for (AwareConfiguration dwc: bestConfigs) {
+        for (AwareConfiguration dwc : bestConfigs) {
             if (dwc.getLeader() == currentLeader) {
                 best = dwc;
                 break;
@@ -199,17 +204,27 @@ public class AwareController {
         return best;
     }
 
-
-
     public void audit(int cid) {
         // int me = viewControl.getStaticConf().getProcessId();
         // int interval = 250; // TODO change this to get from configuration file
-        // if (svc.getStaticConf().isUseDynamicWeights() && cid % 99 == 0 & cid > 0) { // todo hardcoded interval
-        // if (svc.getStaticConf().isUseDynamicWeights() && cid > 0 && cid % interval == me * (interval/viewControl.getCurrentViewN())) {
+        // if (svc.getStaticConf().isUseDynamicWeights() && cid % 99 == 0 & cid > 0) {
+        // // todo hardcoded interval
+        // if (svc.getStaticConf().isUseDynamicWeights() && cid > 0 && cid % interval ==
+        // me * (interval/viewControl.getCurrentViewN())) {
+        int interval = viewControl.getStaticConf().getForensicsInterval();
         if (svc.getStaticConf().isUseDynamicWeights() && cid > 0
-            && viewControl.getAuditProvider().getStorage().getSize() >=  viewControl.getStaticConf().minStorageSize()) {
+                && viewControl.getAuditProvider().getStorage().getSize() >= viewControl.getStaticConf()
+                        .minStorageSize()
+                && cid % interval == viewControl.getStaticConf().getProcessId()
+                        * (interval / viewControl.getCurrentViewN())) {
+            if (!svc.getStaticConf().getBackupForensics() && svc.inBackup()) { // if backup configuration is being used
+                                                                               // no need to perform forensics
+                System.out.println("======= NO NEED TO PERFORM FORENSICS =======");
+                viewControl.getAuditProvider().clean(); // zero can be used here, only from the last clean cid is used
+                return;
+            }
             // perform audit periodically
-            // System.out.println("Audit in consensus " + cid);
+            // System.out.println("Audit in consensus O + cid);
             MessageFactory factory = new MessageFactory(svc.getStaticConf().getProcessId());
             ConsensusMessage cm = factory.createAudit(svc.getCurrentViewId());
             executionManager.getTOMLayer().getCommunication()
@@ -225,12 +240,13 @@ public class AwareController {
     public void optimize(int cid) {
 
         // Calculate a good configuration for a future reconfiguration
-        if (svc.getStaticConf().isUseDynamicWeights() && cid % svc.getStaticConf().getCalculationInterval() == 0 & cid > 0) {
+        if (svc.getStaticConf().isUseDynamicWeights()
+                && cid % svc.getStaticConf().getCalculationInterval() == 0 & cid > 0) {
             // threshold-AWARE: check the next faster view if there is one
-           View v = svc.getCurrentView().isFastestConfig() ? svc.getCurrentView() : svc.nextFasterConfig();
+            View v = svc.getCurrentView().isFastestConfig() ? svc.getCurrentView() : svc.nextFasterConfig();
 
-           // start new Thread to compute the best AWARE config in the background
-            Thread computationOfBestConfig = new Thread(){
+            // start new Thread to compute the best AWARE config in the background
+            Thread computationOfBestConfig = new Thread() {
                 public void run() {
                     logger.info("Started computation of best config in background at cid " + cid);
                     long start = System.nanoTime();
@@ -241,21 +257,24 @@ public class AwareController {
                     /* End critical section */
                     computationCompletedLock.unlock();
                     long end = System.nanoTime();
-                    logger.info("Computed the best configuration in " + (end-start)/1000000.0 + " ms " );
+                    logger.info("Computed the best configuration in " + (end - start) / 1000000.0 + " ms ");
                 }
             };
             computationOfBestConfig.start();
         }
 
-            // Re-calculate best weight distribution after every x consensus
+        // Re-calculate best weight distribution after every x consensus
         if (svc.getStaticConf().isUseDynamicWeights()
-                && (cid % svc.getStaticConf().getCalculationInterval() ) == svc.getStaticConf().getCalculationDelay()
-                && cid >=  svc.getStaticConf().getCalculationInterval() + svc.getStaticConf().getCalculationDelay()) {
+                && (cid % svc.getStaticConf().getCalculationInterval()) == svc.getStaticConf().getCalculationDelay()
+                && cid >= svc.getStaticConf().getCalculationInterval() + svc.getStaticConf().getCalculationDelay()) {
 
             logger.info("Trying to lock, Computation should be completed, at cid" + cid);
 
             computationCompletedLock.lock();
-            /* begin critical section , should only enter here after computation is completed */
+            /*
+             * begin critical section , should only enter here after computation is
+             * completed
+             */
 
             // Threshold-AWARE: Currently: Periodically try to improve the threshold
             boolean thresholdDecrease = false;
@@ -263,7 +282,7 @@ public class AwareController {
                 logger.info("System cant get any faster");
             } else {
                 logger.info("###### SWITCH #####");
-                //svc.switchToFasterConfig();
+                // svc.switchToFasterConfig();
                 thresholdDecrease = true;
             }
 
@@ -280,27 +299,34 @@ public class AwareController {
             logger.info("");
 
             if (svc.getStaticConf().isUseDynamicWeights()
-                    && ((!currentWeights.equals(bestWeights) && current.getPredictedLatency() > best.getPredictedLatency() * svc.getStaticConf().getOptimizationGoal())
-                    || thresholdDecrease)
-            ) {
+                    && ((!currentWeights.equals(bestWeights)
+                            && current.getPredictedLatency() > best.getPredictedLatency()
+                                    * svc.getStaticConf().getOptimizationGoal())
+                            || thresholdDecrease)) {
 
                 // The current weight configuration is not the best
-                // Deterministically change weights (this decision will be the same in all correct replicas)
+                // Deterministically change weights (this decision will be the same in all
+                // correct replicas)
 
                 View currentView = svc.getCurrentView();
 
                 View newView;
                 if (thresholdDecrease) {
                     View thresholdDecresedView = svc.nextFasterConfig();
-                    newView = new View(thresholdDecresedView.getId(), thresholdDecresedView.getProcesses(), thresholdDecresedView.getF(),
-                            thresholdDecresedView.getAddresses(), thresholdDecresedView.isBFT(), thresholdDecresedView.getDelta(), bestWeights);
+                    newView = new View(thresholdDecresedView.getId(), thresholdDecresedView.getProcesses(),
+                            thresholdDecresedView.getF(),
+                            thresholdDecresedView.getAddresses(), thresholdDecresedView.isBFT(),
+                            thresholdDecresedView.getDelta(), bestWeights);
                     logger.info("================== SWITCH to FAST ==================");
                 } else {
                     newView = new View(currentView.getId() + 1, currentView.getProcesses(), currentView.getF(),
                             currentView.getAddresses(), currentView.isBFT(), currentView.getDelta(), bestWeights);
                 }
 
-                /** Reconfigure the view here to adjust weights (and if possible also decrease threshold) */
+                /**
+                 * Reconfigure the view here to adjust weights (and if possible also decrease
+                 * threshold)
+                 */
                 svc.reconfigureTo(newView);
                 /** The system now uses the new view */
 
@@ -308,16 +334,17 @@ public class AwareController {
                 logger.info("|AWARE|-" + cid + "-[X] Optimization: Weight adjustment, now using " + bestWeights);
             } else {
                 // Keep the current configuration
-                logger.info("|AWARE|-"+ cid + "-[ ] Optimization: Weight adjustment, no adjustment," +
+                logger.info("|AWARE|-" + cid + "-[ ] Optimization: Weight adjustment, no adjustment," +
                         " current weight config is the best weight config");
             }
 
             if (svc.getStaticConf().isUseLeaderSelection()
                     && executionManager.getCurrentLeader() != best.getLeader()
-                    && current.getPredictedLatency() > best.getPredictedLatency() * svc.getStaticConf().getOptimizationGoal()) {
+                    && current.getPredictedLatency() > best.getPredictedLatency()
+                            * svc.getStaticConf().getOptimizationGoal()) {
 
                 // The current leader is not the best, change it to the best
-                int newLeader =  (best.getLeader()+svc.getCurrentViewN()) % svc.getCurrentViewN();
+                int newLeader = (best.getLeader() + svc.getCurrentViewN()) % svc.getCurrentViewN();
                 executionManager.setNewLeader(newLeader);
 
                 logger.info("-----_> NEW LEADER SET TO " + newLeader);
@@ -327,15 +354,16 @@ public class AwareController {
                 } else {
                     Acceptor acceptor = executionManager.getAcceptor();
 
-                   // int cidNew = cid+1;
-                    //logger.info("" + acceptor.proposeRecvd[newLeader]  + " " + cidNew );
-                    //if(acceptor.proposeRecvd[newLeader] != null)
-                       // logger.info("!!!! NUMBER" + acceptor.proposeRecvd[newLeader].getNumber());
+                    // int cidNew = cid+1;
+                    // logger.info("" + acceptor.proposeRecvd[newLeader] + " " + cidNew );
+                    // if(acceptor.proposeRecvd[newLeader] != null)
+                    // logger.info("!!!! NUMBER" + acceptor.proposeRecvd[newLeader].getNumber());
 
-
-                    if(acceptor.proposeRecvd[newLeader] != null && acceptor.proposeRecvd[newLeader].getNumber() == cid + 1) {
-                        //logger.info("!!!!!!!!" + acceptor.proposeRecvd[newLeader] + " " + acceptor.proposeRecvd[newLeader].getNumber() + " " + cidNew );
-                        //logger.info("!!!!!!!! Receiving propose of new leader");
+                    if (acceptor.proposeRecvd[newLeader] != null
+                            && acceptor.proposeRecvd[newLeader].getNumber() == cid + 1) {
+                        // logger.info("!!!!!!!!" + acceptor.proposeRecvd[newLeader] + " " +
+                        // acceptor.proposeRecvd[newLeader].getNumber() + " " + cidNew );
+                        // logger.info("!!!!!!!! Receiving propose of new leader");
                         acceptor.processMessage(acceptor.proposeRecvd[newLeader]);
                     }
                 }
@@ -351,7 +379,6 @@ public class AwareController {
             logger.info("Optimization code completed");
         }
     }
-
 
     /**
      * Getter and Setter

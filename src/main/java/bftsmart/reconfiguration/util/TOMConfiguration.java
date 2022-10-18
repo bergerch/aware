@@ -16,6 +16,8 @@ limitations under the License.
 package bftsmart.reconfiguration.util;
 
 import bftsmart.tom.util.KeyLoader;
+import io.netty.handler.timeout.ReadTimeoutException;
+
 import java.util.StringTokenizer;
 
 import java.util.regex.Pattern;
@@ -98,6 +100,9 @@ public class TOMConfiguration extends Configuration {
     // T-AWARE
     private boolean useforensics;
     private int min_storage_size;
+    private int granularity;
+    private boolean backupforensics;
+    private int forensicsInterval;
 
     /** Creates a new instance of TOMConfiguration */
     public TOMConfiguration(int processId, KeyLoader loader) {
@@ -510,6 +515,16 @@ public class TOMConfiguration extends Configuration {
 
             s = (String) configs.remove("system.taware.storagesize");
             min_storage_size = s == null ? 1000 : Integer.parseInt(s);
+
+            s = (String) configs.remove("system.taware.granularity");
+            granularity = s == null ? 1 : Integer.parseInt(s);
+
+            s = (String) configs.remove("system.taware.backupforensics");
+            backupforensics = s == null ? false : Boolean.parseBoolean(s);
+
+            s = (String) configs.remove("system.taware.forensicsinterval");
+            forensicsInterval = s == null ? 1000 : Integer.parseInt(s);
+
         } catch (Exception e) {
             logger.error("Could not parse system configuration file", e);
         }
@@ -811,5 +826,17 @@ public class TOMConfiguration extends Configuration {
 
     public int minStorageSize() {
         return min_storage_size;
+    }
+
+    public int getGranularity(){
+        return granularity;
+    }
+
+    public boolean getBackupForensics(){
+        return backupforensics;
+    }
+
+    public int getForensicsInterval(){
+        return forensicsInterval;
     }
 }

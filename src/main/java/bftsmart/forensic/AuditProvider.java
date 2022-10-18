@@ -44,7 +44,7 @@ public class AuditProvider {
      * Compares received storage and system storage
      * 
      * @param receivedStorage received audit storage
-     * @return true is no conflit was founs, false otherwise
+     * @return true is no conflit was found, false otherwise
      */
     public boolean compareStorages(AuditStorage receivedStorage) {
 
@@ -79,7 +79,16 @@ public class AuditProvider {
     }
 
     public void clean(int cid) {
+        System.out.println("======= Storage clean from " + cid);
         storage.removeProofsUntil(cid); // garbage collection for unecessary proofs
+        if (storage.getSize() < audit_reps.size()) {
+            audit_reps.clear(); // probably not the best way to clean this map
+        }
+    }
+
+    public void clean() {
+        System.out.println("======= Storage full clean ======= ");
+        storage.removeProofsUntil(storage.getMaxCID()); // garbage collection for unecessary proofs
         if (storage.getSize() < audit_reps.size()) {
             audit_reps.clear(); // probably not the best way to clean this map
         }

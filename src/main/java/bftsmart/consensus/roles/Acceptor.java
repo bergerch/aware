@@ -118,6 +118,8 @@ public final class Acceptor {
 		if (controller.getStaticConf().useForensics()) {
 			this.audit_provider = new AuditProvider(controller);
 			this.controller.registerAuditProvider(audit_provider);
+		} else {
+			this.audit_provider = null;
 		}
 	}
 
@@ -563,15 +565,19 @@ public final class Acceptor {
 		// sendAudit(epoch.getConsensus().getId(), epoch);
 		// }
 		// if (audit_provider != null
-		// 		&& audit_provider.getStorage().getSize() >= controller.getStaticConf().maxStorageSize()) {
-		// 			System.out.println("Reducing storage to last checkpoint " + controller.getLastCheckpoint());
-		// 			audit_provider.clean(controller.getLastCheckpoint());
-		// 			System.out.println("Current storage size = " + audit_provider.getStorage().getSize());
-		// 			if (audit_provider.getStorage().getSize() >= controller.getStaticConf().maxStorageSize()) {
-		// 				//if after clean up storage is still to bigm send audit
-		// 				System.out.println("STORAGE STILL TOO BIG");
-		// 				sendAudit(epoch.getConsensus().getId(), epoch);
-		// 			}
+		// && audit_provider.getStorage().getSize() >=
+		// controller.getStaticConf().maxStorageSize()) {
+		// System.out.println("Reducing storage to last checkpoint " +
+		// controller.getLastCheckpoint());
+		// audit_provider.clean(controller.getLastCheckpoint());
+		// System.out.println("Current storage size = " +
+		// audit_provider.getStorage().getSize());
+		// if (audit_provider.getStorage().getSize() >=
+		// controller.getStaticConf().maxStorageSize()) {
+		// //if after clean up storage is still to bigm send audit
+		// System.out.println("STORAGE STILL TOO BIG");
+		// sendAudit(epoch.getConsensus().getId(), epoch);
+		// }
 		// }
 		/**
 		 * 
@@ -630,18 +636,22 @@ public final class Acceptor {
 	 * @param msg consensus message received
 	 */
 	private void storageReceived(ConsensusMessage msg) {
-		// System.out.println("Storage message received from " + msg.getSender());
 		if (audit_provider == null) {
 			return;
 		}
-		// System.out.println("Storage message received from " + msg.getSender());
-		AuditStorage receivedStorage = AuditStorage.fromByteArray(msg.getValue());
-		boolean success = this.audit_provider.compareStorages(receivedStorage);
-
-		if (success) {
-			System.out.println("AUDIT PERFORMED WITH SUCCESSS");
-		} else {
-			System.out.println("CONFLICT FOUND");
-		}
+		System.out.println("\n ================== STORAGE RECEIVED ================== \n\t-> Sender: " + msg.getSender());
+		// Thread t = new Thread() {
+		// 	public void run(){
+				AuditStorage receivedStorage = AuditStorage.fromByteArray(msg.getValue());
+				boolean success = audit_provider.compareStorages(receivedStorage);
+		
+				if (success) {
+					System.out.println(" ======= AUDIT PERFORMED WITH SUCCESSS");
+				} else {
+					System.out.println(" ======= CONFLICT FOUND");
+				}
+			// }
+		// };
+		// t.start();
 	}
 }

@@ -59,9 +59,10 @@ public class ServerViewController extends ViewController {
     private int last_checkpoint;
 
     /**
-    * Forensics
+    * T-AWARE
     */
     private AuditProvider auditProvider;
+    private int K = -1; // granularity
     /**
      * 
      */
@@ -89,7 +90,7 @@ public class ServerViewController extends ViewController {
             logger.info("Using view stored on disk");
             reconfigureTo(cv);
         }
-
+        this.K = this.getStaticConf().getGranularity();
     }
 
     private InetSocketAddress[] getInitAdddresses() {
@@ -332,8 +333,6 @@ public class ServerViewController extends ViewController {
 
     /*************************** SWITCH METHODS *******************************/
 
-    private int K = 1; // granularity
-
     public void switchToSaferConfig() {
         System.out.println("================== SWITCH to SAFE ==================");
         View currentView = this.getCurrentView();
@@ -370,6 +369,14 @@ public class ServerViewController extends ViewController {
 
         View newView = this.nextFasterConfig();
         this.reconfigureTo(newView);
+    }
+
+    public boolean inBackup(){
+        return maxFault() == this.getCurrentViewF();
+    }
+
+    public int maxFault(){
+        return max_fault(currentView.getProcesses().length);
     }
 
     private static int max_fault(int N) {
