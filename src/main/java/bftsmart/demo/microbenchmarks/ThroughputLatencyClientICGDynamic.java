@@ -259,13 +259,32 @@ public class ThroughputLatencyClientICGDynamic {
                 if (verbose)
                     System.out.print("Sending req " + req + "...");
 
-                // long last_send_instant = System.currentTimeMillis();
+                long last_send_instant = System.nanoTime();
 
                 byte[] reply = null;
                 if (readOnly)
                     reply = proxy.invokeUnordered(request);
-                else
-                    reply = proxy.invokeOrdered(request);
+                else{
+                    CorrectableSimple cor = proxy.invokeCorrectable(request);
+                    cor.getValueNoneConsistency();
+                    long nonelatency = System.nanoTime() - last_send_instant;
+                    cor.getValueWeakConsistency();
+                    long weaklatency = System.nanoTime() - last_send_instant;
+                    cor.getValueLineConsistency();
+                    long linelatency = System.nanoTime() - last_send_instant;
+                    cor.getValueFinalConsistency();
+                    long finallatency = System.nanoTime() - last_send_instant;
+                    long final_time = (last_send_instant - initial_time) / 1000000000;
+
+                    try {
+                        latencies.put(id + "; t: " + final_time + " s; None: " + nonelatency / 1000000
+                                + " ms; Weak: " + weaklatency / 1000000 + " ms; Strong: " + linelatency / 1000000
+                                + " ms; Final: " + finallatency / 1000000 + " ms\n");
+                    } catch (InterruptedException ex) {
+                        ex.printStackTrace();
+                    }
+                }
+                    
                 // long latency = System.currentTimeMillis() - last_send_instant;
 
                 // try {
@@ -331,7 +350,7 @@ public class ThroughputLatencyClientICGDynamic {
             System.out.println("Executing experiment for " + numberOfOps / 2 + " ops after "
                     + (System.nanoTime() - initial_time) + " us of execution");
 
-            long ex_initial_time = System.nanoTime();
+            // long ex_initial_time = System.nanoTime();
 
             for (int i = 0; i < numberOfOps / 2; i++, req++) {
                 long last_send_instant = System.nanoTime();
@@ -350,20 +369,23 @@ public class ThroughputLatencyClientICGDynamic {
                 } else {
                     CorrectableSimple cor = proxy.invokeCorrectable(request);
                     cor.getValueNoneConsistency();
+                    System.out.print("#");
                     long nonelatency = System.nanoTime() - last_send_instant;
                     nonest.store(nonelatency);
                     cor.getValueWeakConsistency();
+                    System.out.print("#");
                     long weaklatency = System.nanoTime() - last_send_instant;
                     weakst.store(weaklatency);
                     cor.getValueLineConsistency();
+                    System.out.print("#");
                     long linelatency = System.nanoTime() - last_send_instant;
                     strongst.store(linelatency);
-                    System.out.print(5);
                     cor.getValueFinalConsistency();
+                    System.out.print("#\n");
                     long finallatency = System.nanoTime() - last_send_instant;
                     finalst.store(finallatency);
-                    System.out.print(6);
-                    long final_time = (last_send_instant - ex_initial_time) / 1000000000;
+                    // long final_time = (last_send_instant - ex_initial_time) / 1000000000;
+                    long final_time = (last_send_instant - initial_time) / 1000000000;
 
                     try {
                         latencies.put(id + "; t: " + final_time + " s; None: " + nonelatency / 1000000
@@ -375,7 +397,6 @@ public class ThroughputLatencyClientICGDynamic {
                       // // TODO Auto-generated catch block
                       // e.printStackTrace();
                       // }
-                    System.out.println(7);
                 }
 
                 if (verbose)
@@ -391,7 +412,6 @@ public class ThroughputLatencyClientICGDynamic {
                         double waitTime = Math.random() * interval * -1;
                         System.out.println("waiting for " + waitTime + " ms");
                         Thread.sleep(Math.round(waitTime));
-                        System.out.println(8);
                     }
                     if (this.rampup > 0) {
                         Thread.sleep(this.rampup);

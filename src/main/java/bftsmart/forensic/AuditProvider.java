@@ -48,21 +48,26 @@ public class AuditProvider {
      */
     public boolean compareStorages(AuditStorage receivedStorage) {
 
+        long start_time = System.nanoTime();
+
         int maxCid = receivedStorage.getMaxCID();
 
         System.out.println("Comparing storage....");
 
         if (maxCid <= last_audit) {
+            System.out.println("======= Storage received does not have needed information =======");
             return true; // received storage does not have needed information...
         }
         AuditResult result = auditor.audit(this.storage, receivedStorage, last_audit + 1);
+
+        System.out.println("Comparing Storages took "+(System.nanoTime()-start_time)/1000000+" ms");
 
         if (result.conflictFound()) {
             System.out.println("Conflict found");
             return false;
         } else {
             System.out.println("No conflict found");
-            int minCid = Math.min(receivedStorage.getMinCID(), last_audit);
+            int minCid = receivedStorage.getMinCID();
             int i;
             for (i = minCid; i <= maxCid; i++) { // update information on audits executed
                 int reps = audit_reps.containsKey(i) ? audit_reps.get(i) : 0;
@@ -73,13 +78,15 @@ public class AuditProvider {
                     last_audit = i; // this is the last cid that for certain is safe
                 }
             }
-            clean(i);
+            if (last_audit > 0) {
+                clean(last_audit); //TODO check if this is correct
+            }
             return true;
         }
     }
 
     public void clean(int cid) {
-        System.out.println("======= Storage clean from " + cid);
+        System.out.println(" ======= Storage clean until " + cid + " ======= ");
         storage.removeProofsUntil(cid); // garbage collection for unecessary proofs
         if (storage.getSize() < audit_reps.size()) {
             audit_reps.clear(); // probably not the best way to clean this map
@@ -87,11 +94,10 @@ public class AuditProvider {
     }
 
     public void clean() {
-        System.out.println("======= Storage full clean ======= ");
+        System.out.println(" ======= Storage full clean ======= ");
         storage.removeProofsUntil(storage.getMaxCID()); // garbage collection for unecessary proofs
         if (storage.getSize() < audit_reps.size()) {
             audit_reps.clear(); // probably not the best way to clean this map
         }
     }
-
 }

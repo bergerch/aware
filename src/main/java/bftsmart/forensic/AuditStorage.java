@@ -24,6 +24,8 @@ public class AuditStorage implements Serializable {
         // System.out.println("Audit store created...");
         writeAggregate = new HashMap<>();
         acceptAggregate = new HashMap<>();
+        maxCID = 0;
+        minCID = 0;
     }
 
     /**
@@ -104,7 +106,7 @@ public class AuditStorage implements Serializable {
     public int getMinCID() {
         // int result = Integer.MAX_VALUE;
         // for (int cid : writeAggregate.keySet()) {
-        //     result = Math.min(result, cid);
+        // result = Math.min(result, cid);
         // }
         // return result;
         return minCID;
@@ -118,7 +120,7 @@ public class AuditStorage implements Serializable {
     public int getMaxCID() {
         // int result = -1;
         // for (int cid : acceptAggregate.keySet()) {
-        //     result = Math.max(result, cid);
+        // result = Math.max(result, cid);
         // }
         // return result;
         return maxCID;
@@ -134,11 +136,17 @@ public class AuditStorage implements Serializable {
             writeAggregate.remove(i);
             acceptAggregate.remove(i);
         }
-        minCID = cid+1;
+        minCID = cid + 1;
         // System.out.println("Size of proofs = " + writeAggregate.keySet().size());
     }
 
-    public int getSize(){
+    public void removeProof(int cid) {
+        writeAggregate.remove(cid);
+        acceptAggregate.remove(cid);
+        minCID = cid + 1;
+    }
+
+    public int getSize() {
         return this.acceptAggregate.size();
     }
 }

@@ -593,12 +593,14 @@ public final class Acceptor {
 	 * @param msg message received
 	 */
 	public void auditReceived(TOMMessage msg) {
+		long init_time = System.currentTimeMillis();
 		// System.out.println("Audit message received from " + msg.getSender());
 		TOMMessage response = new TOMMessage(me, msg.getSession(), msg.getSequence(),
 				msg.getOperationId(), this.audit_provider.getStorage().toByteArray(), msg.getViewID(),
 				TOMMessageType.AUDIT);
 		communication.getClientsConn().send(new int[] { msg.getSender() }, response, false); // send to storage to
 																								// sender client
+		System.out.println("Time to send Storage: " + (System.currentTimeMillis()-init_time) + " ms");
 	}
 
 	/**
@@ -640,8 +642,8 @@ public final class Acceptor {
 			return;
 		}
 		System.out.println("\n ================== STORAGE RECEIVED ================== \n\t-> Sender: " + msg.getSender());
-		// Thread t = new Thread() {
-		// 	public void run(){
+		Thread t = new Thread() {
+			public void run(){
 				AuditStorage receivedStorage = AuditStorage.fromByteArray(msg.getValue());
 				boolean success = audit_provider.compareStorages(receivedStorage);
 		
@@ -650,8 +652,8 @@ public final class Acceptor {
 				} else {
 					System.out.println(" ======= CONFLICT FOUND");
 				}
-			// }
-		// };
-		// t.start();
+			}
+		};
+		t.start();
 	}
 }

@@ -103,6 +103,7 @@ public class TOMConfiguration extends Configuration {
     private int granularity;
     private boolean backupforensics;
     private int forensicsInterval;
+    private boolean leaderAudit;
 
     /** Creates a new instance of TOMConfiguration */
     public TOMConfiguration(int processId, KeyLoader loader) {
@@ -452,7 +453,7 @@ public class TOMConfiguration extends Configuration {
             synchronisationPeriod = s != null ? Integer.parseInt(s) : 20000;
 
             s = (String) configs.remove("system.aware.synchronisationDelay");
-            synchronisationDelay = s != null ? Integer.parseInt(s) : 30000;
+            synchronisationDelay = s != null ? Integer.parseInt(s) : 120000;
 
             /**
              * Tulio Ribeiro
@@ -524,6 +525,9 @@ public class TOMConfiguration extends Configuration {
 
             s = (String) configs.remove("system.taware.forensicsinterval");
             forensicsInterval = s == null ? 1000 : Integer.parseInt(s);
+
+            s = (String) configs.remove("system.taware.leaderaudit");
+            leaderAudit = s == null ? true : Boolean.parseBoolean(s);
 
         } catch (Exception e) {
             logger.error("Could not parse system configuration file", e);
@@ -838,5 +842,9 @@ public class TOMConfiguration extends Configuration {
 
     public int getForensicsInterval(){
         return forensicsInterval;
+    }
+
+    public boolean getLeaderAudit(){
+        return leaderAudit;
     }
 }

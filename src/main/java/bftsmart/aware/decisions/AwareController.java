@@ -222,7 +222,12 @@ public class AwareController {
             if (!svc.getStaticConf().getBackupForensics() && svc.inBackup()) { // if backup configuration is being used
                                                                                // no need to perform forensics
                 System.out.println("======= NO NEED TO PERFORM FORENSICS =======");
-                viewControl.getAuditProvider().clean(); // zero can be used here, only from the last clean cid is used
+                viewControl.getAuditProvider().clean();
+                return;
+            }
+            if(!svc.getStaticConf().getLeaderAudit() && currentDW.getLeader()==svc.getStaticConf().getProcessId()) { // leader only performs audit if desirable
+                viewControl.getAuditProvider().clean(); // TODO should I clean storage here?
+                System.out.println("======= ( LEADER ) NO NEED TO PERFORM FORENSICS =======");
                 return;
             }
             // perform audit periodically

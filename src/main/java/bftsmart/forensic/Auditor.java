@@ -54,10 +54,10 @@ public class Auditor {
                 // sender of storage should be considered faulty
                 // testing should end here?
                 // result.invalidSignatureFound();
-                //System.out.println("Aggregate Signatures Invalid!!");
+                // System.out.println("Aggregate Signatures Invalid!!");
                 // return; //stop forensics? Since we received an invalid signature, should we
                 // ignore the correct ones from this sender?
-                continue; // even if signature is incorrect just continues
+                continue; // even if signature is incorrect ignore and continue to next record
             }
             if (!Arrays.equals(local.get(c_id).getValue(), received.get(c_id).getValue())) {
                 // If values for the same consensus id are not equal, conflict has happen
@@ -73,7 +73,8 @@ public class Auditor {
                 }
                 System.out.println("Faulty replicas so far: " + Arrays.toString(result.getReplicasArray()));
             } else {
-                //System.out.println(String.format("Aggreates of consensus id %d have no conflict", c_id));
+                // System.out.println(String.format("Aggreates of consensus id %d have no
+                // conflict", c_id));
             }
         }
     }
@@ -108,14 +109,16 @@ public class Auditor {
         for (Integer sender_id : agg.get_senders()) {
 
             byte[] proof = (byte[]) agg.getProofs().get(sender_id);
-            ConsensusMessage dummi = new ConsensusMessage(type, consensus_id, agg.getEpoch(sender_id), sender_id, value);
+            ConsensusMessage dummi = new ConsensusMessage(type, consensus_id, agg.getEpoch(sender_id), sender_id,
+                    value);
 
             byte[] data = TOMUtil.getBytes(dummi);
 
             boolean valid = TOMUtil.verifySignature(controller.getStaticConf().getPublicKey(sender_id), data, proof);
 
             if (!valid) {
-                System.out.println(String.format("signature is incorrect from sender %d in consensus %d",sender_id,consensus_id));
+                System.out.println(String.format("signature is incorrect from sender %d in consensus %d", sender_id,
+                        consensus_id));
                 return false;
             } else {
                 // System.out.println("signature is correct");
