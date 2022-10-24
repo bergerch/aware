@@ -5,8 +5,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * This Class represents an audit storage
@@ -22,8 +22,8 @@ public class AuditStorage implements Serializable {
 
     public AuditStorage() {
         // System.out.println("Audit store created...");
-        writeAggregate = new HashMap<>();
-        acceptAggregate = new HashMap<>();
+        writeAggregate = new ConcurrentHashMap<>();
+        acceptAggregate = new ConcurrentHashMap<>();
         maxCID = 0;
         minCID = 0;
     }

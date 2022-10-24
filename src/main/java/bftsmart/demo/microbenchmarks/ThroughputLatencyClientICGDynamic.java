@@ -264,7 +264,7 @@ public class ThroughputLatencyClientICGDynamic {
                 byte[] reply = null;
                 if (readOnly)
                     reply = proxy.invokeUnordered(request);
-                else{
+                else {
                     CorrectableSimple cor = proxy.invokeCorrectable(request);
                     cor.getValueNoneConsistency();
                     long nonelatency = System.nanoTime() - last_send_instant;
@@ -284,7 +284,7 @@ public class ThroughputLatencyClientICGDynamic {
                         ex.printStackTrace();
                     }
                 }
-                    
+
                 // long latency = System.currentTimeMillis() - last_send_instant;
 
                 // try {
@@ -304,18 +304,18 @@ public class ThroughputLatencyClientICGDynamic {
                 try {
 
                     // sleeps interval ms before sending next request
-                    // if (interval > 0) {
-                    // Thread.sleep(interval);
-                    // }
-                    // if (interval < 0) { // if interval negative, use it as upper limit for a
-                    // randomized interval
-                    // try { // so wait between 0ms and interval ms
-                    // double waitTime = Math.random() * interval * -1;
-                    // System.out.println("waiting for " + waitTime + " ms");
-                    // Thread.sleep(Math.round(waitTime));
-                    // } catch (InterruptedException ex) {
-                    // }
-                    // }
+                    if (interval > 0) {
+                        Thread.sleep(interval);
+                    }
+                    if (interval < 0) { // if interval negative, use it as upper limit for a
+                        // randomized interval
+                        try { // so wait between 0ms and interval ms
+                            double waitTime = Math.random() * interval * -1;
+                            System.out.println("waiting for " + waitTime + " ms");
+                            Thread.sleep(Math.round(waitTime));
+                        } catch (InterruptedException ex) {
+                        }
+                    }
 
                     if (this.rampup > 0) {
                         Thread.sleep(this.rampup);
@@ -327,7 +327,9 @@ public class ThroughputLatencyClientICGDynamic {
                 }
             }
 
-            try {
+            try
+
+            {
                 System.out.println("Warm up complete after " + (System.nanoTime() - initial_time) / 1000000000
                         + " s\nWaiting 10s...");
                 Thread.sleep(10000);

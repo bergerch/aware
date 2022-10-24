@@ -44,37 +44,44 @@ public class Auditor {
     private void checkConflict(Map<Integer, Aggregate> local, Map<Integer, Aggregate> received, int minCid,
             AuditResult result) {
 
-        for (Integer c_id : local.keySet()) {
-            if (minCid > c_id || received.get(c_id) == null) {
-                continue;
-            }
-            boolean isValid = validSignature(received.get(c_id));// validate received aggregate signature
-            if (!isValid) {
-                // This aggregate is faulty (was received with bad signature)
-                // sender of storage should be considered faulty
-                // testing should end here?
-                // result.invalidSignatureFound();
-                // System.out.println("Aggregate Signatures Invalid!!");
-                // return; //stop forensics? Since we received an invalid signature, should we
-                // ignore the correct ones from this sender?
-                continue; // even if signature is incorrect ignore and continue to next record
-            }
-            if (!Arrays.equals(local.get(c_id).getValue(), received.get(c_id).getValue())) {
-                // If values for the same consensus id are not equal, conflict has happen
-                System.out.println(String.format("Aggreates of consensus id %d have conflict", c_id));
-                if (c_id < result.getFaultyView()) {
-                    result.setFaultyView(c_id);
+        Set<Integer> set = local.keySet();
+        for (Integer c_id : set) {
+            try {
+                if (minCid > c_id || received.get(c_id) == null) {
+                    continue;
                 }
+                boolean isValid = validSignature(received.get(c_id));// validate received aggregate signature
+                if (!isValid) {
+                    // This aggregate is faulty (was received with bad signature)
+                    // sender of storage should be considered faulty
+                    // testing should end here?
+                    // result.invalidSignatureFound();
+                    // System.out.println("Aggregate Signatures Invalid!!");
+                    // return; //stop forensics? Since we received an invalid signature, should we
+                    // ignore the correct ones from this sender?
+                    continue; // even if signature is incorrect ignore and continue to next record
+                }
+                if (!Arrays.equals(local.get(c_id).getValue(), received.get(c_id).getValue())) { // null can happen here
+                                                                                                 // if local storage was
+                                                                                                 // clean between audits
+                    // If values for the same consensus id are not equal, conflict has happen
+                    System.out.println(String.format("Aggreates of consensus id %d have conflict", c_id));
+                    if (c_id < result.getFaultyView()) {
+                        result.setFaultyView(c_id);
+                    }
 
-                Set<Integer> senders = local.get(c_id).get_senders();
-                for (Integer sender_id : received.get(c_id).get_senders()) {
-                    if (senders.contains(sender_id))
-                        result.addReplica(sender_id); // a replica chose more than one value
+                    Set<Integer> senders = local.get(c_id).get_senders();
+                    for (Integer sender_id : received.get(c_id).get_senders()) {
+                        if (senders.contains(sender_id))
+                            result.addReplica(sender_id); // a replica chose more than one value
+                    }
+                    System.out.println("Faulty replicas so far: " + Arrays.toString(result.getReplicasArray()));
+                } else {
+                    // System.out.println(String.format("Aggreates of consensus id %d have no
+                    // conflict", c_id));
                 }
-                System.out.println("Faulty replicas so far: " + Arrays.toString(result.getReplicasArray()));
-            } else {
-                // System.out.println(String.format("Aggreates of consensus id %d have no
-                // conflict", c_id));
+            } catch (NullPointerException e) {
+                return;
             }
         }
     }

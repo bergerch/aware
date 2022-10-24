@@ -600,7 +600,7 @@ public final class Acceptor {
 				TOMMessageType.AUDIT);
 		communication.getClientsConn().send(new int[] { msg.getSender() }, response, false); // send to storage to
 																								// sender client
-		System.out.println("Time to send Storage: " + (System.currentTimeMillis()-init_time) + " ms");
+		System.out.println("Time to send Storage: " + (System.currentTimeMillis() - init_time) + " ms");
 	}
 
 	/**
@@ -641,19 +641,21 @@ public final class Acceptor {
 		if (audit_provider == null) {
 			return;
 		}
-		System.out.println("\n ================== STORAGE RECEIVED ================== \n\t-> Sender: " + msg.getSender());
-		Thread t = new Thread() {
-			public void run(){
-				AuditStorage receivedStorage = AuditStorage.fromByteArray(msg.getValue());
-				boolean success = audit_provider.compareStorages(receivedStorage);
-		
-				if (success) {
-					System.out.println(" ======= AUDIT PERFORMED WITH SUCCESSS");
-				} else {
-					System.out.println(" ======= CONFLICT FOUND");
-				}
-			}
-		};
-		t.start();
+		System.out
+				.println("\n ================== STORAGE RECEIVED ================== \n\t-> Sender: " + msg.getSender());
+		// Thread t = new Thread() {
+		// public void run(){
+		AuditStorage receivedStorage = AuditStorage.fromByteArray(msg.getValue());
+		audit_provider.receiveStorage(receivedStorage);
+		// boolean success = audit_provider.compareStorages(receivedStorage);
+
+		// if (success) {
+		// System.out.println(" ======= AUDIT PERFORMED WITH SUCCESSS");
+		// } else {
+		// System.out.println(" ======= CONFLICT FOUND");
+		// }
+		// }
+		// };
+		// t.start();
 	}
 }

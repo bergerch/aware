@@ -104,6 +104,7 @@ public class TOMConfiguration extends Configuration {
     private boolean backupforensics;
     private int forensicsInterval;
     private boolean leaderAudit;
+    private int auditthreads;
 
     /** Creates a new instance of TOMConfiguration */
     public TOMConfiguration(int processId, KeyLoader loader) {
@@ -529,6 +530,9 @@ public class TOMConfiguration extends Configuration {
             s = (String) configs.remove("system.taware.leaderaudit");
             leaderAudit = s == null ? true : Boolean.parseBoolean(s);
 
+            s = (String) configs.remove("system.taware.auditthreads");
+            auditthreads = s == null ? 1 : Integer.parseInt(s);
+
         } catch (Exception e) {
             logger.error("Could not parse system configuration file", e);
         }
@@ -846,5 +850,9 @@ public class TOMConfiguration extends Configuration {
 
     public boolean getLeaderAudit(){
         return leaderAudit;
+    }
+
+    public int getNumberOfAuditThreads(){
+        return auditthreads;
     }
 }
