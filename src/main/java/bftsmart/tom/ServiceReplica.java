@@ -452,7 +452,7 @@ public class ServiceReplica {
         // Assemble the total order messaging layer
         MessageFactory messageFactory = new MessageFactory(id);
 
-        PipelineManager pipelineManager = new PipelineManager();
+        PipelineManager pipelineManager = new PipelineManager(SVController.getStaticConf().getMinConsensusesInExec(), SVController.getStaticConf().getMaxConsensusesInExec(), SVController.getStaticConf().getDelayBeforeNewConsensusProposeInMillisec());
 
         Acceptor acceptor = new Acceptor(cs, messageFactory, SVController);
         cs.setAcceptor(acceptor);

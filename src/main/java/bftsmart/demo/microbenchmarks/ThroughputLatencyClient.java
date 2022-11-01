@@ -80,6 +80,7 @@ public class ThroughputLatencyClient {
             System.exit(-1);
         }
 
+
         initId = Integer.parseInt(args[0]);
         latencies = new LinkedBlockingQueue<>();
         writerThread = new Thread() {
@@ -240,7 +241,7 @@ public class ThroughputLatencyClient {
             int req = 0;
             
             for (int i = 0; i < numberOfOps / 2; i++, req++) {
-                if (verbose) System.out.print("Sending req " + req + "...");
+//                if (verbose) System.out.print("Sending req " + req + "...");
 
                 long last_send_instant = System.nanoTime();
                 
@@ -257,7 +258,7 @@ public class ThroughputLatencyClient {
                     ex.printStackTrace();
                 }
                         
-                if (verbose) System.out.println(" sent!");
+//                if (verbose) System.out.println(" sent!");
 
                 if (verbose && (req % 1000 == 0)) System.out.println(this.id + " // " + req + " operations sent!");
 
@@ -284,7 +285,7 @@ public class ThroughputLatencyClient {
 
             for (int i = 0; i < numberOfOps / 2; i++, req++) {
                 long last_send_instant = System.nanoTime();
-                if (verbose) System.out.print(this.id + " // Sending req " + req + "...");
+//                if (verbose) System.out.print(this.id + " // Sending req " + req + "...");
 
                 if(readOnly)
                         proxy.invokeUnordered(request);
@@ -298,7 +299,7 @@ public class ThroughputLatencyClient {
                     ex.printStackTrace();
                 }
                         
-                if (verbose) System.out.println(this.id + " // sent!");
+//                if (verbose) System.out.println(this.id + " // sent!");
                 st.store(latency);
 
                 

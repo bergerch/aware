@@ -63,6 +63,9 @@ public class TOMConfiguration extends Configuration {
     private boolean fairbatch;
     private String bindAddress;
     private int clientInvokeOrderedTimeout;
+    private int minConsensusesInExec;
+    private int maxConsensusesInExec;
+    private int delayBeforeNewConsensusProposeInMillisec;
 
     /* Tulio Ribeiro*/
     //private Boolean ssltls=true;
@@ -410,6 +413,27 @@ public class TOMConfiguration extends Configuration {
                 clientInvokeOrderedTimeout = Integer.parseInt(s);
             }
 
+            s = (String) configs.remove("system.pipeline.minConsensusesInExec");
+            if (s == null) {
+                minConsensusesInExec = 0;
+            } else {
+                minConsensusesInExec = Integer.parseInt(s);
+            }
+
+            s = (String) configs.remove("system.pipeline.maxConsensusesInExec");
+            if (s == null) {
+                maxConsensusesInExec = 3;
+            } else {
+                maxConsensusesInExec = Integer.parseInt(s);
+            }
+
+            s = (String) configs.remove("system.pipeline.delayBeforeNewConsensusProposeInMillisec");
+            if (s == null) {
+                delayBeforeNewConsensusProposeInMillisec = 100;
+            } else {
+                delayBeforeNewConsensusProposeInMillisec = Integer.parseInt(s);
+            }
+
         } catch (Exception e) {
             logger.error("Could not parse system configuration file",e);
         }
@@ -587,6 +611,12 @@ public class TOMConfiguration extends Configuration {
     public int getClientInvokeOrderedTimeout() {
         return clientInvokeOrderedTimeout;
     }
+
+    public int getMaxConsensusesInExec(){return maxConsensusesInExec;}
+
+    public int getMinConsensusesInExec(){return minConsensusesInExec;}
+
+    public int getDelayBeforeNewConsensusProposeInMillisec(){return delayBeforeNewConsensusProposeInMillisec;}
 
     /**
      * Tulio Ribeiro ## SSL/TLS getters.

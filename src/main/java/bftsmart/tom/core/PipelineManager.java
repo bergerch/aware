@@ -9,14 +9,21 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 public class PipelineManager {
-    public final int maxConsensusesInExec = 3;
-    public final int minConsensusesInExec = 0;
-    private final int delayBeforeNewConsensusProposeInMillisec = 20;
+    //    TODO move to config file
+    public final int maxConsensusesInExec;
+    public final int minConsensusesInExec;
+    private final int delayBeforeNewConsensusProposeInMillisec;
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private List<Integer> consensusesInExecution = new ArrayList<>();
     private HashMap<Integer, Long> consensusesInExecStartTimestamp = new HashMap<>();
     private Long timestampOfLastConsensusProposed = 0L;
+
+    public PipelineManager(int minConsensusesInExec, int  maxConsensusesInExec , int delayBeforeNewConsensusProposeInMillisec) {
+        this.minConsensusesInExec = minConsensusesInExec;
+        this.maxConsensusesInExec = maxConsensusesInExec;
+        this.delayBeforeNewConsensusProposeInMillisec = delayBeforeNewConsensusProposeInMillisec;
+    }
 
     public long getAmountOfMillisecondsToWait() {
         long currentTimestamp = System.nanoTime();
