@@ -22,6 +22,8 @@ public class Simulator {
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
+    private static boolean hotstuffIsWeighted = false;
+
     public Simulator(ServerViewController controller) {
         this.viewControl = controller;
     }
@@ -59,7 +61,117 @@ public class Simulator {
         return this.predictLatency(replicaSet, leader, weightConfig, m_propose, m_write, n, f, 10);
     }
 
+    public Long predictLatencyHotStuff(int[] replicaSet, int leader, WeightConfiguration weightConfig, long[][] m_propose,
+                               long[][] m_write, int n, int f, int rounds) {
 
+
+        long consensusTime = 0L;
+        boolean isBFT =  (viewControl == null) || viewControl.getStaticConf().isBFT();
+
+        int delta = n - (3*f+1);
+
+        // Compute weights and quorum
+        double V_min = 1.00;
+        double V_max = V_min + (double) delta / (double) f;
+        double[] V = new double[n];
+        double Q_v = isBFT ? 2 * f * V_max + 1 : f * V_max + 1;
+
+        if (!Simulator.hotstuffIsWeighted) {
+
+            V_max = 1.00;
+            Q_v = Math.ceil( (((double) n + f + 1))/2.0);
+        }
+
+        int T = n % 3 >= 1 ? n/3 : n/3-1;
+
+        // Assign binary voting weights to replicas
+        for (int i : replicaSet)
+            V[i] = weightConfig.getR_max().contains(i) ? V_max : V_min;
+
+        // Simulate times of execution in the HotStuff protocol
+
+        long[] t_prepare_a = new long[n];
+        long t_prepare_b = Long.MAX_VALUE;
+
+        long[] t_precommit_a = new long[n];
+        long t_precommit_b = Long.MAX_VALUE;
+
+        long[] t_commit_a = new long[n];
+        long t_commit_b = Long.MAX_VALUE;
+
+        long[] t_decide = new long[n];
+
+
+        long t_response_received_first = -1L;
+        long t_response_received_tp1 = -1L;
+        long t_response_received_2tp1 = -1L;
+        long t_response_received_T = -1L;
+
+
+        @SuppressWarnings("unchecked")
+        PriorityQueue<Vote> prepareRcvd = new PriorityQueue();
+        @SuppressWarnings("unchecked")
+        PriorityQueue<Vote> precommitRcvd = new PriorityQueue();
+        @SuppressWarnings("unchecked")
+        PriorityQueue<Vote> commitRcvd = new PriorityQueue();
+
+        @SuppressWarnings("unchecked")
+        PriorityQueue<Vote> repliestRcvd = new PriorityQueue<>();
+
+        // Compute time proposed time for all replicas. the proposed time is
+        for (int i : replicaSet) {
+            t_prepare_a[i] = m_propose[leader][i];
+            prepareRcvd.add(new Vote(i, V[i], t_prepare_a[i] + m_write[i][leader]));
+        }
+        // Compute time at which leader will finish its PREPARE QC
+        double votes = 0.00;
+        while (votes -  Q_v <= Acceptor.THRESHOLD) {
+            Vote vote = prepareRcvd.poll();
+            if (vote != null) {
+                votes += vote.weight;
+                t_prepare_b = vote.arrivalTime;
+            }
+        }
+
+
+        // Compute time precommit time for all replicas.
+        for (int i : replicaSet) {
+            t_precommit_a[i] = t_prepare_b +  m_write[leader][i];
+            precommitRcvd.add(new Vote(i, V[i], t_precommit_a[i] + m_write[i][leader]));
+        }
+        // Compute time at which leader will finish its PREPARE QC
+        votes = 0.00;
+        while (votes -  Q_v <= Acceptor.THRESHOLD) {
+            Vote vote = precommitRcvd.poll();
+            if (vote != null) {
+                votes += vote.weight;
+                t_precommit_b = vote.arrivalTime;
+            }
+        }
+
+
+        // Compute commit time for all replicas.
+        for (int i : replicaSet) {
+            t_commit_a[i] = t_precommit_b +  m_write[leader][i];
+            commitRcvd.add(new Vote(i, V[i], t_commit_a[i] + m_write[i][leader]));
+        }
+        // Compute time at which leader will finish its PREPARE QC
+        votes = 0.00;
+        while (votes -  Q_v <= Acceptor.THRESHOLD) {
+            Vote vote = commitRcvd.poll();
+            if (vote != null) {
+                votes += vote.weight;
+                t_commit_b = vote.arrivalTime;
+            }
+        }
+
+        // Compute DECIDE time for all replicas.
+        for (int i : replicaSet) {
+            t_decide[i] = t_commit_b +  m_write[leader][i];
+        }
+
+        return t_decide[leader];
+    }
 
 
     /**
@@ -372,6 +484,159 @@ public class Simulator {
         return result;
     }
 
+    public Long[] predictLatencyE2EHotStuff(int[] replicaSet, int leader, WeightConfiguration weightConfig,
+                                            long[][] m_propose, long[][] m_write, int n, int f, long[] clientLatencies) {
+        long consensusTime = 0L;
+        boolean isBFT =  (viewControl == null) || viewControl.getStaticConf().isBFT();
+
+        int delta = n - (3*f+1);
+
+        // Compute weights and quorum
+        double V_min = 1.00;
+        double V_max = V_min + (double) delta / (double) f;
+        double[] V = new double[n];
+        double Q_v = isBFT ? 2 * f * V_max + 1 : f * V_max + 1;
+
+        if (!Simulator.hotstuffIsWeighted) {
+
+            V_max = 1.00;
+            Q_v = Math.ceil( (((double) n + f + 1))/2.0);
+        }
+
+        int T = n % 3 >= 1 ? n/3 : n/3-1;
+
+        // Assign binary voting weights to replicas
+        for (int i : replicaSet)
+            V[i] = weightConfig.getR_max().contains(i) ? V_max : V_min;
+
+        // Simulate times of execution in the HotStuff protocol
+        long t_request_received_by_leader = clientLatencies[leader]; // latency client to leader replica;
+
+        long[] t_prepare_a = new long[n];
+        long t_prepare_b = Long.MAX_VALUE;
+
+        long[] t_precommit_a = new long[n];
+        long t_precommit_b = Long.MAX_VALUE;
+
+        long[] t_commit_a = new long[n];
+        long t_commit_b = Long.MAX_VALUE;
+
+        long[] t_decide = new long[n];
+
+
+        long t_response_received_first = -1L;
+        long t_response_received_tp1 = -1L;
+        long t_response_received_2tp1 = -1L;
+        long t_response_received_T = -1L;
+
+
+        @SuppressWarnings("unchecked")
+        PriorityQueue<Vote> prepareRcvd = new PriorityQueue();
+        @SuppressWarnings("unchecked")
+        PriorityQueue<Vote> precommitRcvd = new PriorityQueue();
+        @SuppressWarnings("unchecked")
+        PriorityQueue<Vote> commitRcvd = new PriorityQueue();
+
+        @SuppressWarnings("unchecked")
+        PriorityQueue<Vote> repliestRcvd = new PriorityQueue<>();
+
+        // Compute time proposed time for all replicas. the proposed time is
+        for (int i : replicaSet) {
+            t_prepare_a[i] = t_request_received_by_leader + m_propose[leader][i];
+            prepareRcvd.add(new Vote(i, V[i], t_prepare_a[i] + m_write[i][leader]));
+        }
+        // Compute time at which leader will finish its PREPARE QC
+        double votes = 0.00;
+        while (votes -  Q_v <= Acceptor.THRESHOLD) {
+            Vote vote = prepareRcvd.poll();
+            if (vote != null) {
+                votes += vote.weight;
+                t_prepare_b = vote.arrivalTime;
+            }
+        }
+
+
+        // Compute time precommit time for all replicas.
+        for (int i : replicaSet) {
+            t_precommit_a[i] = t_prepare_b +  m_write[leader][i];
+            precommitRcvd.add(new Vote(i, V[i], t_precommit_a[i] + m_write[i][leader]));
+        }
+        // Compute time at which leader will finish its PREPARE QC
+        votes = 0.00;
+        while (votes -  Q_v <= Acceptor.THRESHOLD) {
+            Vote vote = precommitRcvd.poll();
+            if (vote != null) {
+                votes += vote.weight;
+                t_precommit_b = vote.arrivalTime;
+            }
+        }
+
+
+        // Compute commit time for all replicas.
+        for (int i : replicaSet) {
+            t_commit_a[i] = t_precommit_b +  m_write[leader][i];
+            commitRcvd.add(new Vote(i, V[i], t_commit_a[i] + m_write[i][leader]));
+        }
+        // Compute time at which leader will finish its PREPARE QC
+        votes = 0.00;
+        while (votes -  Q_v <= Acceptor.THRESHOLD) {
+            Vote vote = commitRcvd.poll();
+            if (vote != null) {
+                votes += vote.weight;
+                t_commit_b = vote.arrivalTime;
+            }
+        }
+
+    // Compute DECIDE time for all replicas.
+        for (int i : replicaSet) {
+            t_decide[i] = t_commit_b +  m_write[leader][i];
+        }
+
+        consensusTime = t_decide[leader];
+
+        // Compute time at which RESPONSE  of replica j arrives at client
+        for (int i : replicaSet) {
+            repliestRcvd.add(new Vote(i, V[i], t_decide[i] + clientLatencies[i]));
+        }
+
+        // Compute time at which client decides a value for each consistency guarantee
+
+        votes = 0.00;
+        boolean waitingForResponses = true;
+        boolean weak_t = false;
+        boolean strong_t = false;
+        boolean strong_T = false;
+        int responses = 0;
+        while (waitingForResponses) {
+            Vote vote = repliestRcvd.poll();
+            responses++;
+            if (vote != null) {
+                votes += vote.weight;
+                if (t_response_received_first == -1L) {
+                    t_response_received_first = vote.arrivalTime; // first response was received at this time
+                }
+                if (!weak_t) {
+                    t_response_received_tp1 = vote.arrivalTime;
+                    weak_t = votes - (f*V_max+1) > Acceptor.THRESHOLD; // weak consistency under t fulfilled
+                }
+                if (!strong_t) {
+                    t_response_received_2tp1 = vote.arrivalTime;
+                    strong_t = votes - (2*f*V_max+1) > Acceptor.THRESHOLD; // linearizability under t fulfilled
+                }
+                if (!strong_T) {
+                    t_response_received_T = vote.arrivalTime;
+                    strong_T = strong_t && (!Simulator.hotstuffIsWeighted || (Simulator.hotstuffIsWeighted && ( T==f || responses >= (n - f - 1)))); // linearizability under T fulfilled
+                } else {
+                    waitingForResponses = false;
+                }
+            }
+        }
+
+        Long[] result = {consensusTime, t_response_received_first, t_response_received_tp1, t_response_received_2tp1,
+                t_response_received_T};
+        return result;
+    }
+
     public static SimulationRun simulatedAnnealing(int n, int f, int delta, int u, int[] replicaSet, long[][] propose, long[][] write, long seed) {
 
         long t1 = System.nanoTime();
@@ -600,7 +865,7 @@ public class Simulator {
             if (sample == -1 || count % skip == 0) {
                 for (int primary : w.getR_max()) { // Only replicas in R_max will be considered to become leader ?
                     examined++;
-                    Long prediction = simulator.predictLatency(replicaSet, primary, w, propose, write, n, f, 1);
+                    Long prediction = simulator.predictLatencyHotStuff(replicaSet, primary, w, propose, write, n, f, 1);
 
                     if (prediction < bestLatency) {
                         bestLatency = prediction;
@@ -615,7 +880,7 @@ public class Simulator {
             }
 
         }
-        Long[] consistencyLatencies = simulator.predictLatencyE2E(replicaSet, best.getLeader(),
+        Long[] consistencyLatencies = simulator.predictLatencyE2EHotStuff(replicaSet, best.getLeader(),
                 best.getWeightConfiguration(), propose, write, n, f, clientLatencies);
 
         long t2 = System.nanoTime();
