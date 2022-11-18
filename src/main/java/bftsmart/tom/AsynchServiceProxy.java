@@ -1,6 +1,7 @@
 package bftsmart.tom;
 
 import bftsmart.communication.client.ReplyListener;
+import bftsmart.consensus.roles.Acceptor;
 import bftsmart.correctable.Consistency;
 import bftsmart.correctable.Correctable;
 import bftsmart.correctable.CorrectableSimple;
@@ -389,8 +390,8 @@ public class AsynchServiceProxy extends ServiceProxy {
 
                         if (votes >= q) {
                             if (levels[level_index].equals(Consistency.FINAL)) {
-                                int needed_responces = (int) Math.ceil((N + 2 * T - t + 1) / 2.0);
-                                if (votes >= q && responces > needed_responces) { // received weights votes and
+                                int needed_responces = N - t - 1;
+                                if (votes >= q && responces >= needed_responces) { // received weights votes and
                                                                                   // confirmations
                                     System.out.println("Received enouch replies and confirmations, executing Update");
                                     correctable.update(context, reply);
@@ -471,8 +472,8 @@ public class AsynchServiceProxy extends ServiceProxy {
 
                 if (votes >= q) {
                     if (levels[level_index].equals(Consistency.FINAL)) {
-                        int needed_responces = (int) Math.ceil((N + 2 * T - t + 1) / 2.0);
-                        if (responces > needed_responces) { // received weights votes and confirmations
+                        int needed_responces = N - t - 1;
+                        if (responces >= needed_responces) { // received weights votes and confirmations
                             System.out.println("Received enouch replies and confirmations, executing Update");
                             latency[level_index] = System.nanoTime() - start;
                             level_index++;
@@ -509,14 +510,14 @@ public class AsynchServiceProxy extends ServiceProxy {
             return 1.0;
         }
         if (level.equals(Consistency.WEAK)) {
-            return t * Vmax + 1.0;
+            return t * Vmax + 1.0 + Acceptor.THRESHOLD;
 
         } else if (level.equals(Consistency.LINE)) {
-            return 2.0 * t * Vmax + 1.0;
+            return 2.0 * t * Vmax + 1.0 + Acceptor.THRESHOLD;
 
         } else if (level.equals(Consistency.FINAL)) {
             // need further confirmations more than (N+2T-(t+1)+1)/2 responces
-            return 2.0 * t * Vmax + 1.0;
+            return 2.0 * t * Vmax + 1.0 + Acceptor.THRESHOLD;
         }
         System.out.println("Consistency problem, could not calculate Quorum votes");
         return 0.0; // should never reach here
