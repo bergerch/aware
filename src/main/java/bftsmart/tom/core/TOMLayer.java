@@ -134,9 +134,6 @@ public final class TOMLayer extends Thread implements RequestReceiver {
     //private ReentrantLock dummyProposeLock = new ReentrantLock();
     //private Condition canDummyPropose = dummyProposeLock.newCondition();
 
-    private final ReentrantLock reconfigurationLock = new ReentrantLock();
-
-    private final Condition reconfigurationCompleted = reconfigurationLock.newCondition();
 
     /**
      * Creates a new instance of TOMulticastLayer
