@@ -34,6 +34,8 @@ import java.security.SignatureException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.util.Base64;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -396,7 +398,27 @@ public final class ThroughputLatencyServer extends DefaultRecoverable{
         if (!write.equalsIgnoreCase("")) w++;
         if (write.equalsIgnoreCase("rwd")) w++;
 
-        new ThroughputLatencyServer(processId,interval,replySize, stateSize, context, s, w);        
+        ThroughputLatencyServer server = new ThroughputLatencyServer(processId,interval,replySize, stateSize, context, s, w);
+
+        Thread clock = new Thread(){ // print time each 30s
+            @Override
+            public void run() {
+                long initTime = System.currentTimeMillis();
+                long time_passed = 0;
+                while (true) {
+                    time_passed = (System.currentTimeMillis()-initTime)/1000;
+                    System.out.println("#########################################################\n"+
+                                       "           --> TIME PASSED : " + time_passed + "s\n"+
+                                       "#########################################################");
+                    try {
+                        sleep(30000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            } 
+        };
+        clock.start();
     }
 
     @Override

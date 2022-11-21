@@ -444,8 +444,9 @@ public class Synchronizer {
         ObjectOutputStream out = null;
         ByteArrayOutputStream bos = null;
         
+        // lr: TODO this condition should take in consideration the safest configuration T and not the current one
         if (this.controller.getStaticConf().isBFT()) {
-            condition = lcManager.getStopsSize(nextReg) > this.controller.getCurrentViewF();
+            condition = lcManager.getStopsSize(nextReg) > this.controller.getCurrentView().getT();
         } else {
             condition = lcManager.getStopsSize(nextReg) > 0;
         }
@@ -464,14 +465,14 @@ public class Synchronizer {
             // store information about message I am going to send
             lcManager.addStop(regency, this.controller.getStaticConf().getProcessId());
 
-            //execManager.stop(); // stop execution of consensus
+            // execManager.stop(); // stop execution of consensus
 
             //Get requests that timed out and the requests received in STOP messages
             //and add those STOPed requests to the client manager
             addSTOPedRequestsToClientManager();
             List<TOMMessage> messages = getRequestsToRelay();
 
-            try { // serialize conent to send in the STOP message
+            try { // serialize content to send in the STOP message
                 bos = new ByteArrayOutputStream();
                 out = new ObjectOutputStream(bos);
 
@@ -507,17 +508,22 @@ public class Synchronizer {
             }
         }
         
+        // lr: TODO this condition should take in consideration the safest configuration T and not the current one
         if (this.controller.getStaticConf().isBFT()) {
-            condition = lcManager.getStopsSize(nextReg) > (2 * this.controller.getCurrentViewF());
+            condition = lcManager.getStopsSize(nextReg) > (2 * this.controller.getCurrentView().getT());
         } else {
             condition = lcManager.getStopsSize(nextReg) > this.controller.getCurrentViewF();
         }
         
         // Did the synchronization phase really started?
-        //if (lcManager.getStopsSize(nextReg) > this.reconfManager.getQuorum2F() && lcManager.getNextReg() > lcManager.getLastReg()) {
+        // if (lcManager.getStopsSize(nextReg) > this.reconfManager.getQuorum2F() && lcManager.getNextReg() > lcManager.getLastReg()) {
         if (condition && lcManager.getNextReg() > lcManager.getLastReg()) {
             
             if (!execManager.stopped()) execManager.stop(); // stop consensus execution if more than f replicas sent a STOP message
+
+            // If there is a need to leader change because of STOP Messages, also change to a safer configuration
+            // lr: perhaps this is the right place to do this? we are certain that a correct quorum of replicas timed out?
+            controller.switchToSaferConfig();
 
             logger.debug("Installing regency " + lcManager.getNextReg());
             lcManager.setLastReg(lcManager.getNextReg()); // define last timestamp
@@ -662,7 +668,7 @@ public class Synchronizer {
                     communication.send(b,
                             new LCMessage(this.controller.getStaticConf().getProcessId(), TOMUtil.STOPDATA, regency, payload));
 
-		//TODO: Turn on timeout again?
+		 //TODO: Turn on timeout again?
                 } catch (IOException ex) {
                     logger.error("Could not deserialize STOPDATA message", ex);
                 }

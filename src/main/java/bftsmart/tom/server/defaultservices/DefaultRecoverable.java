@@ -135,7 +135,6 @@ public abstract class DefaultRecoverable implements Recoverable, BatchExecutable
             stateLock.unlock();
             saveState(snapshot, cid);
 
-            System.out.println("Performing checkpoint for consensus " + cid);
             this.controller.updateLastCheckpoint(cid);
 
             System.arraycopy(firstHalfReplies, 0, replies, 0, firstHalfReplies.length);

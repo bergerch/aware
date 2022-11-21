@@ -206,6 +206,7 @@ public class View implements Serializable {
 
     @Override
     public boolean equals(Object obj) {
+        if (this == obj) return true; // if reference is the same return true
         if (obj instanceof View) {
             View v = (View) obj;
             return (this.addresses.equals(v.addresses) &&

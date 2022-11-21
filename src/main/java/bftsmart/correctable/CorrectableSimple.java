@@ -2,7 +2,6 @@ package bftsmart.correctable;
 
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.ReentrantLock;
 
 import bftsmart.consensus.roles.Acceptor;
 import bftsmart.reconfiguration.ClientViewController;
@@ -16,13 +15,14 @@ public class CorrectableSimple {
     private byte[] ret_value;
 
     private ClientViewController controller;
-    
-    // private ReentrantLock mutex = new ReentrantLock();
+
     private Semaphore block;
 
     private double votes = 0.0;
     private int responses = 0;
 
+    // For performance issues this value should be a slightly higher
+    // than the time for completing one consensus instance
     private int ACQUIRETIMEOUT = 1000;
     private TimeUnit TIMEUNIT = TimeUnit.MILLISECONDS;
 
@@ -47,105 +47,119 @@ public class CorrectableSimple {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        // mutex = new ReentrantLock();
     }
 
     public byte[] getValueNoneConsistency() {
-        return getValue(1.0, 1);
+        return getValue(Consistency.NONE);
     }
 
     public byte[] getValueWeakConsistency() {
-        View current_view = controller.getCurrentView();
-        int t = current_view.getF();
-        double wMax = 1.00 + ((double) current_view.getDelta() / (double) t);
-        double nVotes = t * wMax + 1.0;
-        return getValue(t * wMax + 1.0, minResponses(nVotes, wMax, t));
+        return getValue(Consistency.WEAK);
     }
 
     public byte[] getValueLineConsistency() {
-        View current_view = controller.getCurrentView();
-        int t = current_view.getF();
-        double wMax = 1.00 + ((double) current_view.getDelta() / (double) t);
-        double nVotes = 2 * t * wMax + 1.0;
-        return getValue(2 * t * wMax + 1.0, minResponses(nVotes, wMax, t));
+        return getValue(Consistency.LINE);
     }
 
     private int minResponses(double nVotes, double vmax, int t) {
         // System.out.printf("nVotes = %f; vmax = %f; t = %d\n", nVotes, vmax, t);
         if (nVotes <= vmax) {
             return 1;
-        } else if(nVotes <= vmax * 2 * t) {
-            return (int)Math.ceil(nVotes/vmax);
+        } else if (nVotes <= vmax * 2 * t) {
+            return (int) Math.ceil(nVotes / vmax);
         } else {
-            return 2*t + (int) Math.ceil(nVotes - 2*t*vmax);
+            return 2 * t + (int) Math.ceil(nVotes - 2 * t * vmax);
         }
     }
 
     public byte[] getValueFinalConsistency() {
-        View current_view = controller.getCurrentView();
-        int t = current_view.getF();
-        int T = current_view.getT();
-        int N = current_view.getN();
-        int needed_responses = (N + 2 * T - (t + 1)) / 2;
-        // int time = 1;
+        return getValue(Consistency.FINAL);
+    }
+
+    public byte[] getValue(Consistency consistency) {
+        // System.out.println("Get Values Consistency: " + consistency);
         boolean acquire = false;
+
+        double needed_votes = -1.0;
+        int needed_responses = -1;
+
+        View cmpView = controller.getCurrentView(); // view to compare with current
+
         while (true) {
+            View current_view = controller.getCurrentView();
+
+            // calculation of needed votes and responces should only happen
+            // in the first iteration or if the view as changed
+            boolean compute = needed_responses == -1;
+            boolean sameView = true;
+            if (!compute) {
+                sameView = cmpView.equals(current_view);
+                compute = !sameView;
+            }
+
+            if (compute) {
+                if (consistency.equals(Consistency.NONE)) {
+                    needed_votes = 1.0;
+                    needed_responses = 1;
+                } else if (consistency.equals(Consistency.FINAL)) {
+                    int t = current_view.getF();
+                    int T = current_view.getT();
+                    int N = current_view.getN();
+                    needed_responses = (N + 2 * T - (t + 1)) / 2;
+                } else {
+                    int t = current_view.getF();
+                    double wMax = 1.00 + ((double) current_view.getDelta() / (double) t);
+                    double nVotes = 0.0;
+                    if (consistency.equals(Consistency.WEAK)) {
+                        nVotes = t * wMax + 1.0;
+                    } else if (consistency.equals(Consistency.LINE)) {
+                        nVotes = 2 * t * wMax + 1.0;
+                    }
+                    needed_votes = nVotes;
+                    needed_responses = minResponses(nVotes, wMax, t);
+                }
+                if (!sameView) { // if view has changed update the view to be compared
+                    cmpView = current_view;
+                }
+            }
+
+            // System.out.println("Wainting for " + needed_responses + " responses, and " +
+            // needed_votes + " votes");
+
             try {
+                // Do i need the timeout?
+                // without time out if there is a reconfiguration a deadlock can happen?
+                // TODO test this possibily
                 acquire = block.tryAcquire(needed_responses, ACQUIRETIMEOUT, TIMEUNIT);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            // System.out.printf("after block of %d needed response for the %d time\n", needed_responses, time++);
+
+            if (!acquire) {
+                continue;
+            }
+
             if (state == CorrectableState.FINAL) {
-                // System.out.printf("Will return final consistency using %d responses and %f votes (needed at least %d responses)\n", responses, votes, needed_responses);
                 block.release(needed_responses);
                 return ret_value;
             }
-            if (state == CorrectableState.ERROR) {
-                block.release(needed_responses);
-                return null;
-            }
-            if (acquire) {
-                block.release(needed_responses);   
-            }
-        }
-    }
 
-    /**
-     * Gets decision value after waiting for needed_weights and needed_responces
-     * 
-     * @param needed_votes
-     * @param needed_responses
-     * @return decision value if Correct, null otherwise (ERROR state)
-     */
-    public byte[] getValue(double needed_votes, int needed_responses) {
-        // int time = 1;
-        boolean acquire = false;
-        while (true) {
-            // System.out.println("before try Acquire");
-            try {
-                acquire = block.tryAcquire(needed_responses, ACQUIRETIMEOUT, TIMEUNIT); // do i need the timeout?
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            // System.out.println("Before lock");
-            // mutex.lock();
             if (state == CorrectableState.ERROR) {
-                // mutex.unlock();
                 block.release(needed_responses);
                 return null;
             }
-            // System.out.println("votes >= needed_votes && responses >= needed_responses : " + votes + " >= " + needed_votes + " && " + responses + " >= " + needed_responses);
+            // System.out.println("votes >= needed_votes && responses >= needed_responses : " + votes + " >= "
+            //         + needed_votes + " && " + responses + " >= " + needed_responses);
             if (votes - needed_votes >= Acceptor.THRESHOLD
                     && responses >= needed_responses) {
-                // System.out.printf("Will return using %d responses and %f votes (needed at least %d responses and %f votes)\n", responses, votes, needed_responses, needed_votes);
-                // mutex.unlock();
                 block.release(needed_responses);
                 return ret_value;
+            } else {
+                // If we have the correct number of responses but not the needed votes?
+                // sleep here (must be a small sleep otherwise can worsen performance)
             }
-            // mutex.unlock();
             if (acquire) {
-                block.release(needed_responses);   
+                block.release(needed_responses);
             }
         }
     }
@@ -157,11 +171,12 @@ public class CorrectableSimple {
             this.votes = votes;
             this.responses = responses;
             ret_value = reply.getContent();
-            // System.out.println("update " + responses + ": votes = " + votes + "; responses = " + responses);
+            // System.out.println("update " + responses + ": votes = " + votes + ";
+            // responses = " + responses);
             checkFinal();
-            
+
             block.release(responses); // informs that a responce was received
-            // mutex.unlock();
+            // System.out.println(" (C:" + responses+") ");
         }
     }
 

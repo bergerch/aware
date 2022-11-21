@@ -190,7 +190,7 @@ public class RequestsTimer {
             if (!pendingRequests.isEmpty()) {
                 // leader timeout detected
                 // switch to safer config before leader change
-                //controller.switchToSaferConfig();
+                // controller.switchToSaferConfig();
                 // cb: I guess the protocol switch would not be deterministic here, because requests can time out in only
                 // some specific replicas while they do not time out in others? We need to think of a better place to
                 // switch back

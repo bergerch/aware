@@ -5,6 +5,9 @@ import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import bftsmart.consensus.Epoch;
 import bftsmart.reconfiguration.ServerViewController;
 
@@ -20,6 +23,8 @@ public class AuditProvider {
 
     // consensus id to number of audits executed
     private Map<Integer, Integer> audit_reps = new HashMap<>(100); // TODO receive max size of storage in config file
+
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     public AuditProvider(ServerViewController controller) {
         this.auditor = new Auditor(controller);
@@ -73,21 +78,21 @@ public class AuditProvider {
 
         int maxCid = receivedStorage.getMaxCID();
 
-        System.out.println("Comparing storage...");
+        logger.debug("Comparing storage...");
 
         if (maxCid <= last_audit) {
-            System.out.println(" ======= Storage received does not have needed information ======= ");
+            logger.debug(" ======= Storage received does not have needed information ======= ");
             return true; // received storage does not have needed information...
         }
         AuditResult result = auditor.audit(this.storage, receivedStorage, last_audit + 1);
 
-        System.out.println("Comparing Storages took " + (System.nanoTime() - start_time) / 1000000 + " ms");
+        logger.debug("Comparing Storages took " + (System.nanoTime() - start_time) / 1000000 + " ms");
 
         if (result.conflictFound()) {
-            System.out.println("Conflict found");
+            logger.info("Conflict found: " + result.toString());
             return false;
         } else {
-            System.out.println("No conflict found");
+            logger.debug("No conflict found");
             int minCid = receivedStorage.getMinCID();
             int i;
             try {
@@ -103,7 +108,6 @@ public class AuditProvider {
                 }
             } catch (NullPointerException e) {
                 // audit_rep was cleaned
-                
             }
             if (last_audit > 0) {
                 clean(last_audit); // TODO check if this is correct
@@ -113,7 +117,7 @@ public class AuditProvider {
     }
 
     public void clean(int cid) {
-        System.out.println(" ======= Storage clean until " + cid + " ======= ");
+        logger.info(" ======= Storage clean until " + cid + " ======= ");
         storage.removeProofsUntil(cid); // garbage collection for unecessary proofs
         if (storage.getSize() < audit_reps.size()) {
             audit_reps.clear(); // probably not the best way to clean this map
@@ -122,7 +126,7 @@ public class AuditProvider {
     }
 
     public void clean() {
-        System.out.println(" ======= Storage full clean ======= ");
+        logger.debug(" ======= Storage full clean ======= ");
         storage.removeProofsUntil(storage.getMaxCID()); // garbage collection for unecessary proofs
         if (storage.getSize() < audit_reps.size()) {
             audit_reps.clear(); // probably not the best way to clean this map
@@ -137,8 +141,8 @@ public class AuditProvider {
                 try {
                     AuditStorage received = q.take();
                     compareStorages(received);
-                    System.out.println(" ======= Storage compared in Audit Thread " + this.getName() + " ======= ");
-                    System.out.println(" ======= Storages remaining for comparing: " + q.size() + " ======= ");
+                    logger.debug(" ======= Storage compared in Audit Thread " + this.getName() + " ======= ");
+                    logger.debug(" ======= Storages remaining for comparing: " + q.size() + " ======= ");
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }

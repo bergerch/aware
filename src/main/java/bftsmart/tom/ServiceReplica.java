@@ -18,6 +18,7 @@ package bftsmart.tom;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -84,6 +85,8 @@ public class ServiceReplica {
     private Replier replier = null;
     private RequestVerifier verifier = null;
 
+    private long time;
+
     /**
      * Constructor
      *
@@ -141,6 +144,7 @@ public class ServiceReplica {
      */
     public ServiceReplica(int id, String configHome, Executable executor, Recoverable recoverer,
             RequestVerifier verifier, Replier replier, KeyLoader loader) {
+        this.time = System.currentTimeMillis();
         this.id = id;
         this.SVController = new ServerViewController(id, configHome, loader);
         this.executor = executor;
@@ -249,7 +253,7 @@ public class ServiceReplica {
     /**
      * Cleans the object state and reboots execution. From the perspective of the
      * rest of the system,
-     * this is equivalent to a rash followed by a recovery.
+     * this is equivalent to a crash followed by a recovery.
      */
     public void restart() {
         Thread t = new Thread() {
@@ -285,6 +289,7 @@ public class ServiceReplica {
 
     public void receiveMessages(int consId[], int regencies[], int leaders[], CertifiedDecision[] cDecs,
             TOMMessage[][] requests) {
+
         int numRequests = 0;
         int consensusCount = 0;
         List<TOMMessage> toBatch = new ArrayList<>();

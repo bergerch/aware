@@ -149,7 +149,6 @@ public class Auditor {
 
         // Always sign a consensus proof.
         return TOMUtil.signMessage(controller.getStaticConf().getPrivateKey(), data);
-
         // System.out.println("signature:\n" + Arrays.toString(signature));
     }
 }

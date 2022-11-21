@@ -62,7 +62,7 @@ public class Monitor {
 
         init(n);
 
-        // Periodically compute point-to-pont latencies
+        // Periodically compute point-to-point latencies
         Timer timer = new Timer();
         timer.scheduleAtFixedRate(new TimerTask() {
             @Override
@@ -110,7 +110,7 @@ public class Monitor {
 
 
     /**
-     * Processes measurements decided in come consensus
+     * Processes measurements decided in some consensus
      *
      * @param epoch contains the decision
      * @param cid consensus id

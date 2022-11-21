@@ -17,6 +17,7 @@ package bftsmart.demo.microbenchmarks;
 
 import java.io.IOException;
 
+import bftsmart.correctable.CorrectableSimple;
 import bftsmart.tom.AsynchServiceProxy;
 import bftsmart.tom.ServiceProxy;
 import bftsmart.tom.util.Storage;
@@ -42,7 +43,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
-import bftsmart.correctable.CorrectableSimple;
 
 /**
  * Example client that updates a BFT replicated service (a counter).

@@ -219,15 +219,22 @@ public class AwareController {
                         .minStorageSize()
                 && cid % interval == viewControl.getStaticConf().getProcessId()
                         * (interval / viewControl.getCurrentViewN())) {
-            if (!svc.getStaticConf().getBackupForensics() && svc.inBackup()) { // if backup configuration is being used
-                                                                               // no need to perform forensics
-                System.out.println("======= NO NEED TO PERFORM FORENSICS =======");
+
+            if (!svc.getStaticConf().getBackupForensics() && svc.inBackup()) { 
+                logger.debug("======= NO NEED TO PERFORM FORENSICS =======");
                 viewControl.getAuditProvider().clean();
                 return;
             }
+
+            if (!svc.getStaticConf().getFastForensics() && !svc.inBackup()) { 
+                logger.debug("======= NO NEED TO PERFORM FORENSICS =======");
+                viewControl.getAuditProvider().clean();
+                return;
+            }
+
             if(!svc.getStaticConf().getLeaderAudit() && currentDW.getLeader()==svc.getStaticConf().getProcessId()) { // leader only performs audit if desirable
-                viewControl.getAuditProvider().clean(); // TODO should I clean storage here?
-                System.out.println("======= ( LEADER ) NO NEED TO PERFORM FORENSICS =======");
+                viewControl.getAuditProvider().clean();
+                logger.debug("======= ( LEADER ) NO NEED TO PERFORM FORENSICS =======");
                 return;
             }
             // perform audit periodically
@@ -289,7 +296,7 @@ public class AwareController {
             // Threshold-AWARE: Currently: Periodically try to improve the threshold
             boolean thresholdDecrease = false;
             if (svc.getCurrentView().isFastestConfig()) {
-                logger.info("System cant get any faster");
+                logger.info("###### NO SWITCH POSSIBLE ######");
             } else {
                 logger.info("###### SWITCH #####");
                 // svc.switchToFasterConfig();

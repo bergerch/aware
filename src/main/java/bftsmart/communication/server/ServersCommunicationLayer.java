@@ -119,6 +119,8 @@ public class ServersCommunicationLayer extends Thread {
     public MessageLatencyMonitor writeLatenciesMonitor;
     public MessageLatencyMonitor proposeLatenciesMonitor;
 
+    private long start_time;
+
     public ServersCommunicationLayer(ServerViewController controller,
             LinkedBlockingQueue<SystemMessage> inQueue,
             ServiceReplica replica) throws Exception {
@@ -216,6 +218,8 @@ public class ServersCommunicationLayer extends Thread {
                 }
             }
         }
+
+        start_time = System.currentTimeMillis() / 1000;
 
         start();
     }

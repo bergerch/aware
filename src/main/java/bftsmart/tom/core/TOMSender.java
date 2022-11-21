@@ -16,6 +16,7 @@ limitations under the License.
 package bftsmart.tom.core;
 
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -47,12 +48,15 @@ public abstract class TOMSender implements ReplyReceiver, Closeable, AutoCloseab
 	private boolean useSignatures = false;
 	private AtomicInteger opCounter = new AtomicInteger(0);
 
+	private long start_time;
+
 	/**
 	 * Creates a new instance of TOMulticastSender
 	 *
 	 * TODO: This may really be empty?
 	 */
 	public TOMSender() {
+		start_time = System.currentTimeMillis();
 	}
 
 	public void close(){

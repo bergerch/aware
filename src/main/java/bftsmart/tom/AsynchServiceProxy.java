@@ -309,6 +309,7 @@ public class AsynchServiceProxy extends ServiceProxy {
 
                     @Override
                     public void reset() {
+                        System.out.println("Correctable reset()");
                         responses = 0;
                         votes = 0;
                         correctable.reset();
@@ -319,6 +320,8 @@ public class AsynchServiceProxy extends ServiceProxy {
 
                         responses++;
                         votes += cViewController.getCurrentView().getWeight(reply.getSender());
+
+                        // System.out.print("Responses received so far: " + responses + ";\tTotal votes acumulated: " + votes);
                         // System.out.println("update");
                         correctable.update(context, reply, votes, responses);
                         // System.out.printf("Votes = %f; Responses = %d\n", votes, responses);

@@ -102,6 +102,7 @@ public class TOMConfiguration extends Configuration {
     private int min_storage_size;
     private int granularity;
     private boolean backupforensics;
+    private boolean fastforensics;
     private int forensicsInterval;
     private boolean leaderAudit;
     private int auditthreads;
@@ -522,7 +523,10 @@ public class TOMConfiguration extends Configuration {
             granularity = s == null ? 1 : Integer.parseInt(s);
 
             s = (String) configs.remove("system.taware.backupforensics");
-            backupforensics = s == null ? false : Boolean.parseBoolean(s);
+            backupforensics = s == null ? true : Boolean.parseBoolean(s);
+
+            s = (String) configs.remove("system.taware.fastforensics");
+            fastforensics = s == null ? true : Boolean.parseBoolean(s);
 
             s = (String) configs.remove("system.taware.forensicsinterval");
             forensicsInterval = s == null ? 1000 : Integer.parseInt(s);
@@ -842,6 +846,10 @@ public class TOMConfiguration extends Configuration {
 
     public boolean getBackupForensics(){
         return backupforensics;
+    }
+
+    public boolean getFastForensics(){
+        return fastforensics;
     }
 
     public int getForensicsInterval(){

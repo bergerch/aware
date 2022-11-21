@@ -59,10 +59,11 @@ public class ServerViewController extends ViewController {
     private int last_checkpoint;
 
     /**
-    * T-AWARE
-    */
+     * T-AWARE
+     */
     private AuditProvider auditProvider;
     private int K = -1; // granularity
+
     /**
      * 
      */
@@ -312,7 +313,6 @@ public class ServerViewController extends ViewController {
         System.out.println("Reconfigure:\n\tN = " + this.currentView.getN() + "\tt = " + this.currentView.getF()
                 + "\n\tDelta = " + this.currentView.getDelta());
 
-
         System.out.println("OVerlayF = " + overlayF);
         System.out.println("OVerlayN = " + overlayN);
     }
@@ -336,7 +336,10 @@ public class ServerViewController extends ViewController {
     public void switchToSaferConfig() {
         System.out.println("================== SWITCH to SAFE ==================");
         View currentView = this.getCurrentView();
-        if (currentView.isSaferConfig()) return;
+        if (currentView.isSaferConfig()) {
+            logger.info("============== Already safest config ==============");
+            return;
+        }
 
         int N = currentView.getProcesses().length;
         int max_faults = max_fault(N);
@@ -347,11 +350,10 @@ public class ServerViewController extends ViewController {
         this.reconfigureTo(newView);
     }
 
-
-
     public View nextFasterConfig() {
         View currentView = this.getCurrentView();
-        if (currentView.isFastestConfig()) return currentView;
+        if (currentView.isFastestConfig())
+            return currentView;
 
         int N = currentView.getProcesses().length;
         int max_faults = max_fault(N);
@@ -365,17 +367,18 @@ public class ServerViewController extends ViewController {
     public void switchToFasterConfig() {
         System.out.println("================== SWITCH to FAST ==================");
         View currentView = this.getCurrentView();
-        if (currentView.isFastestConfig()) return;
+        if (currentView.isFastestConfig())
+            return;
 
         View newView = this.nextFasterConfig();
         this.reconfigureTo(newView);
     }
 
-    public boolean inBackup(){
+    public boolean inBackup() {
         return maxFault() == this.getCurrentViewF();
     }
 
-    public int maxFault(){
+    public int maxFault() {
         return max_fault(currentView.getProcesses().length);
     }
 
@@ -388,20 +391,22 @@ public class ServerViewController extends ViewController {
     }
 
     // private int getTotalWeights(){
-    //     return ;
+    // return ;
     // }
 
-    public int getLastCheckpoint(){
+    public int getLastCheckpoint() {
         return last_checkpoint;
     }
-    public void updateLastCheckpoint(int cid){
+
+    public void updateLastCheckpoint(int cid) {
         this.last_checkpoint = cid;
     }
 
     public void registerAuditProvider(AuditProvider audit_provider) {
         this.auditProvider = audit_provider;
     }
-    public AuditProvider getAuditProvider(){
+
+    public AuditProvider getAuditProvider() {
         return auditProvider;
     }
 }

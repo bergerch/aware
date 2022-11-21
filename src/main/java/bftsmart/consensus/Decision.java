@@ -1,18 +1,18 @@
 /**
-Copyright (c) 2007-2013 Alysson Bessani, Eduardo Alchieri, Paulo Sousa, and the authors indicated in the @author tags
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
+ * Copyright (c) 2007-2013 Alysson Bessani, Eduardo Alchieri, Paulo Sousa, and the authors indicated in the @author tags
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package bftsmart.consensus;
 
 import bftsmart.tom.core.messages.TOMMessage;
@@ -31,10 +31,10 @@ public class Decision {
     private Epoch decisionEpoch = null; // Epoch in which the value was decided
     private int regency; // Regency in which the value was decided
     private int leader; // Leader with which the value was decided
-    
+
     private byte[] value = null; // decided value
     private TOMMessage[] deserializedValue = null; // decided value (deserialized)
-    
+
     //for benchmarking
     public TOMMessage firstMessageProposed = null;
     public int batchSize = 0;
@@ -59,9 +59,7 @@ public class Decision {
      * Set leader with which the value was decided
      * @param leader Leader with which the value was decided
      */
-    public void setLeader(int leader) {
-        this.leader = leader;
-    }
+    public void setLeader(int leader) { this.leader = leader; }
 
     /**
      * Returns regency in which the value was decided
@@ -78,7 +76,7 @@ public class Decision {
     public int getLeader() {
         return leader;
     }
-    
+
     /**
      * Set epoch in which the value was decided
      * @param epoch The epoch in which the value was decided
@@ -90,13 +88,13 @@ public class Decision {
 
     /**
      * Get epoch in which the value was decided
-     * 
+     *
      * @return The epoch in which the value was decided
      */
     public Epoch getDecisionEpoch() {
         return decisionEpoch;
     }
-    
+
     /**
      * Sets the decided value
      * @return Decided Value
@@ -132,8 +130,8 @@ public class Decision {
                 LoggerFactory.getLogger(this.getClass()).info("waiting for propose for consensus " + cid);
                 Thread.sleep(1);
             } catch (InterruptedException ie) {
-                
-                LoggerFactory.getLogger(this.getClass()).error("Interruption during sleep",ie);
+
+                LoggerFactory.getLogger(this.getClass()).error("Interruption during sleep", ie);
             }
         }
     }
