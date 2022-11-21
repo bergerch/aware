@@ -396,12 +396,12 @@ public class AsynchServiceProxy extends ServiceProxy {
                                 int needed_responces = N - t - 1;
                                 if (votes >= q && responces >= needed_responces) { // received weights votes and
                                                                                   // confirmations
-                                    System.out.println("Received enough replies and confirmations, executing Update");
+                                    System.out.println("Received enouch replies and confirmations, executing Update");
                                     correctable.update(context, reply);
                                     level_index++;
                                 }
                             } else {
-                                System.out.println("Received enough replies, executing Update");
+                                System.out.println("Received enouch replies, executing Update");
                                 correctable.update(context, reply);
                                 level_index++;
                             }
@@ -477,12 +477,12 @@ public class AsynchServiceProxy extends ServiceProxy {
                     if (levels[level_index].equals(Consistency.FINAL)) {
                         int needed_responces = N - t - 1;
                         if (responces >= needed_responces) { // received weights votes and confirmations
-                            System.out.println("Received enough replies and confirmations, executing Update");
+                            System.out.println("Received enouch replies and confirmations, executing Update");
                             latency[level_index] = System.nanoTime() - start;
                             level_index++;
                         }
                     } else {
-                        System.out.println("Received enough replies, executing Update");
+                        System.out.println("Received enouch replies, executing Update");
                         latency[level_index] = System.nanoTime() - start;
                         level_index++;
                     }
@@ -519,7 +519,7 @@ public class AsynchServiceProxy extends ServiceProxy {
             return 2.0 * t * Vmax + 1.0 + Acceptor.THRESHOLD;
 
         } else if (level.equals(Consistency.FINAL)) {
-            // need further confirmations more than (N+2T-(t+1)+1)/2 responses
+            // need further confirmations more than (N+2T-(t+1)+1)/2 responces
             return 2.0 * t * Vmax + 1.0 + Acceptor.THRESHOLD;
         }
         System.out.println("Consistency problem, could not calculate Quorum votes");

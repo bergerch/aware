@@ -105,7 +105,7 @@ public class CorrectableSimple {
                     int t = current_view.getF();
                     int T = current_view.getT();
                     int N = current_view.getN();
-                    needed_responses = N - t - 1;
+                    needed_responses = (N + 2 * T - (t + 1)) / 2;
                 } else {
                     int t = current_view.getF();
                     double wMax = 1.00 + ((double) current_view.getDelta() / (double) t);
@@ -150,7 +150,8 @@ public class CorrectableSimple {
             }
             // System.out.println("votes >= needed_votes && responses >= needed_responses : " + votes + " >= "
             //         + needed_votes + " && " + responses + " >= " + needed_responses);
-            if (votes - needed_votes >= Acceptor.THRESHOLD && responses >= needed_responses) {
+            if (votes - needed_votes >= Acceptor.THRESHOLD
+                    && responses >= needed_responses) {
                 block.release(needed_responses);
                 return ret_value;
             } else {
@@ -185,8 +186,8 @@ public class CorrectableSimple {
         int T = current_view.getT();
         int N = current_view.getN();
         double wMax = 1.00 + ((double) current_view.getDelta() / (double) t);
-        int needed_responces = N - t - 1;
-        if (this.responses >= needed_responces && this.votes >= 2 * t * wMax + 1.0 + Acceptor.THRESHOLD) {
+        int needed_responces =  N - t - 1;
+        if (this.responses >= needed_responces && this.votes  >= 2 * t * wMax + 1.0 + Acceptor.THRESHOLD) {
             close();
         }
     }
