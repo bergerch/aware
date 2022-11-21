@@ -186,8 +186,8 @@ public class CorrectableSimple {
         int T = current_view.getT();
         int N = current_view.getN();
         double wMax = 1.00 + ((double) current_view.getDelta() / (double) t);
-        int needed_responces = (int) Math.ceil((N + 2 * T - (t + 1)) / 2.0);
-        if (this.responses >= needed_responces && this.votes >= 2 * t * wMax + 1.0) {
+        int needed_responces =  N - t - 1;
+        if (this.responses >= needed_responces && this.votes  >= 2 * t * wMax + 1.0 + Acceptor.THRESHOLD) {
             close();
         }
     }

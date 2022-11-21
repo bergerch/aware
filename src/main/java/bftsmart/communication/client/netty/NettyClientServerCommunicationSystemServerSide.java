@@ -173,7 +173,7 @@ public class NettyClientServerCommunicationSystemServerSide extends SimpleChanne
 
             /** AWARE **/
             if (controller.getStaticConf().isUseWeights()) {
-                logger.info("Using WHEAT Extensions: ");
+                logger.info("thres-AWARE built_051022, Extensions: ");
                 logger.info("Use dynamic weight adjustments (AWARE): " + controller.getStaticConf().isUseDynamicWeights());
                 logger.info("Use Leader selection optimization: " + controller.getStaticConf().isUseLeaderSelection());
                 logger.info("Use WRITE-RESPONSE: " + controller.getStaticConf().isUseWriteResponse());
@@ -181,6 +181,8 @@ public class NettyClientServerCommunicationSystemServerSide extends SimpleChanne
                 logger.info("Use PROPOSE-RESPONSE: " + controller.getStaticConf().isUseProposeResponse());
                 logger.info("Monitoring overhead: " + controller.getStaticConf().getMonitoringOverhead());
                 logger.info("Re-Calculate after x consensus: " + controller.getStaticConf().getCalculationInterval());
+				logger.info("Calc Delay: " + controller.getStaticConf().getCalculationDelay());
+				logger.info("Opt goal " + controller.getStaticConf().getOptimizationGoal());
             }
 
 		} catch (InterruptedException | UnknownHostException ex) {

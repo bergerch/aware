@@ -23,7 +23,7 @@ public class ThroughputLatencyServer extends DefaultSingleRecoverable {
 	private double maxThroughput;
 
 	public static void main(String[] args) {
-		if (args.length != 1) {
+		if (args.length < 1) {
 			System.out.println("USAGE: bftsmart.benchmark.ThroughputLatencyServer <process id>");
 			System.exit(-1);
 		}

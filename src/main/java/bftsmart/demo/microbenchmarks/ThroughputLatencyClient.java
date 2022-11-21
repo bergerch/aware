@@ -57,7 +57,7 @@ public class ThroughputLatencyClient {
      * "MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgXa3mln4anewXtqrM" +
      * "hMw6mfZhslkRa/j9P790ToKjlsihRANCAARnxLhXvU4EmnIwhVl3Bh0VcByQi2um" +
      * "9KsJ/QdCDjRZb1dKg447voj5SZ8SSZOUglc/v8DJFFJFTfygjwi+27gz";
-     * 
+     *
      * public static String pubKey =
      * "MIICNjCCAd2gAwIBAgIRAMnf9/dmV9RvCCVw9pZQUfUwCgYIKoZIzj0EAwIwgYEx" +
      * "CzAJBgNVBAYTAlVTMRMwEQYDVQQIEwpDYWxpZm9ybmlhMRYwFAYDVQQHEw1TYW4g" +
@@ -279,9 +279,16 @@ public class ThroughputLatencyClient {
 
                     // sleeps interval ms before sending next request
                     if (interval > 0) {
-
-                        Thread.sleep(interval);
-                    } else if (this.rampup > 0) {
+Thread.sleep(interval);
+                        }
+                        if (interval < 0) { // if interval negative, use it as upper limit for a randomized interval
+                            try {    // so wait between 0ms and interval ms
+                                double waitTime = Math.random() * interval * -1;
+                                System.out.println("waiting for " + waitTime + " ms");
+                        Thread.sleep(Math.round(waitTime));
+                            } catch (InterruptedException ex) {
+                            }
+                    }  if (this.rampup > 0) {
                         Thread.sleep(this.rampup);
                     }
                     this.rampup -= 100;
@@ -316,23 +323,31 @@ public class ThroughputLatencyClient {
                     System.out.println(this.id + " // sent!");
                 st.store(latency);
 
-                try {
+                
+                    try {
+                        
+                        //sleeps interval ms before sending next request
+                        if (interval > 0) {
+                            
+                            Thread.sleep(interval);
+                        }
+                        if (interval < 0) { // if interval negative, use it as upper limit for a randomized interval
 
-                    // sleeps interval ms before sending next request
-                    if (interval > 0) {
-
-                        Thread.sleep(interval);
-                    } else if (this.rampup > 0) {
-                        Thread.sleep(this.rampup);
+                            double waitTime = Math.random() * interval * -1;
+                            System.out.println("waiting for " + waitTime + " ms");
+                            Thread.sleep(Math.round(waitTime));
+                        }
+                        if (this.rampup > 0) {
+                            Thread.sleep(this.rampup);
+                        }
+                        this.rampup -= 100;
+                        
+                    } catch (InterruptedException ex) {
+                        ex.printStackTrace();
                     }
-                    this.rampup -= 100;
-
-                } catch (InterruptedException ex) {
-                    ex.printStackTrace();
-                }
-
-                if (verbose && (req % 1000 == 0))
-                    System.out.println(this.id + " // " + req + " operations sent!");
+                
+                                
+                if (verbose && (req % 1000 == 0)) System.out.println(this.id + " // " + req + " operations sent!");
             }
 
             if (id == initId) {
@@ -346,6 +361,53 @@ public class ThroughputLatencyClient {
                         + " executions (all samples) = " + st.getDP(false) / 1000 + " us ");
                 System.out.println(this.id + " // Maximum time for " + numberOfOps / 2 + " executions (all samples) = "
                         + st.getMax(false) / 1000 + " us ");
+            }
+System.out.println("Finished! Continue to send operations");
+
+            for (int i = 0; i < 2*numberOfOps; i++, req++) {
+                long last_send_instant = System.nanoTime();
+                if (verbose) System.out.print(this.id + " // Sending req " + req + "...");
+
+                if(readOnly)
+                    proxy.invokeUnordered(request);
+                else
+                    proxy.invokeOrdered(request);
+                long latency = System.nanoTime() - last_send_instant;
+
+                try {
+                    latencies.put(id + "\t" + System.currentTimeMillis() + "\t" + latency + "\n");
+                } catch (InterruptedException ex) {
+                    ex.printStackTrace();
+                }
+
+                if (verbose) System.out.println(this.id + " // sent!");
+                st.store(latency);
+
+
+                try {
+
+                    //sleeps interval ms before sending next request
+                    if (interval > 0) {
+
+                        Thread.sleep(interval);
+                    }
+                    if (interval < 0) { // if interval negative, use it as upper limit for a randomized interval
+
+                        double waitTime = Math.random() * interval * -1;
+                        System.out.println("waiting for " + waitTime + " ms");
+                        Thread.sleep(Math.round(waitTime));
+                    }
+                    if (this.rampup > 0) {
+                        Thread.sleep(this.rampup);
+                    }
+                    this.rampup -= 100;
+
+                } catch (InterruptedException ex) {
+                    ex.printStackTrace();
+                }
+
+
+                if (verbose && (req % 1000 == 0)) System.out.println(this.id + " // " + req + " operations sent!");
             }
 
             proxy.close();

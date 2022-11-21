@@ -18,10 +18,8 @@ package bftsmart.reconfiguration.views;
 import bftsmart.aware.decisions.WeightConfiguration;
 
 import java.io.Serializable;
-import java.util.Arrays;
+import java.util.*;
 import java.net.InetSocketAddress;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  *
@@ -112,6 +110,19 @@ public class View implements Serializable {
         for (int i = 0; i < u; i++)
             this.weights.put(processes[i], wMax);
 
+    }
+
+    public WeightConfiguration getWeightConfiguration() {
+        Set<Integer> max = new TreeSet<>();
+        Set<Integer> min = new TreeSet<>();
+        this.weights.forEach((replica, weight) -> {
+            if (weight > 1.0) {
+                max.add(replica);
+            } else {
+                min.add(replica);
+            }
+        });
+        return new WeightConfiguration(max, min);
     }
 
     public boolean isMember(int id) {
