@@ -91,7 +91,7 @@ public class FindOptimalWeightConfigTest {
                 Simulator.SimulationRun tabuSearch = Simulator.tabuSearch(n, f, delta, u, replicaSet, propose, write, 1160, 500);
                 resultstabu[i] = tabuSearch;
 
-                Simulator.SimulationRun simulatedAnnealing = Simulator.simulatedAnnealing(n, f, delta, u, replicaSet, propose, write, 500);
+                Simulator.SimulationRun simulatedAnnealing = Simulator.simulatedAnnealing(n, f, delta, u, replicaSet, propose, write, 500, null, false);
                 resultsAnnealing[i] = simulatedAnnealing;
 
                 Simulator.SimulationRun exhaustiveSearch = Simulator.exhaustiveSearch(n, f, delta, u, replicaSet, propose, write);

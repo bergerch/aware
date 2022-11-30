@@ -93,7 +93,7 @@ public class TestAWSLatencies {
                             _parallelism_lock[finalClientIndex % parallel].lock();
 
                             if (finalStrategy.equals("SA")) {
-                                sim = Simulator.simulatedAnnealing(SIZE, finalF, finalDelta, finalU, replicaset, m, m, 0);
+                                sim = Simulator.simulatedAnnealing(SIZE, finalF, finalDelta, finalU, replicaset, m, m, 0,  m[finalClientIndex], false);
                             } else {
                                 sim = Simulator.exhaustiveSearch(SIZE, finalF, finalDelta, finalU, replicaset, m, m, m[finalClientIndex]);
                             }

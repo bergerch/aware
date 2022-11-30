@@ -23,6 +23,7 @@ public class Simulator {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private static boolean hotstuffIsWeighted = false;
+    private static boolean AWAREoptimise = false;
 
     public Simulator(ServerViewController controller) {
         this.viewControl = controller;
@@ -100,13 +101,6 @@ public class Simulator {
         long t_commit_b = Long.MAX_VALUE;
 
         long[] t_decide = new long[n];
-
-
-        long t_response_received_first = -1L;
-        long t_response_received_tp1 = -1L;
-        long t_response_received_2tp1 = -1L;
-        long t_response_received_T = -1L;
-
 
         @SuppressWarnings("unchecked")
         PriorityQueue<Vote> prepareRcvd = new PriorityQueue();
@@ -632,12 +626,17 @@ public class Simulator {
             }
         }
 
-        Long[] result = {consensusTime, t_response_received_first, t_response_received_tp1, t_response_received_2tp1,
+        Long[] result = {(consensusTime-t_request_received_by_leader),
+                t_response_received_first,
+                t_response_received_tp1,
+                t_response_received_2tp1,
                 t_response_received_T};
+
         return result;
     }
 
-    public static SimulationRun simulatedAnnealing(int n, int f, int delta, int u, int[] replicaSet, long[][] propose, long[][] write, long seed) {
+    public static SimulationRun simulatedAnnealing(int n, int f, int delta, int u, int[] replicaSet, long[][] propose,
+                                                   long[][] write, long seed,  long[] clientLatencies, boolean hotstuff) {
 
         long t1 = System.nanoTime();
         Simulator simulator = new Simulator(null);
@@ -646,93 +645,113 @@ public class Simulator {
         WeightConfiguration w = new WeightConfiguration(u, replicaSet);
         AwareConfiguration x = new AwareConfiguration(w, 0);
         AwareConfiguration best = x;
-        long prediction = simulator.predictLatency(replicaSet, x.getLeader(), x.getWeightConfiguration(), propose,
-                write, n, f, 10);
+        long prediction = 0L;
+        if (hotstuff) {
+            prediction = simulator.predictLatencyHotStuff(replicaSet, x.getLeader(), x.getWeightConfiguration(), propose,
+                    write, n, f, 10);
+        } else {
+            prediction = simulator.predictLatency(replicaSet, x.getLeader(), x.getWeightConfiguration(), propose,
+                    write, n, f, 10);
+        }
         best.setPredictedLatency(prediction);
         x.setPredictedLatency(prediction);
         Random random = new Random(seed);
 
-        // Simulated Annealing parameters
-        double temp = 25000;
-        double coolingRate = 0.0055;
-        double threshold = 0.5;
+        if (Simulator.AWAREoptimise) {
+            // Simulated Annealing parameters
+            double temp = 25000;
+            double coolingRate = 0.0055;
+            double threshold = 0.5;
 
 
-        // Debug Info
-        double initTemp = temp;
-        int examined = 0;
-        int jumps = 0;
-        int betterFound = 0;
+            // Debug Info
+            double initTemp = temp;
+            int examined = 0;
+            int jumps = 0;
+            int betterFound = 0;
 
 
-        while (temp > threshold) {
+            while (temp > threshold) {
 
-            examined++;
-            AwareConfiguration y = new AwareConfiguration(x.getWeightConfiguration().deepCopy(), x.getLeader());
+                examined++;
+                AwareConfiguration y = new AwareConfiguration(x.getWeightConfiguration().deepCopy(), x.getLeader());
 
-            // Create a random variation of configuration x
-            int randomReplicaFrom = random.nextInt(u);
-            int randomReplicaTo = random.nextInt(n - u);
+                // Create a random variation of configuration x
+                int randomReplicaFrom = random.nextInt(u);
+                int randomReplicaTo = random.nextInt(n - u);
 
-            TreeSet<Integer> R_max = (TreeSet<Integer>) y.getWeightConfiguration().getR_max();
-            TreeSet<Integer> R_min = (TreeSet<Integer>) y.getWeightConfiguration().getR_min();
+                TreeSet<Integer> R_max = (TreeSet<Integer>) y.getWeightConfiguration().getR_max();
+                TreeSet<Integer> R_min = (TreeSet<Integer>) y.getWeightConfiguration().getR_min();
 
-            Integer max = (Integer) R_max.toArray()[randomReplicaFrom];
-            Integer min = (Integer) R_min.toArray()[randomReplicaTo];
+                Integer max = (Integer) R_max.toArray()[randomReplicaFrom];
+                Integer min = (Integer) R_min.toArray()[randomReplicaTo];
 
-            // Get energy of solutions
-            Long predictX = x.getPredictedLatency();
+                // Get energy of solutions
+                Long predictX = x.getPredictedLatency();
 
 
-            // Swap min and max replica
-            if (max.equals(y.getLeader())) {
-                y.setLeader(min);
-            }
-            R_max.remove(max);
-            R_max.add(min);
+                // Swap min and max replica
+                if (max.equals(y.getLeader())) {
+                    y.setLeader(min);
+                }
+                R_max.remove(max);
+                R_max.add(min);
 
-            R_min.remove(min);
-            R_min.add(max);
+                R_min.remove(min);
+                R_min.add(max);
 
-            Long predictY = simulator.predictLatency(replicaSet, y.getLeader(), y.getWeightConfiguration(),
-                    propose, write, n, f, 10);
 
-            // If the new solution is better, it is accepted
-            if (predictY < predictX) {
-                x = y;
-                x.setPredictedLatency(predictY);
-                betterFound++;
+                Long predictY = hotstuff ? simulator.predictLatencyHotStuff(replicaSet, y.getLeader(), y.getWeightConfiguration(),
+                        propose, write, n, f, 10) :
+                        simulator.predictLatency(replicaSet, y.getLeader(), y.getWeightConfiguration(),
+                                propose, write, n, f, 10);
 
-            } else {
-                // If the new solution is worse, calculate an acceptance probability
-                double rand = random.nextDouble();
-                if (Math.exp(-((predictY - predictX) / (temp))) > rand) {
-                    jumps++;
+                // If the new solution is better, it is accepted
+                if (predictY < predictX) {
                     x = y;
                     x.setPredictedLatency(predictY);
+                    betterFound++;
+
+                } else {
+                    // If the new solution is worse, calculate an acceptance probability
+                    double rand = random.nextDouble();
+                    if (Math.exp(-((predictY - predictX) / (temp))) > rand) {
+                        jumps++;
+                        x = y;
+                        x.setPredictedLatency(predictY);
+                    }
                 }
-            }
 
-            // Record best solution found
-            if (predictY < best.getPredictedLatency()) {
-                best = y;
-                best.setPredictedLatency(predictY);
-            }
+                // Record best solution found
+                if (predictY < best.getPredictedLatency()) {
+                    best = y;
+                    best.setPredictedLatency(predictY);
+                }
 
-            // Cool system down
-            temp *= 1 - coolingRate;
+                // Cool system down
+                temp *= 1 - coolingRate;
+            }
         }
 
 
-        long t2= System.nanoTime();
+        Long[] consistencyLatencies = simulator.predictLatencyE2EHotStuff(replicaSet, best.getLeader(),
+                best.getWeightConfiguration(), propose, write, n, f, clientLatencies);
+
+        long t2 = System.nanoTime();
         double time = ((double) (t2 - t1)) / 1000000.00; // in ms
 
-        String additionalParameters = "temperature: " + initTemp + " coolingRate: " + coolingRate + " threshold: "
-                + threshold + " jumps: " + jumps + " better found: " + betterFound;
+        String additionalParameters = ""; //sample == -1 ? "Worst Configuration performs in " + worstLatency + " ms" : "";
+        additionalParameters += "/n";
+        additionalParameters += " " + consistencyLatencies[1] + " " + consistencyLatencies[2] +" "
+                + consistencyLatencies[3] +" " + consistencyLatencies[4];
 
-        Simulator.printStrategyInfo("Simulated Annealing", examined, best, time, additionalParameters);
+        Simulator.printStrategyInfo("Simulated Annealing", 1, best, time, additionalParameters);
 
-        return simulator.new SimulationRun(time, best.getPredictedLatency(), best);
+        SimulationRun result = simulator.new SimulationRun(time, best.getPredictedLatency(), best);
+
+        result.setLatencies(consistencyLatencies);
+
+        return result;
     }
 
 
@@ -888,7 +907,7 @@ public class Simulator {
 
         String additionalParameters = ""; //sample == -1 ? "Worst Configuration performs in " + worstLatency + " ms" : "";
         additionalParameters += "/n";
-        additionalParameters += " " + consistencyLatencies[1] + " " + consistencyLatencies[2] +" "
+        additionalParameters += " " + consistencyLatencies[0] + " " + consistencyLatencies[1] + " " + consistencyLatencies[2] +" "
                 + consistencyLatencies[3] +" " + consistencyLatencies[4];
 
         String strategy = sample != -1 ? "Wide-Spread Sample of " + sample : "Exhaustive Search (Brute-Force)";

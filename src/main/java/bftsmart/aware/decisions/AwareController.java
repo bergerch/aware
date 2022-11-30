@@ -125,7 +125,7 @@ public class AwareController {
 
         // For larger systems, use heuristic, e.g, Simulated Annealing
         if (n > N_SIZE_TO_USE_HEURISTICS) {
-            return Simulator.simulatedAnnealing(n, f, delta, u, replicaSet, propose, write, cid).best;
+            return Simulator.simulatedAnnealing(n, f, delta, u, replicaSet, propose, write, cid, null, false).best;
         }
 
 
