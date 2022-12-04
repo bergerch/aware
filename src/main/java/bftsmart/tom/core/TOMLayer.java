@@ -549,10 +549,6 @@ public final class TOMLayer extends Thread implements RequestReceiver {
 
                 }
                 logger.debug("I am the leader and start consensus");
-                System.out.println("crash before propose? -no");
-               if (execId > 50 && this.controller.getStaticConf().getProcessId() == 0) { // simulate crash
-                    System.exit(0);
-                }
                 execManager.getProposer().startConsensus(execId, createPropose(dec));
             }
         }
