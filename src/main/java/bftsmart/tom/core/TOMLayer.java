@@ -495,23 +495,6 @@ public final class TOMLayer extends Thread implements RequestReceiver {
             }
             //END t-AWARE:  block untils t-AWARE reconfiguration completes
 
-
-            //START t-AWARE:  block untils t-AWARE reconfiguration completes
-            reconfigurationLock.lock();
-            if ( (getLastExec() % controller.getStaticConf().getCalculationInterval()) == controller.getStaticConf().getCalculationDelay()
-                    && getLastExec() >=  controller.getStaticConf().getCalculationInterval() + controller.getStaticConf().getCalculationDelay()
-                    && getLastExec() > AwareController.getInstance(controller, execManager).getLastReconfigurationCID()
-            ) {
-                logger.debug("There may be a reconfiguration. Waiting for this to complete");
-                reconfigurationCompleted.awaitUninterruptibly();
-                logger.debug("Reconfiguration completed");
-            }
-            reconfigurationLock.unlock();
-            if (execManager.getCurrentLeader() != this.controller.getStaticConf().getProcessId()) {
-              continue;
-            }
-            //END t-AWARE:  block untils t-AWARE reconfiguration completes
-
             logger.debug("I'm the leader.");
 
             // blocks until there are requests to be processed/ordered
@@ -567,7 +550,7 @@ public final class TOMLayer extends Thread implements RequestReceiver {
                 }
                 logger.debug("I am the leader and start consensus");
                 System.out.println("crash before propose? -no");
-                if (execId > 100 && this.controller.getStaticConf().getProcessId() == 0) { // simulate crash
+               if (execId > 50 && this.controller.getStaticConf().getProcessId() == 0) { // simulate crash
                     System.exit(0);
                 }
                 execManager.getProposer().startConsensus(execId, createPropose(dec));

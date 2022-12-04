@@ -183,6 +183,9 @@ public class NettyClientServerCommunicationSystemServerSide extends SimpleChanne
                 logger.info("Re-Calculate after x consensus: " + controller.getStaticConf().getCalculationInterval());
 				logger.info("Calc Delay: " + controller.getStaticConf().getCalculationDelay());
 				logger.info("Opt goal " + controller.getStaticConf().getOptimizationGoal());
+				logger.info("SyncDelay " + controller.getStaticConf().getSynchronisationDelay());
+				logger.info("SyncPeriod " + controller.getStaticConf().getSynchronisationPeriod());
+				logger.info("Granularity: " + controller.getStaticConf().getGranularity());
             }
 
 		} catch (InterruptedException | UnknownHostException ex) {
