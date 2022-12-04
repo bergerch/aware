@@ -20,6 +20,8 @@ public class ThroughputLatencyClient {
 		if (args.length != 6) {
 			System.out.println("USAGE: bftsmart.benchmark.ThroughputLatencyClient <initial client id> " +
 					"<num clients> <number of operations per client> <request size> <isWrite?> <measurement leader?>");
+//			<initial client id> <number of clients> <number of operations> <request size>
+//			<interval (ms)> <read only?> <verbose?> <nosig | default | ecdsa>");
 			System.exit(-1);
 		}
 
