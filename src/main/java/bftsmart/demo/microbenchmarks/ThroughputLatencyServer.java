@@ -232,16 +232,17 @@ public final class ThroughputLatencyServer extends DefaultRecoverable{
             readOnly = msgCtx.readOnly;
                     
             msgCtx.getFirstInBatch().executedTime = System.nanoTime();
+            System.out.println("executedTime time : " + msgCtx.getFirstInBatch().executedTime);
                         
             totalLatency.store(msgCtx.getFirstInBatch().executedTime - msgCtx.getFirstInBatch().receptionTime);
 
             if (readOnly == false) {
-                System.out.println("receptionTime : " + msgCtx.getFirstInBatch().receptionTime);
-                System.out.println("consensusStartTime : "+ msgCtx.getFirstInBatch().consensusStartTime);
-                System.out.println("executedTime : " + msgCtx.getFirstInBatch().executedTime);
-                System.out.println("decisionTime : " + msgCtx.getFirstInBatch().decisionTime);
-                System.out.println("writeSentTime : " + msgCtx.getFirstInBatch().writeSentTime);
-                System.out.println("acceptSentTime : " + msgCtx.getFirstInBatch().acceptSentTime);
+//                System.out.println("receptionTime : " + msgCtx.getFirstInBatch().receptionTime);
+//                System.out.println("consensusStartTime : "+ msgCtx.getFirstInBatch().consensusStartTime);
+//                System.out.println("executedTime : " + msgCtx.getFirstInBatch().executedTime);
+//                System.out.println("decisionTime : " + msgCtx.getFirstInBatch().decisionTime);
+//                System.out.println("writeSentTime : " + msgCtx.getFirstInBatch().writeSentTime);
+//                System.out.println("acceptSentTime : " + msgCtx.getFirstInBatch().acceptSentTime);
                 consensusLatency.store(msgCtx.getFirstInBatch().decisionTime - msgCtx.getFirstInBatch().consensusStartTime);
                 long temp = msgCtx.getFirstInBatch().consensusStartTime - msgCtx.getFirstInBatch().receptionTime;
                 preConsLatency.store(temp > 0 ? temp : 0);

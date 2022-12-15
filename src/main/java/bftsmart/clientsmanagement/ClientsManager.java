@@ -287,6 +287,7 @@ public class ClientsManager {
     public boolean requestReceived(TOMMessage request, boolean fromClient, ServerCommunicationSystem cs) {
                 
         long receptionTime = System.nanoTime();
+        logger.debug("Reception time : {}", receptionTime);
         long receptionTimestamp = System.currentTimeMillis();
         
         int clientId = request.getSender();

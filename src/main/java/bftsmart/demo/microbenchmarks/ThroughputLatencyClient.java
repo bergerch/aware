@@ -291,6 +291,7 @@ public class ThroughputLatencyClient {
 
             System.out.println("Executing experiment for " + numberOfOps / 2 + " ops");
             long totalLatency = 0;
+            long startExpTime = System.nanoTime();
             for (int i = 0; i < numberOfOps / 2; i++, req++) {
                 long last_send_instant = System.nanoTime();
                 if (verbose) System.out.print(this.id + " // Sending req " + req + "...");
@@ -304,7 +305,7 @@ public class ThroughputLatencyClient {
                 totalLatency += System.nanoTime() - last_send_instant;
                 System.out.println("Latency for " + id + ": " + latency);
 
-                if(i%10==0) {
+                if(i%10==0 || (i-1)==numberOfOps/2) {
                     System.out.println("Total latency for Client: " + id + " for last 10 requests : " + totalLatency);
                 }
 
@@ -343,6 +344,8 @@ public class ThroughputLatencyClient {
 
                 if (verbose && (req % 1000 == 0)) System.out.println(this.id + " // " + req + " operations sent!");
             }
+            long endExpTime = System.nanoTime();
+            System.out.println(this.id + " // TOTAL time for " + numberOfOps / 2 + " executions (-10%) = " + (endExpTime - startExpTime) / 1000 + " us ");
             System.out.println("ID: " + id + " initID: " + initId);
             if(id == initId) {
                 System.out.println(this.id + " // Average time for " + numberOfOps / 2 + " executions (-10%) = " + st.getAverage(true) / 1000 + " us ");
@@ -351,15 +354,6 @@ public class ThroughputLatencyClient {
                 System.out.println(this.id + " // Standard desviation for " + numberOfOps / 2 + " executions (all samples) = " + st.getDP(false) / 1000 + " us ");
                 System.out.println(this.id + " // Maximum time for " + numberOfOps / 2 + " executions (all samples) = " + st.getMax(false) / 1000 + " us ");
             }
-
-
-
-
-
-
-
-
-
 
             System.out.println("Finished! Continue to send operations");
 
@@ -372,7 +366,12 @@ public class ThroughputLatencyClient {
                 else
                     proxy.invokeOrdered(request);
                 long latency = System.nanoTime() - last_send_instant;
+                totalLatency += System.nanoTime() - last_send_instant;
+                System.out.println("Latency for " + id + ": " + latency);
 
+                if(i%10==0 || (i-1)==numberOfOps) {
+                    System.out.println("Total latency for Client: " + id + " for last 10 requests : " + totalLatency);
+                }
                 try {
                     latencies.put(id + "\t" + System.currentTimeMillis() + "\t" + latency + "\n");
                 } catch (InterruptedException ex) {
