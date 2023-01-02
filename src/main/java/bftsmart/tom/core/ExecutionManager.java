@@ -430,8 +430,8 @@ public final class ExecutionManager {
             }
 
             if(controller.getStaticConf().isBFT()){
-            	return ((countWrites > (2*controller.getCurrentViewF())) &&
-            			(countAccepts > (2*controller.getCurrentViewF())));
+            	return ((countWrites > (2*controller.getCurrentViewT())) &&
+            			(countAccepts > (2*controller.getCurrentViewT())));
             }else{
             	return (countAccepts > controller.getQuorum());
             }

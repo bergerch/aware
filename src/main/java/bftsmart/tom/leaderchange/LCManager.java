@@ -462,7 +462,7 @@ public class LCManager {
             return false;
         }
         
-        if (!(collects.size() >= (SVController.getCurrentViewN() - SVController.getCurrentViewF()))) {
+        if (!(collects.size() >= (SVController.getCurrentViewN() - SVController.getCurrentViewT()))) {
             logger.debug("Less than N-F contexts collected from replicas, returning false");
             return false;
         }
@@ -558,7 +558,7 @@ public class LCManager {
         boolean unbound = false;
         int count = 0;
 
-        if (collects.size() >= (SVController.getCurrentViewN() - SVController.getCurrentViewF())) {
+        if (collects.size() >= (SVController.getCurrentViewN() - SVController.getCurrentViewT())) {
 
 
             for (CollectData c : collects) {
@@ -569,7 +569,7 @@ public class LCManager {
         else return false;
 
         if(SVController.getStaticConf().isBFT()) {
-            unbound = count > ((SVController.getCurrentViewN() + SVController.getCurrentViewF()) / 2);
+            unbound = count > ((SVController.getCurrentViewN() + SVController.getCurrentViewT()) / 2);
         }
         else {
         	unbound = count > ((SVController.getCurrentViewN()) / 2);
@@ -620,7 +620,7 @@ public class LCManager {
         }
 
         if(SVController.getStaticConf().isBFT()) {
-            quorum = count > ((SVController.getCurrentViewN() + SVController.getCurrentViewF()) / 2);
+            quorum = count > ((SVController.getCurrentViewN() + SVController.getCurrentViewT()) / 2);
         }
         else {
             quorum = count > ((SVController.getCurrentViewN())/2);
@@ -661,7 +661,7 @@ public class LCManager {
         }
 
         if(SVController.getStaticConf().isBFT()) {
-            certified = count > SVController.getCurrentViewF();
+            certified = count > SVController.getCurrentViewT();
         } else {
             certified = count > 0;
         }
@@ -794,7 +794,7 @@ public class LCManager {
         
         byte[] hashedValue = md.digest(cDec.getDecision());
         Set<ConsensusMessage> ConsensusMessages = cDec.getConsMessages();
-        int certificateCurrentView = (2*tomLayer.controller.getCurrentViewF()) + 1;
+        int certificateCurrentView = (2*tomLayer.controller.getCurrentViewT()) + 1;
         int certificateLastView = -1;
         if (tomLayer.controller.getLastView() != null) certificateLastView = (2*tomLayer.controller.getLastView().getF()) + 1;
         int countValid = 0;
@@ -848,7 +848,7 @@ public class LCManager {
         boolean ret = countValid >=  (certificateLastView != -1 && pubKey != null ? certificateLastView : certificateCurrentView);
         logger.debug("Proof for CID {} is {} ({} valid messages, needed {})",
                 cDec.getCID(), (ret ? "valid" : "invalid"), countValid, ( pubKey != null ? certificateLastView : certificateCurrentView));
-        return true;
+        return ret;
     }
 
     /**
@@ -906,6 +906,6 @@ public class LCManager {
             }
         }
         
-        return (count > this.SVController.getCurrentViewF() ? ets : -1);
+        return (count > this.SVController.getCurrentViewT() ? ets : -1);
     }
 }

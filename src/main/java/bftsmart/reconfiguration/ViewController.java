@@ -94,6 +94,10 @@ public class ViewController {
         return getCurrentView().getF();
     }
 
+    public int getCurrentViewT() {
+        return getCurrentView().getT();
+    }
+
     public int getCurrentViewN() {
         return getCurrentView().getN();
     }

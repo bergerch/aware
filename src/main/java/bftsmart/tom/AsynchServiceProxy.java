@@ -196,7 +196,7 @@ public class AsynchServiceProxy extends ServiceProxy {
                             }
                         }
 
-                        if (sameContent >= Math.ceil((getViewManager().getCurrentViewN() + getViewManager().getCurrentViewF() + 1) / 2.0)
+                        if (sameContent >= Math.ceil((getViewManager().getCurrentViewN() + getViewManager().getCurrentViewT() + 1) / 2.0)
                                 //totalVotes >= replyQuorum
                             && v.getId() > getViewManager().getCurrentViewId() ) {
 

@@ -262,7 +262,7 @@ public class NettyClientServerCommunicationSystemClientSide extends SimpleChanne
 		Collections.shuffle(Arrays.asList(targetArray), new Random());
 
 		if (controller.getStaticConf().isBFT()) {
-			quorum = (int) Math.ceil((controller.getCurrentViewN() + controller.getCurrentViewF()) / 2) + 1;
+			quorum = (int) Math.ceil((controller.getCurrentViewN() + controller.getCurrentViewT()) / 2) + 1;
 		} else {
 			quorum = (int) Math.ceil((controller.getCurrentViewN()) / 2) + 1;
 		}
@@ -326,7 +326,7 @@ public class NettyClientServerCommunicationSystemClientSide extends SimpleChanne
 			}
 		}
 
-		if (targets.length > controller.getCurrentViewF() && sent < controller.getCurrentViewF() + 1) {
+		if (targets.length > controller.getCurrentViewT() && sent < controller.getCurrentViewT() + 1) {
 			// if less than f+1 servers are connected send an exception to the client
 			throw new RuntimeException("Impossible to connect to servers!");
 		}

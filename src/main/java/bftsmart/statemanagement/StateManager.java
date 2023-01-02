@@ -80,7 +80,7 @@ public abstract class StateManager {
     }
 
     protected boolean enoughReplies() {
-        return senderStates.size() > SVController.getCurrentViewF();
+        return senderStates.size() > SVController.getCurrentViewT();
     }
 
     protected boolean enoughRegencies(int regency) {
@@ -199,7 +199,7 @@ public abstract class StateManager {
         if (waitingCID == -1) {
             logger.debug("I'm not waiting for any state, so I will keep record of this message");
             if (tomLayer.execManager.isDecidable(cid)) {
-                logger.info("I have now more than " + SVController.getCurrentViewF() + " messages for CID " + cid + " which are beyond CID " + lastCID);
+                logger.info("I have now more than " + SVController.getCurrentViewT() + " messages for CID " + cid + " which are beyond CID " + lastCID);
                 lastCID = cid;
                 waitingCID = cid - 1;
                 logger.info("I will be waiting for state messages associated to consensus " + waitingCID);

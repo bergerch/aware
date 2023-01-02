@@ -204,7 +204,7 @@ public class StandardStateManager extends StateManager {
                         if (otherReplicaState != null) {
                             if (Arrays.equals(hash, otherReplicaState.getStateHash())) {
                                 haveState = 1;
-                            } else if (getNumEqualStates() > SVController.getCurrentViewF()) {
+                            } else if (getNumEqualStates() > SVController.getCurrentViewT()) {
                                 haveState = -1;
                             }
                         }
@@ -332,7 +332,7 @@ public class StandardStateManager extends StateManager {
                         if (stateTimer != null) {
                             stateTimer.cancel();
                         }
-                    } else if (haveState == 0 && (SVController.getCurrentViewN() - SVController.getCurrentViewF()) <= getReplies()) {
+                    } else if (haveState == 0 && (SVController.getCurrentViewN() - SVController.getCurrentViewT()) <= getReplies()) {
 
                         logger.debug("Could not obtain the state, retrying");
                         reset();
