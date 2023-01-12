@@ -201,7 +201,7 @@ public final class Acceptor {
 			// start this consensus if it is not already running
 //			if (cid == tomLayer.getLastExec() + 1) {
 //			TODO && tomLayer.pipelineManager.getConsensusesInExecution().contains(cid)
-			if(cid >= (tomLayer.getLastExec() + 1) && cid <= (tomLayer.getLastExec() + 3)) {
+			if(cid >= (tomLayer.getLastExec() + 1) && cid <= (tomLayer.getLastExec() + controller.getStaticConf().getMaxConsensusesInExec())) {
 				tomLayer.setInExec(cid);
 			}
 			epoch.deserializedPropValue = tomLayer.checkProposedValue(value, true);
@@ -223,9 +223,6 @@ public final class Acceptor {
 
 					epoch.setWrite(me, epoch.propValueHash);
 					epoch.getConsensus().getDecision().firstMessageProposed.writeSentTime = System.nanoTime();
-					logger.debug("Write sent time in Sending WRITE for : {}", epoch.getConsensus().getDecision().firstMessageProposed.writeSentTime);
-					logger.debug("write sent time - propose received : {}", epoch.getConsensus().getDecision().firstMessageProposed.writeSentTime - epoch.getConsensus().getDecision().firstMessageProposed.proposeReceivedTime);
-					logger.debug("write sent time - Consensus start : {}", epoch.getConsensus().getDecision().firstMessageProposed.writeSentTime - epoch.getConsensus().getDecision().firstMessageProposed.consensusStartTime);
 
 					logger.debug("Sending WRITE for cId:{}, I am:{}", cid, me);
 					communication.send(this.controller.getCurrentViewOtherAcceptors(),
@@ -241,8 +238,6 @@ public final class Acceptor {
 					epoch.setAccept(me, epoch.propValueHash);
 					epoch.getConsensus().getDecision().firstMessageProposed.writeSentTime = System.nanoTime();
 					epoch.getConsensus().getDecision().firstMessageProposed.acceptSentTime = System.nanoTime();
-					logger.debug("Write sent time : {}", epoch.getConsensus().getDecision().firstMessageProposed.writeSentTime);
-					logger.debug("Accept sent time : {}", epoch.getConsensus().getDecision().firstMessageProposed.acceptSentTime);
 
 					/**** LEADER CHANGE CODE! ******/
 					logger.debug("[CFT Mode] Setting consensus " + cid + " QuorumWrite tiemstamp to "

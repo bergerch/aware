@@ -254,9 +254,12 @@ public final class ExecutionManager {
                 stoppedMsgsLock.unlock();
             } else {
                 if (isRetrievingState || 
-                        msg.getNumber() > (lastConsId + 1) || 
-                        (inExec != -1 && inExec < msg.getNumber()) || 
-                        (inExec == -1 && msg.getType() != MessageFactory.PROPOSE)) { //not propose message for the next consensus
+                        msg.getNumber() > (lastConsId + controller.getStaticConf().getMaxConsensusesInExec()) ||
+                       // (inExec != -1 && inExec < msg.getNumber()) || Todo checkLimits for pipelining needs modifications
+                        (!tomLayer.getAllExecutingInstances().contains(msg.getNumber()) &&  msg.getType() != MessageFactory.PROPOSE)
+                        // (inExec == -1 && msg.getType() != MessageFactory.PROPOSE))
+                )
+                         { //not propose message for the next consensus
                     logger.debug("Message for consensus " + 
                             msg.getNumber() + " is out of context, adding it to out of context set");
                     
@@ -267,8 +270,7 @@ public final class ExecutionManager {
                     
                     addOutOfContextMessage(msg);
                 } else { //can process!
-                    logger.debug("Message for consensus " + 
-                            msg.getNumber() + " can be processed");
+                    logger.debug("Message for consensus " + msg.getNumber() + " can be processed");
             
                     //Logger.debug = false;
                     canProcessTheMessage = true;
@@ -313,6 +315,7 @@ public final class ExecutionManager {
         outOfContextLock.lock();
         /******* BEGIN OUTOFCONTEXT CRITICAL SECTION *******/
         boolean result = outOfContextProposes.get(cid) != null;
+        logger.info(" ReceivedOutOfContextPropose() " + cid);
         /******* END OUTOFCONTEXT CRITICAL SECTION *******/
         outOfContextLock.unlock();
 
