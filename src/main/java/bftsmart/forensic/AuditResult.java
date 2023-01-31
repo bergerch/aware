@@ -12,6 +12,7 @@ public class AuditResult {
 
     private Set<Integer> replicas;
     private int faultyView;
+    private boolean valid_signatures = true;
 
     public AuditResult(){
         faultyView = Integer.MAX_VALUE;
@@ -56,7 +57,15 @@ public class AuditResult {
         return !replicas.isEmpty();
     }
 
+    public boolean validSignatures(){
+        return valid_signatures;
+    }
+
     public String toString(){
         return "Falty view: " + faultyView + ", Faulty replicas: " + replicas.toString();
+    }
+
+    public void invalidSignatureFound() {
+        this.valid_signatures = false;
     }
 }

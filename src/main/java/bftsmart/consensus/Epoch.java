@@ -604,7 +604,7 @@ public class Epoch implements Serializable {
 
     public void createWriteAggregate() {
         if (this.writeAgg == null) {
-            this.writeAgg = new Aggregate(this.writeProofs, true);
+            this.writeAgg = new Aggregate(this.writeProofs);
         }
     }
 
@@ -614,7 +614,7 @@ public class Epoch implements Serializable {
 
     public void createAcceptAggregate() {
         if (this.acceptAgg == null) {
-            this.acceptAgg = new Aggregate(this.proof, false);
+            this.acceptAgg = new Aggregate(this.proof);
         }
     }
 

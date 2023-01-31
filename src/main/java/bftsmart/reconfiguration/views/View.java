@@ -18,10 +18,8 @@ package bftsmart.reconfiguration.views;
 import bftsmart.aware.decisions.WeightConfiguration;
 
 import java.io.Serializable;
-import java.util.Arrays;
+import java.util.*;
 import java.net.InetSocketAddress;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  *
@@ -114,6 +112,19 @@ public class View implements Serializable {
 
     }
 
+    public WeightConfiguration getWeightConfiguration() {
+        Set<Integer> max = new TreeSet<>();
+        Set<Integer> min = new TreeSet<>();
+        this.weights.forEach((replica, weight) -> {
+            if (weight > 1.0) {
+                max.add(replica);
+            } else {
+                min.add(replica);
+            }
+        });
+        return new WeightConfiguration(max, min);
+    }
+
     public boolean isMember(int id) {
         for (int i = 0; i < this.processes.length; i++) {
             if (this.processes[i] == id) {
@@ -181,6 +192,10 @@ public class View implements Serializable {
         return overlayN;
     }
 
+    public double getQuorum() {
+        return 2* this.getF() * (1 + ( (double) this.delta/(double) this.getF()));
+    }
+
     public String getViewString() {
         String s = "";
         for (int i = 0; i < this.getN(); i++) {
@@ -206,6 +221,7 @@ public class View implements Serializable {
 
     @Override
     public boolean equals(Object obj) {
+        if (this == obj) return true; // if reference is the same return true
         if (obj instanceof View) {
             View v = (View) obj;
             return (this.addresses.equals(v.addresses) &&

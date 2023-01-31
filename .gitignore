@@ -1,6 +1,7 @@
 bin/main/bftsmart
 config/currentView
 test
+.idea/
 
 # Ignore Gradle project-specific cache directory
 .gradle

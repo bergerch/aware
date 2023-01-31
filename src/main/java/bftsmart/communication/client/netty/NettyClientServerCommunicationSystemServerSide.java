@@ -173,7 +173,7 @@ public class NettyClientServerCommunicationSystemServerSide extends SimpleChanne
 
             /** AWARE **/
             if (controller.getStaticConf().isUseWeights()) {
-                logger.info("Using WHEAT Extensions: ");
+                logger.info("FTL Build 31. Jan 2023, Extensions: ");
                 logger.info("Use dynamic weight adjustments (AWARE): " + controller.getStaticConf().isUseDynamicWeights());
                 logger.info("Use Leader selection optimization: " + controller.getStaticConf().isUseLeaderSelection());
                 logger.info("Use WRITE-RESPONSE: " + controller.getStaticConf().isUseWriteResponse());
@@ -181,6 +181,11 @@ public class NettyClientServerCommunicationSystemServerSide extends SimpleChanne
                 logger.info("Use PROPOSE-RESPONSE: " + controller.getStaticConf().isUseProposeResponse());
                 logger.info("Monitoring overhead: " + controller.getStaticConf().getMonitoringOverhead());
                 logger.info("Re-Calculate after x consensus: " + controller.getStaticConf().getCalculationInterval());
+				logger.info("Calc Delay: " + controller.getStaticConf().getCalculationDelay());
+				logger.info("Opt goal " + controller.getStaticConf().getOptimizationGoal());
+				logger.info("SyncDelay " + controller.getStaticConf().getSynchronisationDelay());
+				logger.info("SyncPeriod " + controller.getStaticConf().getSynchronisationPeriod());
+				logger.info("Granularity: " + controller.getStaticConf().getGranularity());
             }
 
 		} catch (InterruptedException | UnknownHostException ex) {

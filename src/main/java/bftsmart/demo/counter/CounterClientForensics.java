@@ -20,14 +20,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.List;
-
-import bftsmart.forensic.AuditResult;
-import bftsmart.forensic.AuditStorage;
-import bftsmart.forensic.Auditor;
 import bftsmart.tom.ServiceProxy;
 import bftsmart.tom.core.messages.TOMMessageType;
-import bftsmart.tom.util.TOMUtil;
 
 /**
  * Example client that updates a BFT replicated service (a counter).
@@ -99,21 +93,21 @@ public class CounterClientForensics {
 
         byte[] reply = counterProxy.invoke(out.toByteArray(), TOMMessageType.AUDIT);
         
-        try {
-            List<AuditStorage> storages = (List<AuditStorage>) TOMUtil.getObject(reply);
+        // try {
+        //     List<AuditStorage> storages = (List<AuditStorage>) TOMUtil.getObject(reply);
 
-            Auditor audit = new Auditor();
-            AuditResult result = audit.audit(storages);
+        //     Auditor audit = new Auditor();
+        //     AuditResult result = audit.audit(storages);
 
-            if (result.conflictFound()) {
-                System.out.println(result);
-            } else {
-                System.out.println("No conflict found");
-            }
+        //     if (result.conflictFound()) {
+        //         System.out.println(result);
+        //     } else {
+        //         System.out.println("No conflict found");
+        //     }
 
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        // } catch (Exception e) {
+        //     e.printStackTrace();
+        // }
         System.out.println("### Forensics complete ###");
     }
 

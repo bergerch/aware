@@ -21,6 +21,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.StringTokenizer;
 
+import bftsmart.forensic.AuditProvider;
 import bftsmart.reconfiguration.views.View;
 import bftsmart.tom.core.TOMLayer;
 import bftsmart.tom.core.messages.TOMMessage;
@@ -55,6 +56,18 @@ public class ServerViewController extends ViewController {
     private int overlayQ_BFT;
     private int overlayQ_CFT;
 
+    private int last_checkpoint;
+
+    /**
+     * T-AWARE
+     */
+    private AuditProvider auditProvider;
+    private int K = -1; // granularity
+
+    /**
+     * 
+     */
+
     public ServerViewController(int procId, KeyLoader loader) {
         this(procId, "", loader);
         /*
@@ -78,7 +91,7 @@ public class ServerViewController extends ViewController {
             logger.info("Using view stored on disk");
             reconfigureTo(cv);
         }
-
+        this.K = this.getStaticConf().getGranularity();
     }
 
     private InetSocketAddress[] getInitAdddresses() {
@@ -271,6 +284,7 @@ public class ServerViewController extends ViewController {
 
     @Override
     public final void reconfigureTo(View newView) {
+        this.lastView = this.currentView;
         this.currentView = newView;
         getViewStore().storeView(this.currentView);
         if (newView.isMember(getStaticConf().getProcessId())) {
@@ -300,7 +314,6 @@ public class ServerViewController extends ViewController {
         System.out.println("Reconfigure:\n\tN = " + this.currentView.getN() + "\tt = " + this.currentView.getF()
                 + "\n\tDelta = " + this.currentView.getDelta());
 
-
         System.out.println("OVerlayF = " + overlayF);
         System.out.println("OVerlayN = " + overlayN);
     }
@@ -321,12 +334,13 @@ public class ServerViewController extends ViewController {
 
     /*************************** SWITCH METHODS *******************************/
 
-    private int K = 1; // granularity
-
     public void switchToSaferConfig() {
         System.out.println("================== SWITCH to SAFE ==================");
         View currentView = this.getCurrentView();
-        if (currentView.isSaferConfig()) return;
+        if (currentView.isSaferConfig()) {
+            logger.info("============== Already safest config ==============");
+            return;
+        }
 
         int N = currentView.getProcesses().length;
         int max_faults = max_fault(N);
@@ -337,10 +351,10 @@ public class ServerViewController extends ViewController {
         this.reconfigureTo(newView);
     }
 
-    public void switchToFasterConfig() {
-        System.out.println("================== SWITCH to FAST ==================");
+    public View nextFasterConfig() {
         View currentView = this.getCurrentView();
-        if (currentView.isFastestConfig()) return;
+        if (currentView.isFastestConfig())
+            return currentView;
 
         int N = currentView.getProcesses().length;
         int max_faults = max_fault(N);
@@ -348,7 +362,25 @@ public class ServerViewController extends ViewController {
         int new_delta = calculateDelta(N, new_faults);
         View newView = new View(currentView.getId() + 1, currentView.getProcesses(), new_faults,
                 currentView.getAddresses(), currentView.isBFT(), new_delta);
+        return newView;
+    }
+
+    public void switchToFasterConfig() {
+        System.out.println("================== SWITCH to FAST ==================");
+        View currentView = this.getCurrentView();
+        if (currentView.isFastestConfig())
+            return;
+
+        View newView = this.nextFasterConfig();
         this.reconfigureTo(newView);
+    }
+
+    public boolean inBackup() {
+        return maxFault() == this.getCurrentViewF();
+    }
+
+    public int maxFault() {
+        return max_fault(currentView.getProcesses().length);
     }
 
     private static int max_fault(int N) {
@@ -360,6 +392,22 @@ public class ServerViewController extends ViewController {
     }
 
     // private int getTotalWeights(){
-    //     return ;
+    // return ;
     // }
+
+    public int getLastCheckpoint() {
+        return last_checkpoint;
+    }
+
+    public void updateLastCheckpoint(int cid) {
+        this.last_checkpoint = cid;
+    }
+
+    public void registerAuditProvider(AuditProvider audit_provider) {
+        this.auditProvider = audit_provider;
+    }
+
+    public AuditProvider getAuditProvider() {
+        return auditProvider;
+    }
 }

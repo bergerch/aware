@@ -108,7 +108,9 @@ public final class ExecutionManager {
         //******* EDUARDO END **************//
         
         // Get initial leader
-        if (controller.getCurrentViewAcceptors().length > 0)
+        if (controller.getStaticConf().getInitialLeader() != 0) {
+            currentLeader = controller.getStaticConf().getInitialLeader();
+        } else if (controller.getCurrentViewAcceptors().length > 0)
             currentLeader = controller.getCurrentViewAcceptors()[0];
         else currentLeader = 0;
     }
@@ -428,8 +430,8 @@ public final class ExecutionManager {
             }
 
             if(controller.getStaticConf().isBFT()){
-            	return ((countWrites > (2*controller.getCurrentViewF())) &&
-            			(countAccepts > (2*controller.getCurrentViewF())));
+            	return ((countWrites > (2*controller.getCurrentViewT())) &&
+            			(countAccepts > (2*controller.getCurrentViewT())));
             }else{
             	return (countAccepts > controller.getQuorum());
             }
