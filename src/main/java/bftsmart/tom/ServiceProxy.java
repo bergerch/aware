@@ -443,7 +443,7 @@ public class ServiceProxy extends TOMSender {
 					 * Forensics
 					 */
 					if (requestType == TOMMessageType.AUDIT) {
-						if (receivedReplies >= 2 * getViewManager().getCurrentViewT()) { // wait for 2f ??
+						if (receivedReplies >= getViewManager().getCurrentViewN() - getViewManager().getCurrentViewT()) { // wait for 2f ??
 
 							List<AuditStorage> storages = new ArrayList<>();
 

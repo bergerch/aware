@@ -28,6 +28,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import bftsmart.consensus.roles.Acceptor;
+import bftsmart.reconfiguration.views.View;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -794,16 +796,22 @@ public class LCManager {
         
         byte[] hashedValue = md.digest(cDec.getDecision());
         Set<ConsensusMessage> ConsensusMessages = cDec.getConsMessages();
-        int certificateCurrentView = (2*tomLayer.controller.getCurrentViewT()) + 1;
-        int certificateLastView = -1;
-        if (tomLayer.controller.getLastView() != null) certificateLastView = (2*tomLayer.controller.getLastView().getF()) + 1;
-        int countValid = 0;
+        double certificateCurrentView = tomLayer.controller.getCurrentView().getQuorum(); // certificate is assessed
+        View usedView = tomLayer.controller.getCurrentView();                             // by checking sum of weights
+        double certificateLastView = -1;
+        if (tomLayer.controller.getLastView() != null) {
+            logger.debug("[new] certificate of last view != null, and .getF() equals " + tomLayer.controller.getLastView().getF());
+            certificateLastView = tomLayer.controller.getLastView().getQuorum();
+            usedView = tomLayer.controller.getLastView();
+        }
+        double weightsValid = 0.0;
         PublicKey pubKey = null;
+        logger.debug("certificateLastView: " + certificateLastView);
         
         HashSet<Integer> alreadyCounted = new HashSet<>(); //stores replica IDs that were already counted
-            
+        logger.debug("Cons Messages size() + " + ConsensusMessages.size());
         for (ConsensusMessage consMsg : ConsensusMessages) {
-            
+
             ConsensusMessage cm = new ConsensusMessage(consMsg.getType(),consMsg.getNumber(),
                     consMsg.getEpoch(), consMsg.getSender(), consMsg.getValue());
 
@@ -827,7 +835,7 @@ public class LCManager {
                         TOMUtil.verifySignature(pubKey, data, signature) && !alreadyCounted.contains(consMsg.getSender())) {
                     
                     alreadyCounted.add(consMsg.getSender());
-                    countValid++;
+                    weightsValid += usedView.getWeight(consMsg.getSender());
                 } else {
                     logger.error("Invalid signature in message from " + consMsg.getSender());
                 }
@@ -840,14 +848,16 @@ public class LCManager {
         // If proofs were made of signatures, use a certificate correspondent to last view
         // otherwise, use certificate for the current view
         // To understand why this is important, check the comments in Acceptor.computeWrite()
-                
-        if (certificateLastView != -1 && pubKey != null)
-            logger.debug("Computing certificate based on previous view");
         
         //return countValid >= certificateCurrentView;
-        boolean ret = countValid >=  (certificateLastView != -1 && pubKey != null ? certificateLastView : certificateCurrentView);
-        logger.debug("Proof for CID {} is {} ({} valid messages, needed {})",
-                cDec.getCID(), (ret ? "valid" : "invalid"), countValid, ( pubKey != null ? certificateLastView : certificateCurrentView));
+        double certificate = certificateCurrentView;
+        if (certificateLastView != -1 && pubKey != null) {
+            certificate = certificateLastView;
+            logger.debug("Computing certificate based on previous view");
+        }
+        boolean ret = weightsValid - certificate >= Acceptor.THRESHOLD;
+        logger.debug("Proof for CID {} is {} ({} valid weights, needed {})",
+                cDec.getCID(), (ret ? "valid" : "invalid"), weightsValid, certificate);
         return ret;
     }
 

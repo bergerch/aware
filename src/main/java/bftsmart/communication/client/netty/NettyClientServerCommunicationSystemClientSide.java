@@ -262,7 +262,7 @@ public class NettyClientServerCommunicationSystemClientSide extends SimpleChanne
 		Collections.shuffle(Arrays.asList(targetArray), new Random());
 
 		if (controller.getStaticConf().isBFT()) {
-			quorum = (int) Math.ceil((controller.getCurrentViewN() + controller.getCurrentViewT()) / 2) + 1;
+			quorum = controller.getCurrentViewN() - controller.getCurrentViewT();
 		} else {
 			quorum = (int) Math.ceil((controller.getCurrentViewN()) / 2) + 1;
 		}

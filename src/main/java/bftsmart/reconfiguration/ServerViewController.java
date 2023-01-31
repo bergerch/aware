@@ -284,6 +284,7 @@ public class ServerViewController extends ViewController {
 
     @Override
     public final void reconfigureTo(View newView) {
+        this.lastView = this.currentView;
         this.currentView = newView;
         getViewStore().storeView(this.currentView);
         if (newView.isMember(getStaticConf().getProcessId())) {

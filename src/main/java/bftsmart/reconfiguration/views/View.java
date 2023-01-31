@@ -192,6 +192,10 @@ public class View implements Serializable {
         return overlayN;
     }
 
+    public double getQuorum() {
+        return 2* this.getF() * (1 + ( (double) this.delta/(double) this.getF()));
+    }
+
     public String getViewString() {
         String s = "";
         for (int i = 0; i < this.getN(); i++) {
