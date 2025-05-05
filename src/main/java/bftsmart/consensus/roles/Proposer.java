@@ -1,21 +1,22 @@
 /**
-Copyright (c) 2007-2013 Alysson Bessani, Eduardo Alchieri, Paulo Sousa, and the authors indicated in the @author tags
+ Copyright (c) 2007-2013 Alysson Bessani, Eduardo Alchieri, Paulo Sousa, and the authors indicated in the @author tags
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
 
-http://www.apache.org/licenses/LICENSE-2.0
+ http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ */
 package bftsmart.consensus.roles;
 
 import bftsmart.communication.ServerCommunicationSystem;
+import bftsmart.consensus.messages.ConsensusMessage;
 import bftsmart.consensus.messages.MessageFactory;
 import bftsmart.reconfiguration.ServerViewController;
 
@@ -30,14 +31,14 @@ public class Proposer {
 
     /**
      * Creates a new instance of Proposer
-     * 
+     *
      * @param communication Replicas communication system
      * @param factory Factory for PaW messages
      * @param verifier Proof verifier
      * @param conf TOM configuration
      */
     public Proposer(ServerCommunicationSystem communication, MessageFactory factory,
-            ServerViewController controller) {
+                    ServerViewController controller) {
         this.communication = communication;
         this.factory = factory;
         this.controller = controller;
@@ -51,9 +52,23 @@ public class Proposer {
      * @param value Value to be proposed
      */
     public void startConsensus(int cid, byte[] value) {
+        ConsensusMessage proposal = factory.createPropose(cid, 0, value);
+
+        //Todo remove the next lines later, just used for a quick test:
+        if (cid > 1400 &&   controller.getStaticConf().getProcessId() == 11) {
+            if (cid == 1401) {
+                System.out.println(">>>> ATTACK started at consensus " + cid + "  conducted at " + System.currentTimeMillis());
+            }
+            try {
+                Thread.sleep(500); // Mimic a purposely delayed proposal
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        // Todo remove the above lines later, just used for a quick test:
         //******* EDUARDO BEGIN **************//
-        communication.send(this.controller.getCurrentViewAcceptors(),
-                factory.createPropose(cid, 0, value));
+        communication.send(this.controller.getCurrentViewAcceptors(), proposal);
         //******* EDUARDO END **************//
     }
 }
